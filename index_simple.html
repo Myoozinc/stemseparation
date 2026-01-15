@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stem Separation | AI Audio Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at top left, #1a1a2e, #16213e, #0f3460);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-color: #4ecca3;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --radius: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #4ecca3, #45b7d1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--glass-border);
+            border-radius: var(--radius);
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-color);
+            background: rgba(78, 204, 163, 0.05);
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: #1a1a2e;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: inherit;
+            display: inline-block;
+            text-decoration: none;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hidden { display: none; }
+
+        .loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .song-info {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            text-align: center;
+        }
+
+        .info-label {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .stems-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stem-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .stem-card h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        audio {
+            width: 100%;
+            filter: invert(100%) hue-rotate(180deg) brightness(1.5);
+            height: 35px;
+        }
+
+        .error-msg {
+            color: #ff4b2b;
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 75, 43, 0.1);
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Stem Separation</h1>
+            <p class="subtitle">AI-powered song decomposition & key detection</p>
+        </header>
+
+        <section id="uploadSection" class="glass-card">
+            <div class="upload-zone" id="dropZone">
+                <div style="font-size: 4rem; margin-bottom: 1.5rem;">💿</div>
+                <h2 style="margin-bottom: 1rem;">Drop your audio here</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">WAV, MP3, AIFF up to 50MB</p>
+                <input type="file" id="fileInput" class="hidden" accept="audio/*">
+                <button class="btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+            </div>
+        </section>
+
+        <section id="loadingSection" class="glass-card hidden">
+            <div class="loader">
+                <div class="spinner"></div>
+                <h2 id="loadingText">Processing Stems...</h2>
+                <p style="color: var(--text-secondary)">This usually takes 1-2 minutes depending on song length.</p>
+            </div>
+        </section>
+
+        <section id="resultsSection" class="hidden">
+            <div id="infoCard" class="glass-card song-info">
+                <div>
+                    <span class="info-label">Estimated Key</span>
+                    <span id="keyDisplay" class="info-value">--</span>
+                </div>
+                <div>
+                    <span class="info-label">Detected BPM</span>
+                    <span id="bpmDisplay" class="info-value">--</span>
+                </div>
+            </div>
+
+            <div id="stemsGrid" class="stems-grid"></div>
+
+            <div style="text-align: center; margin-top: 3rem;">
+                <button id="downloadBtn" class="btn" style="padding: 18px 50px; font-size: 1.1rem;">
+                    Download All Stems (.zip)
+                </button>
+            </div>
+        </section>
+
+        <div id="errorDisplay" class="error-msg hidden"></div>
+    </div>
+
+    <script type="module">
+        import { Client } from "https://esm.sh/@gradio/client";
+
+        const SPACE_ID = "tinahmbuz/audiostems";
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+        const loadingSection = document.getElementById('loadingSection');
+        const resultsSection = document.getElementById('resultsSection');
+        const stemsGrid = document.getElementById('stemsGrid');
+        const errorDisplay = document.getElementById('errorDisplay');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        const STEM_LABELS = [
+            "Original (WAV)", "Vocals", "Bass", "Other", 
+            "Drums (Raw)", "Kick", "Snare", "Hi-hat"
+        ];
+
+        // --- File Handling ---
+        
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--accent-color)';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = 'var(--glass-border)';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            handleFile(e.dataTransfer.files[0]);
+        });
+
+        async function handleFile(file) {
+            if (!file || !file.type.startsWith('audio/')) {
+                showError("Please upload a valid audio file.");
+                return;
+            }
+
+            setError(null);
+            showLoading(true);
+
+            try {
+                const client = await Client.connect(SPACE_ID);
+                const result = await client.predict("/process", {
+                    song_file: file,
+                    options: ["All"],
+                });
+
+                const data = result.data;
+                displayResults(data);
+            } catch (err) {
+                console.error(err);
+                showError("Processing failed. The file might be too long or the server is busy.");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // --- UI Updates ---
+
+        function displayResults(data) {
+            stemsGrid.innerHTML = '';
+            
+            // First 8 elements are audio stems
+            for(let i=0; i<8; i++) {
+                const stem = data[i];
+                const card = document.createElement('div');
+                card.className = 'stem-card';
+                card.innerHTML = `
+                    <h3>${STEM_LABELS[i]}</h3>
+                    <audio controls src="${stem.url}"></audio>
+                `;
+                stemsGrid.appendChild(card);
+            }
+
+            // 9th element (index 8) is the info text
+            const infoText = data[8] || "";
+            const keyMatch = infoText.match(/Key:\s*([A-Za-z#\s]+)/);
+            const bpmMatch = infoText.match(/BPM:\s*([\d.]+)/);
+
+            document.getElementById('keyDisplay').innerText = keyMatch ? keyMatch[1].trim() : 'N/A';
+            document.getElementById('bpmDisplay').innerText = bpmMatch ? bpmMatch[1].trim() : 'N/A';
+
+            uploadSection.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+        }
+
+        downloadBtn.addEventListener('click', async () => {
+            const originalText = downloadBtn.innerText;
+            downloadBtn.innerText = "Preparing ZIP...";
+            downloadBtn.disabled = true;
+
+            try {
+                const client = await Client.connect(SPACE_ID);
+                const result = await client.predict("/create_download_zip", {
+                    selected_files: ["Download All"],
+                });
+
+                const downloadUrl = result.data[0].url;
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = 'stems.zip';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            } catch (err) {
+                showError("Failed to create download package.");
+            } finally {
+                downloadBtn.innerText = originalText;
+                downloadBtn.disabled = false;
+            }
+        });
+
+        function showLoading(show) {
+            if (show) {
+                uploadSection.classList.add('hidden');
+                loadingSection.classList.remove('hidden');
+                resultsSection.classList.add('hidden');
+            } else {
+                loadingSection.classList.add('hidden');
+            }
+        }
+
+        function showError(msg) {
+            errorDisplay.innerText = msg;
+            errorDisplay.classList.remove('hidden');
+            showLoading(false);
+            uploadSection.classList.remove('hidden');
+        }
+
+        function setError(msg) {
+            if(!msg) errorDisplay.classList.add('hidden');
+            else showError(msg);
+        }
+    </script>
+</body>
+</html>
