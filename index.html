@@ -129,6 +129,12 @@
             box-shadow: none;
         }
 
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-top: 1rem;
+        }
+
         .options-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -180,7 +186,7 @@
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
         .spinner {
@@ -214,6 +220,11 @@
             align-items: center;
             justify-content: space-between;
             gap: 1.5rem;
+            transition: background 0.2s;
+        }
+
+        .stem-card:hover {
+            background: rgba(255, 255, 255, 0.06);
         }
 
         .stem-card h3 {
@@ -224,26 +235,35 @@
 
         audio {
             flex-grow: 1;
-            filter: invert(100%) hue-rotate(180deg) brightness(1.5);
+            /* Improved visibility on dark mode */
             height: 32px;
+            border-radius: 4px;
+        }
+
+        /* Styling for the audio player in Chrome/Safari */
+        audio::-webkit-media-controls-enclosure {
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
         .song-info-row {
             display: flex;
             gap: 2rem;
-            padding: 1rem;
-            background: rgba(78, 204, 163, 0.05);
+            padding: 1.5rem;
+            background: rgba(78, 204, 163, 0.08);
             border-radius: 12px;
             margin-bottom: 2rem;
+            justify-content: space-around;
         }
 
         .info-pill {
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
         .info-pill .val {
-            font-size: 1.4rem;
+            font-size: 1.8rem;
             font-weight: 700;
             color: var(--accent-color);
         }
@@ -252,11 +272,12 @@
             font-size: 0.7rem;
             text-transform: uppercase;
             color: var(--text-secondary);
+            letter-spacing: 1px;
         }
 
         .download-action-bar {
             margin-top: 2rem;
-            padding-top: 2.5rem;
+            padding-top: 2rem;
             border-top: 1px solid var(--glass-border);
         }
 
@@ -271,6 +292,13 @@
             padding: 6px 12px;
             border-radius: 20px;
         }
+
+        .timer {
+            font-family: monospace;
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 
@@ -278,17 +306,16 @@
     <div class="container">
         <header>
             <h1>Advanced Stem Splitter</h1>
-            <p class="subtitle">Separate vocals, instruments, and detect key/tempo</p>
+            <p class="subtitle">AI-powered song decomposition & key/tempo detection</p>
         </header>
 
         <div class="main-layout">
-            <!-- Left Side: Controls -->
             <div class="side-panel">
                 <div class="glass-card" id="uploadPanel">
                     <div class="upload-zone" id="dropZone">
                         <div style="font-size: 2.5rem; margin-bottom: 1rem;">📁</div>
                         <h4 style="margin-bottom: 0.5rem;">Click or Drop Song</h4>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary)">WAV, MP3, etc.</p>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary)">WAV, MP3, etc. (Max 50MB)</p>
                         <input type="file" id="fileInput" class="hidden" accept="audio/*">
                     </div>
 
@@ -297,11 +324,11 @@
                         <div class="options-group">
                             <label class="option-item">
                                 <input type="checkbox" name="process_opt" value="All" checked onclick="toggleAll(this)">
-                                <span class="checkmark">All</span>
+                                <span class="checkmark">All Stems</span>
                             </label>
                             <label class="option-item">
                                 <input type="checkbox" name="process_opt" value="Convert to WAV">
-                                <span class="checkmark">Convert to WAV</span>
+                                <span class="checkmark">Original WAV</span>
                             </label>
                             <label class="option-item">
                                 <input type="checkbox" name="process_opt" value="Vocals">
@@ -325,30 +352,35 @@
                             </label>
                             <label class="option-item">
                                 <input type="checkbox" name="process_opt" value="Info" checked>
-                                <span class="checkmark">Info</span>
+                                <span class="checkmark">Key/BPM Info</span>
                             </label>
                         </div>
-                        <button class="btn" id="processBtn">▶ Process Song</button>
+                        <button class="btn" id="processBtn">▶ Split Song</button>
                     </div>
 
-                    <div id="loadingPanel" class="hidden" style="text-align: center; padding: 2rem 0;">
+                    <div id="loadingPanel" class="hidden" style="text-align: center; padding: 1rem 0;">
                         <div class="spinner"></div>
-                        <p id="loadingText" style="font-weight: 600;">Splitting Stems...</p>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">This may take a
-                            minute</p>
+                        <p id="loadingText" style="font-weight: 600;">AI is Processing...</p>
+                        <div class="timer" id="processTimer">00:00</div>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">
+                            Processing can take 30s to 3min depending on song length and server load.
+                        </p>
                     </div>
                 </div>
 
                 <div id="errorDisplay" class="error-msg hidden"
-                    style="color: #ff4b2b; font-size: 0.9rem; text-align: center; margin-bottom: 1rem;"></div>
+                    style="color: #ff4b2b; font-size: 0.9rem; text-align: center; margin-bottom: 1rem; padding: 1rem; background: rgba(255,75,43,0.1); border-radius: 8px;">
+                </div>
+
+                <button class="btn btn-secondary hidden" id="resetBtn">↻ Process Another Song</button>
             </div>
 
-            <!-- Right Side: Results -->
             <div id="resultsArea">
                 <div class="glass-card"
-                    style="min-height: 400px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);"
+                    style="min-height: 480px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); text-align: center;"
                     id="emptyState">
-                    Select a song and click Process to see results
+                    <div style="font-size: 4rem; opacity: 0.2; margin-bottom: 1rem;">🎶</div>
+                    <p>Select a song from your computer<br>and click "Split Song" to start the AI analysis.</p>
                 </div>
 
                 <div id="resultsContent" class="hidden">
@@ -366,7 +398,7 @@
                     <div id="stemsList" class="stems-grid"></div>
 
                     <div class="download-action-bar">
-                        <span class="label-title">Download Stems</span>
+                        <span class="label-title">Download Package</span>
                         <div class="download-options" id="downloadSelectedOpts">
                             <label class="option-item">
                                 <input type="checkbox" class="dl-opt" value="Download All" checked
@@ -406,7 +438,7 @@
                                 <span class="checkmark">Hi-hat</span>
                             </label>
                         </div>
-                        <button class="btn" id="downloadBtn">⬇ Download Selected</button>
+                        <button class="btn" id="downloadBtn">⬇ Download ZIP Archive</button>
                     </div>
                 </div>
             </div>
@@ -426,96 +458,146 @@
         const emptyState = document.getElementById('emptyState');
         const stemsList = document.getElementById('stemsList');
         const downloadBtn = document.getElementById('downloadBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const timerDisplay = document.getElementById('processTimer');
 
         let selectedFile = null;
+        let timerInterval;
+        let startTime;
 
         window.toggleAll = (el) => {
             const checks = document.querySelectorAll('input[name="process_opt"]');
-            checks.forEach(c => { if(c !== el) c.checked = false; });
+            if (el.checked) {
+                checks.forEach(c => { if (c !== el && c.value !== "Info") c.checked = false; });
+            }
         };
 
         window.toggleAllDl = (el) => {
             const checks = document.querySelectorAll('.dl-opt');
-            checks.forEach(c => { if(c !== el) c.checked = false; });
+            if (el.checked) {
+                checks.forEach(c => { if (c !== el) c.checked = false; });
+            }
         };
 
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => {
             selectedFile = e.target.files[0];
-            if(selectedFile) {
-                dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">🎵</div><h4 style="color: var(--accent-color)">${selectedFile.name}</h4><p style="font-size: 0.8rem">Ready to process</p>`;
+            if (selectedFile) {
+                dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">🎵</div><h4 style="color: var(--accent-color)">${selectedFile.name}</h4><p style="font-size: 0.8rem">${(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>`;
             }
         };
 
+        resetBtn.onclick = () => {
+            resultsContent.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            resetBtn.classList.add('hidden');
+            dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">📁</div><h4 style="margin-bottom: 0.5rem;">Click or Drop Song</h4><p style="font-size: 0.8rem; color: var(--text-secondary)">WAV, MP3, etc. (Max 50MB)</p>`;
+            selectedFile = null;
+            fileInput.value = '';
+        };
+
         processBtn.onclick = async () => {
-            if(!selectedFile) return alert("Please select a song first!");
+            if (!selectedFile) return alert("Please select a song first!");
 
             const selectedOptions = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
-            
+
             optionsArea.classList.add('hidden');
             loadingPanel.classList.remove('hidden');
             document.getElementById('errorDisplay').classList.add('hidden');
+            emptyState.classList.add('hidden');
+            resultsContent.classList.add('hidden');
+
+            startTimer();
 
             try {
                 const client = await Client.connect(SPACE_ID);
-                const result = await client.predict("/process", { 
-                    song_file: selectedFile, 
-                    options: selectedOptions 
+                const result = await client.predict("/process", {
+                    song_file: selectedFile,
+                    options: selectedOptions
                 });
 
                 displayResults(result.data);
+                resetBtn.classList.remove('hidden');
             } catch (err) {
-                document.getElementById('errorDisplay').innerText = "Error: " + err.message;
+                document.getElementById('errorDisplay').innerText = "Processing failed. The server might be overloaded or the session expired. Try a shorter clip or refresh the page.";
                 document.getElementById('errorDisplay').classList.remove('hidden');
+                emptyState.classList.remove('hidden');
             } finally {
+                stopTimer();
                 loadingPanel.classList.add('hidden');
                 optionsArea.classList.remove('hidden');
             }
         };
+
+        function startTimer() {
+            startTime = Date.now();
+            timerDisplay.innerText = "00:00";
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const s = (elapsed % 60).toString().padStart(2, '0');
+                timerDisplay.innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
 
         function displayResults(data) {
             emptyState.classList.add('hidden');
             resultsContent.classList.remove('hidden');
             stemsList.innerHTML = '';
 
-            const LABELS = ["WAV", "Vocals", "Bass", "Other", "Drums", "Kick", "Snare", "Hi-hat"];
-            
-            for(let i=0; i<8; i++) {
-                if(!data[i] || !data[i].url) continue;
+            const LABELS = ["Original WAV", "Vocals Only", "Bass Guitar", "Other Instruments", "Drum Kit", "Kick Drum", "Snare Drum", "Hi-Hat"];
+
+            for (let i = 0; i < 8; i++) {
+                if (!data[i] || !data[i].url) continue;
                 const div = document.createElement('div');
                 div.className = 'stem-card';
-                div.innerHTML = `<h3>${LABELS[i]}</h3><audio controls src="${data[i].url}"></audio>`;
+                div.innerHTML = `<h3>${LABELS[i]}</h3><audio controls preload="auto"><source src="${data[i].url}" type="audio/wav"></audio>`;
                 stemsList.appendChild(div);
             }
 
+            // Enhanced Parsing for Key/BPM
             const infoText = data[8] || "";
-            const key = infoText.match(/Key:\s*([A-Za-z#\s]+)/);
-            const bpm = infoText.match(/BPM:\s*([\d.]+)/);
+            console.log("Debug Info:", infoText);
 
-            document.getElementById('keyDisplay').innerText = key ? key[1].trim() : 'N/A';
-            document.getElementById('bpmDisplay').innerText = bpm ? bpm[1].trim() : 'N/A';
+            // Match Key (handles "Key: C major", "Result: Estimated Key C major", etc.)
+            const keyMatch = infoText.match(/Key:\s*([A-Za-z#\s]+)/i) || infoText.match(/Estimated Key\s*([A-Za-z#\s]+)/i);
+            // Match BPM (handles "BPM: 120", "Result: Detected BPM 124.5", etc.)
+            const bpmMatch = infoText.match(/BPM:\s*([\d.]+)/i) || infoText.match(/Detected BPM\s*([\d.]+)/i);
+
+            document.getElementById('keyDisplay').innerText = keyMatch ? keyMatch[1].trim() : 'N/A';
+            document.getElementById('bpmDisplay').innerText = bpmMatch ? bpmMatch[1].trim() : 'N/A';
         }
 
         downloadBtn.onclick = async () => {
             const selectedFiles = Array.from(document.querySelectorAll('.dl-opt:checked')).map(c => c.value);
-            if(selectedFiles.length === 0) return alert("Select at least one file to download");
+            if (selectedFiles.length === 0) return alert("Select at least one file to download");
 
             const originalText = downloadBtn.innerText;
-            downloadBtn.innerText = "Creating Package...";
+            downloadBtn.innerText = "Generating ZIP Archive...";
             downloadBtn.disabled = true;
 
             try {
                 const client = await Client.connect(SPACE_ID);
-                const result = await client.predict("/create_download_zip", { 
-                    selected_files: selectedFiles 
+                const result = await client.predict("/create_download_zip", {
+                    selected_files: selectedFiles
                 });
 
-                const link = document.createElement('a');
-                link.href = result.data[0].url;
-                link.download = "stems.zip";
-                link.click();
+                if (result.data && result.data[0] && result.data[0].url) {
+                    const link = document.createElement('a');
+                    link.href = result.data[0].url;
+                    link.download = "stems_pack.zip";
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+                } else {
+                    throw new Error("No download URL returned.");
+                }
             } catch (err) {
-                alert("Download failed: " + err.message);
+                alert("Download failed. The temporary audio files may have expired. Try processing the song again.");
             } finally {
                 downloadBtn.innerText = originalText;
                 downloadBtn.disabled = false;
