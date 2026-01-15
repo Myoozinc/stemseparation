@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
             --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --accent-color: #4ecca3;
+            --accent-glow: rgba(78, 204, 163, 0.3);
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.6);
             --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
@@ -39,7 +41,7 @@
 
         .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1200px;
         }
 
         header {
@@ -48,7 +50,7 @@
         }
 
         h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-size: clamp(2rem, 5vw, 3rem);
             font-weight: 700;
             margin-bottom: 0.5rem;
             background: linear-gradient(to right, #4ecca3, #45b7d1);
@@ -62,6 +64,19 @@
             font-size: 1.1rem;
         }
 
+        .main-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .glass-card {
             background: var(--glass-bg);
             backdrop-filter: blur(12px);
@@ -69,18 +84,18 @@
             border: 1px solid var(--glass-border);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            padding: 2.5rem;
+            padding: 1.5rem;
             margin-bottom: 2rem;
-            transition: transform 0.3s ease;
         }
 
         .upload-zone {
             border: 2px dashed var(--glass-border);
-            border-radius: var(--radius);
-            padding: 3rem;
+            border-radius: 12px;
+            padding: 2rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
         }
 
         .upload-zone:hover {
@@ -92,155 +107,310 @@
             background: var(--accent-color);
             color: #1a1a2e;
             border: none;
-            padding: 14px 32px;
+            padding: 12px 24px;
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-family: inherit;
-            display: inline-block;
-            text-decoration: none;
-            transition: transform 0.2s, opacity 0.2s;
+            width: 100%;
+            transition: all 0.2s;
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            opacity: 0.9;
+            box-shadow: 0 4px 15px var(--accent-glow);
         }
 
         .btn:disabled {
             background: #555;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
-        .hidden { display: none; }
+        .options-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
 
-        .loader {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.5rem;
+        .option-item {
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .option-item input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            display: block;
+            padding: 8px 4px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            font-size: 0.8rem;
+            text-align: center;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .option-item input:checked~.checkmark {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+
+        .label-title {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none;
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255,255,255,0.1);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
             border-left-color: var(--accent-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .song-info {
-            display: flex;
-            justify-content: center;
-            gap: 3rem;
-            text-align: center;
-        }
-
-        .info-label {
-            display: block;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
-        }
-
-        .info-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--accent-color);
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .stems-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+            grid-template-columns: 1fr;
+            gap: 1rem;
         }
 
         .stem-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
         }
 
         .stem-card h3 {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 1rem;
-            color: var(--accent-color);
+            font-size: 0.85rem;
+            width: 120px;
+            color: var(--text-primary);
         }
 
         audio {
-            width: 100%;
+            flex-grow: 1;
             filter: invert(100%) hue-rotate(180deg) brightness(1.5);
-            height: 35px;
+            height: 32px;
         }
 
-        .error-msg {
-            color: #ff4b2b;
-            text-align: center;
+        .song-info-row {
+            display: flex;
+            gap: 2rem;
             padding: 1rem;
-            background: rgba(255, 75, 43, 0.1);
-            border-radius: 10px;
+            background: rgba(78, 204, 163, 0.05);
+            border-radius: 12px;
             margin-bottom: 2rem;
+        }
+
+        .info-pill {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-pill .val {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .info-pill .lbl {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .download-action-bar {
+            margin-top: 2rem;
+            padding-top: 2.5rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .download-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .download-options .checkmark {
+            padding: 6px 12px;
+            border-radius: 20px;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
-            <h1>Stem Separation</h1>
-            <p class="subtitle">AI-powered song decomposition & key detection</p>
+            <h1>Advanced Stem Splitter</h1>
+            <p class="subtitle">Separate vocals, instruments, and detect key/tempo</p>
         </header>
 
-        <section id="uploadSection" class="glass-card">
-            <div class="upload-zone" id="dropZone">
-                <div style="font-size: 4rem; margin-bottom: 1.5rem;">💿</div>
-                <h2 style="margin-bottom: 1rem;">Drop your audio here</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 2rem;">WAV, MP3, AIFF up to 50MB</p>
-                <input type="file" id="fileInput" class="hidden" accept="audio/*">
-                <button class="btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
-            </div>
-        </section>
+        <div class="main-layout">
+            <!-- Left Side: Controls -->
+            <div class="side-panel">
+                <div class="glass-card" id="uploadPanel">
+                    <div class="upload-zone" id="dropZone">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">📁</div>
+                        <h4 style="margin-bottom: 0.5rem;">Click or Drop Song</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary)">WAV, MP3, etc.</p>
+                        <input type="file" id="fileInput" class="hidden" accept="audio/*">
+                    </div>
 
-        <section id="loadingSection" class="glass-card hidden">
-            <div class="loader">
-                <div class="spinner"></div>
-                <h2 id="loadingText">Processing Stems...</h2>
-                <p style="color: var(--text-secondary)">This usually takes 1-2 minutes depending on song length.</p>
-            </div>
-        </section>
+                    <div id="processingOptions">
+                        <span class="label-title">Processing Options</span>
+                        <div class="options-group">
+                            <label class="option-item">
+                                <input type="checkbox" name="process_opt" value="All" checked onclick="toggleAll(this)">
+                                <span class="checkmark">All</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" name="process_opt" value="Convert to WAV">
+                                <span class="checkmark">Convert to WAV</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" name="process_opt" value="Vocals">
+                                <span class="checkmark">Vocals</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" name="process_opt" value="Bass">
+                                <span class="checkmark">Bass</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" name="process_opt" value="Other">
+                                <span class="checkmark">Other</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" name="process_opt" value="Drums">
+                                <span class="checkmark">Drums</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" name="process_opt" value="Refine Drums">
+                                <span class="checkmark">Refine Drums</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" name="process_opt" value="Info" checked>
+                                <span class="checkmark">Info</span>
+                            </label>
+                        </div>
+                        <button class="btn" id="processBtn">▶ Process Song</button>
+                    </div>
 
-        <section id="resultsSection" class="hidden">
-            <div id="infoCard" class="glass-card song-info">
-                <div>
-                    <span class="info-label">Estimated Key</span>
-                    <span id="keyDisplay" class="info-value">--</span>
+                    <div id="loadingPanel" class="hidden" style="text-align: center; padding: 2rem 0;">
+                        <div class="spinner"></div>
+                        <p id="loadingText" style="font-weight: 600;">Splitting Stems...</p>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">This may take a
+                            minute</p>
+                    </div>
                 </div>
-                <div>
-                    <span class="info-label">Detected BPM</span>
-                    <span id="bpmDisplay" class="info-value">--</span>
+
+                <div id="errorDisplay" class="error-msg hidden"
+                    style="color: #ff4b2b; font-size: 0.9rem; text-align: center; margin-bottom: 1rem;"></div>
+            </div>
+
+            <!-- Right Side: Results -->
+            <div id="resultsArea">
+                <div class="glass-card"
+                    style="min-height: 400px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);"
+                    id="emptyState">
+                    Select a song and click Process to see results
+                </div>
+
+                <div id="resultsContent" class="hidden">
+                    <div class="song-info-row">
+                        <div class="info-pill">
+                            <span class="lbl">Estimated Key</span>
+                            <span id="keyDisplay" class="val">--</span>
+                        </div>
+                        <div class="info-pill">
+                            <span class="lbl">Detected BPM</span>
+                            <span id="bpmDisplay" class="val">--</span>
+                        </div>
+                    </div>
+
+                    <div id="stemsList" class="stems-grid"></div>
+
+                    <div class="download-action-bar">
+                        <span class="label-title">Download Stems</span>
+                        <div class="download-options" id="downloadSelectedOpts">
+                            <label class="option-item">
+                                <input type="checkbox" class="dl-opt" value="Download All" checked
+                                    onclick="toggleAllDl(this)">
+                                <span class="checkmark">Download All</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" class="dl-opt" value="WAV">
+                                <span class="checkmark">WAV</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" class="dl-opt" value="Vocals">
+                                <span class="checkmark">Vocals</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" class="dl-opt" value="Bass">
+                                <span class="checkmark">Bass</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" class="dl-opt" value="Other">
+                                <span class="checkmark">Other</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" class="dl-opt" value="Drums (Raw)">
+                                <span class="checkmark">Drums</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" class="dl-opt" value="Kick">
+                                <span class="checkmark">Kick</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" class="dl-opt" value="Snare">
+                                <span class="checkmark">Snare</span>
+                            </label>
+                            <label class="option-item">
+                                <input type="checkbox" class="dl-opt" value="Hi-hat">
+                                <span class="checkmark">Hi-hat</span>
+                            </label>
+                        </div>
+                        <button class="btn" id="downloadBtn">⬇ Download Selected</button>
+                    </div>
                 </div>
             </div>
-
-            <div id="stemsGrid" class="stems-grid"></div>
-
-            <div style="text-align: center; margin-top: 3rem;">
-                <button id="downloadBtn" class="btn" style="padding: 18px 50px; font-size: 1.1rem;">
-                    Download All Stems (.zip)
-                </button>
-            </div>
-        </section>
-
-        <div id="errorDisplay" class="error-msg hidden"></div>
+        </div>
     </div>
 
     <script type="module">
@@ -249,138 +419,109 @@
         const SPACE_ID = "tinahmbuz/audiostems";
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const uploadSection = document.getElementById('uploadSection');
-        const loadingSection = document.getElementById('loadingSection');
-        const resultsSection = document.getElementById('resultsSection');
-        const stemsGrid = document.getElementById('stemsGrid');
-        const errorDisplay = document.getElementById('errorDisplay');
+        const processBtn = document.getElementById('processBtn');
+        const loadingPanel = document.getElementById('loadingPanel');
+        const optionsArea = document.getElementById('processingOptions');
+        const resultsContent = document.getElementById('resultsContent');
+        const emptyState = document.getElementById('emptyState');
+        const stemsList = document.getElementById('stemsList');
         const downloadBtn = document.getElementById('downloadBtn');
 
-        const STEM_LABELS = [
-            "Original (WAV)", "Vocals", "Bass", "Other", 
-            "Drums (Raw)", "Kick", "Snare", "Hi-hat"
-        ];
+        let selectedFile = null;
 
-        // --- File Handling ---
-        
-        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--accent-color)';
-        });
+        window.toggleAll = (el) => {
+            const checks = document.querySelectorAll('input[name="process_opt"]');
+            checks.forEach(c => { if(c !== el) c.checked = false; });
+        };
 
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.style.borderColor = 'var(--glass-border)';
-        });
+        window.toggleAllDl = (el) => {
+            const checks = document.querySelectorAll('.dl-opt');
+            checks.forEach(c => { if(c !== el) c.checked = false; });
+        };
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            handleFile(e.dataTransfer.files[0]);
-        });
-
-        async function handleFile(file) {
-            if (!file || !file.type.startsWith('audio/')) {
-                showError("Please upload a valid audio file.");
-                return;
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => {
+            selectedFile = e.target.files[0];
+            if(selectedFile) {
+                dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">🎵</div><h4 style="color: var(--accent-color)">${selectedFile.name}</h4><p style="font-size: 0.8rem">Ready to process</p>`;
             }
+        };
 
-            setError(null);
-            showLoading(true);
+        processBtn.onclick = async () => {
+            if(!selectedFile) return alert("Please select a song first!");
+
+            const selectedOptions = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
+            
+            optionsArea.classList.add('hidden');
+            loadingPanel.classList.remove('hidden');
+            document.getElementById('errorDisplay').classList.add('hidden');
 
             try {
                 const client = await Client.connect(SPACE_ID);
-                const result = await client.predict("/process", {
-                    song_file: file,
-                    options: ["All"],
+                const result = await client.predict("/process", { 
+                    song_file: selectedFile, 
+                    options: selectedOptions 
                 });
 
-                const data = result.data;
-                displayResults(data);
+                displayResults(result.data);
             } catch (err) {
-                console.error(err);
-                showError("Processing failed. The file might be too long or the server is busy.");
+                document.getElementById('errorDisplay').innerText = "Error: " + err.message;
+                document.getElementById('errorDisplay').classList.remove('hidden');
             } finally {
-                showLoading(false);
+                loadingPanel.classList.add('hidden');
+                optionsArea.classList.remove('hidden');
             }
-        }
-
-        // --- UI Updates ---
+        };
 
         function displayResults(data) {
-            stemsGrid.innerHTML = '';
+            emptyState.classList.add('hidden');
+            resultsContent.classList.remove('hidden');
+            stemsList.innerHTML = '';
+
+            const LABELS = ["WAV", "Vocals", "Bass", "Other", "Drums", "Kick", "Snare", "Hi-hat"];
             
-            // First 8 elements are audio stems
             for(let i=0; i<8; i++) {
-                const stem = data[i];
-                const card = document.createElement('div');
-                card.className = 'stem-card';
-                card.innerHTML = `
-                    <h3>${STEM_LABELS[i]}</h3>
-                    <audio controls src="${stem.url}"></audio>
-                `;
-                stemsGrid.appendChild(card);
+                if(!data[i] || !data[i].url) continue;
+                const div = document.createElement('div');
+                div.className = 'stem-card';
+                div.innerHTML = `<h3>${LABELS[i]}</h3><audio controls src="${data[i].url}"></audio>`;
+                stemsList.appendChild(div);
             }
 
-            // 9th element (index 8) is the info text
             const infoText = data[8] || "";
-            const keyMatch = infoText.match(/Key:\s*([A-Za-z#\s]+)/);
-            const bpmMatch = infoText.match(/BPM:\s*([\d.]+)/);
+            const key = infoText.match(/Key:\s*([A-Za-z#\s]+)/);
+            const bpm = infoText.match(/BPM:\s*([\d.]+)/);
 
-            document.getElementById('keyDisplay').innerText = keyMatch ? keyMatch[1].trim() : 'N/A';
-            document.getElementById('bpmDisplay').innerText = bpmMatch ? bpmMatch[1].trim() : 'N/A';
-
-            uploadSection.classList.add('hidden');
-            resultsSection.classList.remove('hidden');
+            document.getElementById('keyDisplay').innerText = key ? key[1].trim() : 'N/A';
+            document.getElementById('bpmDisplay').innerText = bpm ? bpm[1].trim() : 'N/A';
         }
 
-        downloadBtn.addEventListener('click', async () => {
+        downloadBtn.onclick = async () => {
+            const selectedFiles = Array.from(document.querySelectorAll('.dl-opt:checked')).map(c => c.value);
+            if(selectedFiles.length === 0) return alert("Select at least one file to download");
+
             const originalText = downloadBtn.innerText;
-            downloadBtn.innerText = "Preparing ZIP...";
+            downloadBtn.innerText = "Creating Package...";
             downloadBtn.disabled = true;
 
             try {
                 const client = await Client.connect(SPACE_ID);
-                const result = await client.predict("/create_download_zip", {
-                    selected_files: ["Download All"],
+                const result = await client.predict("/create_download_zip", { 
+                    selected_files: selectedFiles 
                 });
 
-                const downloadUrl = result.data[0].url;
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = 'stems.zip';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
+                const link = document.createElement('a');
+                link.href = result.data[0].url;
+                link.download = "stems.zip";
+                link.click();
             } catch (err) {
-                showError("Failed to create download package.");
+                alert("Download failed: " + err.message);
             } finally {
                 downloadBtn.innerText = originalText;
                 downloadBtn.disabled = false;
             }
-        });
-
-        function showLoading(show) {
-            if (show) {
-                uploadSection.classList.add('hidden');
-                loadingSection.classList.remove('hidden');
-                resultsSection.classList.add('hidden');
-            } else {
-                loadingSection.classList.add('hidden');
-            }
-        }
-
-        function showError(msg) {
-            errorDisplay.innerText = msg;
-            errorDisplay.classList.remove('hidden');
-            showLoading(false);
-            uploadSection.classList.remove('hidden');
-        }
-
-        function setError(msg) {
-            if(!msg) errorDisplay.classList.add('hidden');
-            else showError(msg);
-        }
+        };
     </script>
 </body>
+
 </html>
