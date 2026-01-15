@@ -91,7 +91,7 @@
         .upload-zone {
             border: 2px dashed var(--glass-border);
             border-radius: 12px;
-            padding: 2rem;
+            padding: 2.5rem 1rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -117,7 +117,7 @@
             transition: all 0.2s;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px var(--accent-glow);
         }
@@ -125,8 +125,7 @@
         .btn:disabled {
             background: #555;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+            opacity: 0.6;
         }
 
         .btn-secondary {
@@ -142,20 +141,6 @@
             margin-bottom: 1.5rem;
         }
 
-        .option-item {
-            position: relative;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .option-item input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        }
-
         .checkmark {
             display: block;
             padding: 8px 4px;
@@ -166,9 +151,14 @@
             text-align: center;
             transition: all 0.2s;
             color: var(--text-secondary);
+            cursor: pointer;
         }
 
-        .option-item input:checked~.checkmark {
+        input[type="checkbox"] {
+            display: none;
+        }
+
+        input[type="checkbox"]:checked+.checkmark {
             background: var(--accent-color);
             border-color: var(--accent-color);
             color: #1a1a2e;
@@ -189,11 +179,11 @@
             display: none !important;
         }
 
-        /* Progress Circle Styles */
+        /* CIRCULAR PROGRESS */
         .progress-circle-container {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 140px;
+            height: 140px;
             margin: 0 auto 1.5rem;
         }
 
@@ -203,19 +193,19 @@
 
         .progress-circle-bg {
             fill: none;
-            stroke: rgba(255, 255, 255, 0.1);
-            stroke-width: 8;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 10;
         }
 
         .progress-circle-bar {
             fill: none;
             stroke: var(--accent-color);
-            stroke-width: 8;
+            stroke-width: 10;
             stroke-linecap: round;
-            stroke-dasharray: 283;
-            /* 2 * PI * 45 */
-            stroke-dashoffset: 283;
-            transition: stroke-dashoffset 0.5s ease;
+            stroke-dasharray: 314;
+            /* 2 * PI * 50 */
+            stroke-dashoffset: 314;
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .progress-text {
@@ -223,9 +213,20 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .progress-percent {
+            font-size: 1.5rem;
             font-weight: 700;
             color: var(--accent-color);
+        }
+
+        .progress-stage {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-top: -5px;
         }
 
         .stems-grid {
@@ -243,28 +244,24 @@
             align-items: center;
             justify-content: space-between;
             gap: 1.5rem;
-            transition: background 0.2s;
-        }
-
-        .stem-card:hover {
-            background: rgba(255, 255, 255, 0.06);
         }
 
         .stem-card h3 {
             font-size: 0.85rem;
-            width: 120px;
+            width: 130px;
             color: var(--text-primary);
         }
 
         audio {
             flex-grow: 1;
-            height: 35px;
-            filter: brightness(1.2);
+            height: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .song-info-row {
             display: flex;
-            gap: 2rem;
+            gap: 1rem;
             padding: 1.5rem;
             background: rgba(78, 204, 163, 0.08);
             border-radius: 12px;
@@ -291,6 +288,14 @@
             letter-spacing: 1px;
         }
 
+        .timer {
+            font-family: monospace;
+            color: var(--accent-color);
+            font-size: 1rem;
+            margin-top: 1rem;
+            opacity: 0.6;
+        }
+
         .download-action-bar {
             margin-top: 2rem;
             padding-top: 2rem;
@@ -305,16 +310,9 @@
         }
 
         .download-options .checkmark {
-            padding: 6px 12px;
+            padding: 6px 16px;
             border-radius: 20px;
-        }
-
-        .timer {
-            font-family: monospace;
-            color: var(--accent-color);
-            font-size: 1rem;
-            margin-top: 0.5rem;
-            opacity: 0.7;
+            font-size: 0.75rem;
         }
     </style>
 </head>
@@ -323,82 +321,67 @@
     <div class="container">
         <header>
             <h1>Advanced Stem Splitter</h1>
-            <p class="subtitle">AI-powered song decomposition & key/tempo detection</p>
+            <p class="subtitle">Next-gen audio separation with intelligent Key & Tempo detection</p>
         </header>
 
         <div class="main-layout">
             <div class="side-panel">
                 <div class="glass-card" id="uploadPanel">
                     <div class="upload-zone" id="dropZone">
-                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">📁</div>
-                        <h4 style="margin-bottom: 0.5rem;">Click or Drop Song</h4>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary)">WAV, MP3, etc. (Max 50MB)</p>
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">💿</div>
+                        <h4 style="margin-bottom: 0.3rem;">Upload Track</h4>
+                        <p style="font-size: 0.75rem; color: var(--text-secondary)">Click to browse audio files</p>
                         <input type="file" id="fileInput" class="hidden" accept="audio/*">
                     </div>
 
                     <div id="processingOptions">
-                        <span class="label-title">Processing Options</span>
+                        <span class="label-title">Separation Mode</span>
                         <div class="options-group">
-                            <label class="option-item">
-                                <input type="checkbox" name="process_opt" value="All" checked onclick="toggleAll(this)">
-                                <span class="checkmark">All Stems</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" name="process_opt" value="Convert to WAV">
-                                <span class="checkmark">Original WAV</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" name="process_opt" value="Vocals">
-                                <span class="checkmark">Vocals</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" name="process_opt" value="Bass">
-                                <span class="checkmark">Bass</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" name="process_opt" value="Other">
-                                <span class="checkmark">Other</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" name="process_opt" value="Drums">
-                                <span class="checkmark">Drums</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" name="process_opt" value="Refine Drums">
-                                <span class="checkmark">Refine Drums</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" name="process_opt" value="Info" checked>
-                                <span class="checkmark">Key/BPM Info</span>
-                            </label>
+                            <label><input type="checkbox" name="process_opt" value="All" checked
+                                    onclick="toggleAll(this)"><span class="checkmark">Full Split</span></label>
+                            <label><input type="checkbox" name="process_opt" value="Convert to WAV"><span
+                                    class="checkmark">Song WAV</span></label>
+                            <label><input type="checkbox" name="process_opt" value="Vocals"><span
+                                    class="checkmark">Vocals</span></label>
+                            <label><input type="checkbox" name="process_opt" value="Bass"><span
+                                    class="checkmark">Bass</span></label>
+                            <label><input type="checkbox" name="process_opt" value="Other"><span
+                                    class="checkmark">Other</span></label>
+                            <label><input type="checkbox" name="process_opt" value="Drums"><span
+                                    class="checkmark">Drums</span></label>
+                            <label><input type="checkbox" name="process_opt" value="Refine Drums"><span
+                                    class="checkmark">Precise Drums</span></label>
+                            <label><input type="checkbox" name="process_opt" value="Info" checked><span
+                                    class="checkmark">Key & BPM</span></label>
                         </div>
-                        <button class="btn" id="processBtn">▶ Split Song</button>
+                        <button class="btn" id="processBtn">▶ Split Stems</button>
                     </div>
 
                     <div id="loadingPanel" class="hidden" style="text-align: center; padding: 1rem 0;">
                         <div class="progress-circle-container">
-                            <svg class="progress-circle-svg" width="120" height="120">
-                                <circle class="progress-circle-bg" cx="60" cy="60" r="45"></circle>
-                                <circle id="progressBar" class="progress-circle-bar" cx="60" cy="60" r="45"></circle>
+                            <svg class="progress-circle-svg" width="140" height="140">
+                                <circle class="progress-circle-bg" cx="70" cy="70" r="50"></circle>
+                                <circle id="progressBar" class="progress-circle-bar" cx="70" cy="70" r="50"></circle>
                             </svg>
-                            <div class="progress-text" id="progressPercent">0%</div>
+                            <div class="progress-text">
+                                <div class="progress-percent" id="progressPercent">0%</div>
+                                <div class="progress-stage" id="progressStage">ANALYZING</div>
+                            </div>
                         </div>
-                        <p id="loadingText" style="font-weight: 600;">AI is Processing...</p>
+                        <p id="loadingText" style="font-weight: 600;">AI Engine Processing...</p>
                         <div class="timer" id="processTimer">00:00</div>
                     </div>
                 </div>
 
-                <div id="errorDisplay" class="error-msg hidden"></div>
-
-                <button class="btn btn-secondary hidden" id="resetBtn">↻ Process Another Song</button>
+                <button class="btn btn-secondary hidden" id="resetBtn">↻ Start New Song</button>
             </div>
 
             <div id="resultsArea">
                 <div class="glass-card"
-                    style="min-height: 480px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); text-align: center;"
+                    style="min-height: 500px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary);"
                     id="emptyState">
-                    <div style="font-size: 4rem; opacity: 0.2; margin-bottom: 1rem;">🎶</div>
-                    <p>Select a song and click "Split Song" to start.</p>
+                    <div style="font-size: 5rem; opacity: 0.1; margin-bottom: 2rem;">🎙️</div>
+                    <p>Select your track to begin separation</p>
                 </div>
 
                 <div id="resultsContent" class="hidden">
@@ -416,47 +399,28 @@
                     <div id="stemsList" class="stems-grid"></div>
 
                     <div class="download-action-bar">
-                        <span class="label-title">Download Package</span>
+                        <span class="label-title">Export Options</span>
                         <div class="download-options" id="downloadSelectedOpts">
-                            <label class="option-item">
-                                <input type="checkbox" class="dl-opt" value="Download All" checked
-                                    onclick="toggleAllDl(this)">
-                                <span class="checkmark">Download All</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" class="dl-opt" value="WAV">
-                                <span class="checkmark">WAV</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" class="dl-opt" value="Vocals">
-                                <span class="checkmark">Vocals</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" class="dl-opt" value="Bass">
-                                <span class="checkmark">Bass</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" class="dl-opt" value="Other">
-                                <span class="checkmark">Other</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" class="dl-opt" value="Drums (Raw)">
-                                <span class="checkmark">Drums</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" class="dl-opt" value="Kick">
-                                <span class="checkmark">Kick</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" class="dl-opt" value="Snare">
-                                <span class="checkmark">Snare</span>
-                            </label>
-                            <label class="option-item">
-                                <input type="checkbox" class="dl-opt" value="Hi-hat">
-                                <span class="checkmark">Hi-hat</span>
-                            </label>
+                            <label><input type="checkbox" class="dl-opt" value="Download All" checked
+                                    onclick="toggleAllDl(this)"><span class="checkmark">Entire Bundle</span></label>
+                            <label><input type="checkbox" class="dl-opt" value="WAV"><span class="checkmark">Main
+                                    WAV</span></label>
+                            <label><input type="checkbox" class="dl-opt" value="Vocals"><span
+                                    class="checkmark">Vocals</span></label>
+                            <label><input type="checkbox" class="dl-opt" value="Bass"><span
+                                    class="checkmark">Bass</span></label>
+                            <label><input type="checkbox" class="dl-opt" value="Other"><span
+                                    class="checkmark">Other</span></label>
+                            <label><input type="checkbox" class="dl-opt" value="Drums (Raw)"><span
+                                    class="checkmark">Drums</span></label>
+                            <label><input type="checkbox" class="dl-opt" value="Kick"><span
+                                    class="checkmark">Kick</span></label>
+                            <label><input type="checkbox" class="dl-opt" value="Snare"><span
+                                    class="checkmark">Snare</span></label>
+                            <label><input type="checkbox" class="dl-opt" value="Hi-hat"><span
+                                    class="checkmark">Hi-hat</span></label>
                         </div>
-                        <button class="btn" id="downloadBtn">⬇ Download ZIP Archive</button>
+                        <button class="btn" id="downloadBtn">⬇ Generate ZIP Package</button>
                     </div>
                 </div>
             </div>
@@ -480,157 +444,154 @@
         const timerDisplay = document.getElementById('processTimer');
         const progressBar = document.getElementById('progressBar');
         const progressPercent = document.getElementById('progressPercent');
+        const progressStage = document.getElementById('progressStage');
 
         let selectedFile = null;
         let timerInterval;
+        let client = null;
 
+        // --- THEME & UI HELPERS ---
         window.toggleAll = (el) => {
-            const checks = document.querySelectorAll('input[name="process_opt"]');
-            if (el.checked) checks.forEach(c => { if (c !== el && c.value !== "Info") c.checked = false; });
+            if (el.checked) document.querySelectorAll('input[name="process_opt"]').forEach(c => { if (c !== el && c.value !== "Info") c.checked = false; });
         };
-
         window.toggleAllDl = (el) => {
-            const checks = document.querySelectorAll('.dl-opt');
-            if (el.checked) checks.forEach(c => { if (c !== el) c.checked = false; });
+            if (el.checked) document.querySelectorAll('.dl-opt').forEach(c => { if (c !== el) c.checked = false; });
         };
 
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => {
             selectedFile = e.target.files[0];
-            if (selectedFile) {
-                dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">🎵</div><h4 style="color: var(--accent-color)">${selectedFile.name}</h4><p style="font-size: 0.8rem">Ready</p>`;
-            }
+            if (selectedFile) dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">🎵</div><h4 style="color: var(--accent-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${selectedFile.name}</h4><p style="font-size: 0.75rem">Ready for engine</p>`;
         };
 
         resetBtn.onclick = () => {
             resultsContent.classList.add('hidden');
             emptyState.classList.remove('hidden');
             resetBtn.classList.add('hidden');
-            dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">📁</div><h4 style="margin-bottom: 0.5rem;">Click or Drop Song</h4>`;
+            dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">💿</div><h4 style="margin-bottom: 0.3rem;">Upload Track</h4><p style="font-size: 0.75rem; color: var(--text-secondary)">Click to browse</p>`;
             selectedFile = null;
             fileInput.value = '';
         };
 
+        // --- CORE LOGIC ---
+        async function getClient() {
+            if (!client) {
+                progressStage.innerText = "CONNECTING";
+                client = await Client.connect(SPACE_ID);
+            }
+            return client;
+        }
+
         processBtn.onclick = async () => {
-            if (!selectedFile) return alert("Please select a song first!");
-            const selectedOptions = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
+            if (!selectedFile) return alert("Select a song first!");
+            const opts = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
 
             optionsArea.classList.add('hidden');
             loadingPanel.classList.remove('hidden');
-            updateProgress(0);
+            emptyState.classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            updateProgress(5, "INITIALIZING");
             startTimer();
 
             try {
-                const client = await Client.connect(SPACE_ID);
+                const api = await getClient();
+                const job = api.predict("/process", { song_file: selectedFile, options: opts });
 
-                // Track progress using the status callback
-                const job = client.predict("/process", {
-                    song_file: selectedFile,
-                    options: selectedOptions
-                });
-
-                // Listen for status updates
-                for await (const message of job) {
-                    if (message.type === "status") {
-                        const stage = message.stage;
-                        const progress = message.progress;
-
-                        if (progress !== undefined && progress !== null) {
-                            // If the API provides actual progress, use it
-                            updateProgress(Math.floor(progress * 100));
-                        } else {
-                            // Fallback pseudo-progress based on stage
-                            if (stage === "pending") updateProgress(5);
-                            if (stage === "loading") updateProgress(20);
-                            if (stage === "processing") updateProgress(processPercent.innerText.includes("95") ? 95 : parseInt(progressPercent.innerText) + 1);
-                        }
+                for await (const msg of job) {
+                    if (msg.type === "status") {
+                        const s = msg.stage;
+                        const p = msg.progress;
+                        if (p) updateProgress(Math.floor(p * 100), s.toUpperCase());
+                        else if (s === "pending") updateProgress(10, "IN QUEUE");
+                        else if (s === "loading") updateProgress(25, "UPLOADING");
+                        else if (s === "processing") updateProgress(Math.max(40, parseInt(progressPercent.innerText)), "AI PROCESSING");
                     }
-
-                    if (message.type === "data") {
-                        updateProgress(100);
-                        displayResults(message.data);
-                        resetBtn.classList.remove('hidden');
+                    if (msg.type === "data") {
+                        updateProgress(100, "COMPLETE");
+                        setTimeout(() => {
+                            displayResults(msg.data);
+                            loadingPanel.classList.add('hidden');
+                            resetBtn.classList.remove('hidden');
+                        }, 500);
                     }
                 }
             } catch (err) {
-                alert("Processing failed: " + err.message);
+                alert("AI Engine Error: " + err.message);
                 optionsArea.classList.remove('hidden');
-            } finally {
-                stopTimer();
                 loadingPanel.classList.add('hidden');
-            }
+            } finally { stopTimer(); }
         };
 
-        function updateProgress(percent) {
-            const offset = 283 - (percent / 100 * 283);
+        function updateProgress(percent, stage) {
+            const offset = 314 - (percent / 100 * 314);
             progressBar.style.strokeDashoffset = offset;
             progressPercent.innerText = `${percent}%`;
+            if (stage) progressStage.innerText = stage;
         }
 
         function startTimer() {
-            let elapsed = 0;
+            let s = 0;
             timerInterval = setInterval(() => {
-                elapsed++;
-                const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
-                const s = (elapsed % 60).toString().padStart(2, '0');
-                timerDisplay.innerText = `${m}:${s}`;
-
-                // Smoothly increment pseudo-progress if stuck at processing
-                const current = parseInt(progressPercent.innerText);
-                if (current >= 20 && current < 98) {
-                    updateProgress(current + 1);
-                }
+                s++;
+                const m = Math.floor(s / 60).toString().padStart(2, '0'), sc = (s % 60).toString().padStart(2, '0');
+                timerDisplay.innerText = `${m}:${sc}`;
+                // Smooth climb if stuck
+                let curr = parseInt(progressPercent.innerText);
+                if (curr >= 40 && curr < 97) updateProgress(curr + 1, "AI PROCESSING");
             }, 1000);
         }
-
-        function stopTimer() { clearInterval(timerInterval); }
+        const stopTimer = () => clearInterval(timerInterval);
 
         function displayResults(data) {
-            emptyState.classList.add('hidden');
             resultsContent.classList.remove('hidden');
             stemsList.innerHTML = '';
-
             const LABELS = ["Original WAV", "Vocals", "Bass", "Other", "Drums", "Kick", "Snare", "Hi-hat"];
+
             for (let i = 0; i < 8; i++) {
-                if (!data[i] || !data[i].url) continue;
+                if (!data[i]?.url) continue;
                 const div = document.createElement('div');
                 div.className = 'stem-card';
-                div.innerHTML = `<h3>${LABELS[i]}</h3><audio controls preload="metadata"><source src="${data[i].url}" type="audio/wav"></audio>`;
+                div.innerHTML = `<h3>${LABELS[i]}</h3><audio controls><source src="${data[i].url}" type="audio/wav"></audio>`;
                 stemsList.appendChild(div);
             }
 
-            const infoText = data[8] || "";
-            let key = "N/A";
-            let bpm = "N/A";
+            // GIGA-ROBUST BPM/KEY DETECTION
+            const raw = data[8] || "";
+            console.log("AI Song Insight:", raw);
 
-            const bpmMatch = infoText.match(/(\d+\.?\d*)\s*BPM/i) || infoText.match(/BPM[:\s]*(\d+\.?\d*)/i);
-            if (bpmMatch) bpm = bpmMatch[1];
+            let key = "N/A", bpm = "N/A";
 
-            const keyMatch = infoText.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || infoText.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
-            if (keyMatch) key = keyMatch[1];
+            // 1. Look for numbers near "BPM" or "Tempo"
+            const b = raw.match(/(?:BPM|Tempo)[:\s]*(\d+\.?\d*)/i) || raw.match(/(\d+\.?\d*)\s*(?:BPM|Tempo)/i);
+            if (b) bpm = Math.round(parseFloat(b[1]));
 
-            if (key === "N/A" && infoText.includes('|')) key = infoText.split('|')[0].replace("Estimated Key", "").trim();
-            if (bpm === "N/A" && infoText.includes('|')) bpm = infoText.split('|')[1].replace("Detected BPM", "").trim();
+            // 2. Look for common Key patterns (e.g. "Ab major", "C# min")
+            const k = raw.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || raw.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
+            if (k) key = k[1];
 
-            document.getElementById('keyDisplay').innerText = key;
-            document.getElementById('bpmDisplay').innerText = bpm;
+            // 3. Last Resort: Split by pipe "|" if standard markers fail
+            if ((bpm === "N/A" || key === "N/A") && raw.includes('|')) {
+                const parts = raw.split('|');
+                if (key === "N/A") key = parts[0].replace(/Estimated Key/i, "").trim();
+                if (bpm === "N/A") bpm = parts[1].replace(/[^\d.]/g, "").trim();
+            }
+
+            document.getElementById('keyDisplay').innerText = key || "N/A";
+            document.getElementById('bpmDisplay').innerText = bpm || "N/A";
         }
 
         downloadBtn.onclick = async () => {
-            const selectedFiles = Array.from(document.querySelectorAll('.dl-opt:checked')).map(c => c.value);
-            const originalText = downloadBtn.innerText;
-            downloadBtn.innerText = "Creating ZIP...";
+            const dl = Array.from(document.querySelectorAll('.dl-opt:checked')).map(c => c.value);
+            const t = downloadBtn.innerText;
+            downloadBtn.innerText = "Building Package...";
             downloadBtn.disabled = true;
             try {
-                const client = await Client.connect(SPACE_ID);
-                const result = await client.predict("/create_download_zip", { selected_files: selectedFiles });
-                const link = document.createElement('a');
-                link.href = result.data[0].url;
-                link.download = "stems.zip";
-                link.click();
+                const api = await getClient();
+                const res = await api.predict("/create_download_zip", { selected_files: dl });
+                const a = document.createElement('a'); a.href = res.data[0].url; a.download = "stems.zip"; a.click();
             } catch (err) { alert(err.message); } finally {
-                downloadBtn.innerText = originalText;
-                downloadBtn.disabled = false;
+                downloadBtn.innerText = t; downloadBtn.disabled = false;
             }
         };
     </script>
