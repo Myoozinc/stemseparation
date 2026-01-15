@@ -50,7 +50,7 @@
         }
 
         h1 {
-            font-size: clamp(2rem, 5vw, 3rem);
+            font-size: clamp(2.2rem, 5vw, 3.2rem);
             font-weight: 700;
             margin-bottom: 0.5rem;
             background: linear-gradient(to right, #4ecca3, #45b7d1);
@@ -66,12 +66,12 @@
 
         .main-layout {
             display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 2rem;
+            grid-template-columns: 360px 1fr;
+            gap: 2.5rem;
             align-items: start;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 950px) {
             .main-layout {
                 grid-template-columns: 1fr;
             }
@@ -79,53 +79,55 @@
 
         .glass-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            padding: 1.5rem;
+            padding: 2rem;
             margin-bottom: 2rem;
         }
 
         .upload-zone {
             border: 2px dashed var(--glass-border);
             border-radius: 12px;
-            padding: 2.5rem 1rem;
+            padding: 2.5rem 1.5rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
         }
 
         .upload-zone:hover {
             border-color: var(--accent-color);
-            background: rgba(78, 204, 163, 0.05);
+            background: rgba(78, 204, 163, 0.08);
         }
 
         .btn {
             background: var(--accent-color);
             color: #1a1a2e;
             border: none;
-            padding: 12px 24px;
+            padding: 14px 28px;
             border-radius: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 1rem;
             font-family: inherit;
             width: 100%;
             transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px var(--accent-glow);
+            box-shadow: 0 6px 20px var(--accent-glow);
         }
 
         .btn:disabled {
-            background: #555;
+            background: #444;
+            color: #888;
             cursor: not-allowed;
-            opacity: 0.6;
         }
 
         .btn-secondary {
@@ -136,153 +138,148 @@
 
         .options-group {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
+            grid-template-columns: 1fr;
+            gap: 0.6rem;
             margin-bottom: 1.5rem;
         }
 
-        .checkmark {
-            display: block;
-            padding: 8px 4px;
-            border-radius: 8px;
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 10px 15px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--glass-border);
-            font-size: 0.8rem;
-            text-align: center;
-            transition: all 0.2s;
-            color: var(--text-secondary);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .option-item input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-color);
             cursor: pointer;
         }
 
-        input[type="checkbox"] {
-            display: none;
-        }
-
-        input[type="checkbox"]:checked+.checkmark {
-            background: var(--accent-color);
-            border-color: var(--accent-color);
-            color: #1a1a2e;
-            font-weight: 600;
+        .option-item:hover {
+            background: rgba(255, 255, 255, 0.06);
         }
 
         .label-title {
             display: block;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.75rem;
+            letter-spacing: 1.5px;
+            margin-bottom: 1rem;
             color: var(--accent-color);
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .hidden {
             display: none !important;
         }
 
-        /* CIRCULAR PROGRESS */
-        .progress-circle-container {
-            position: relative;
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 1.5rem;
+        /* PROGRESS CIRCLE */
+        .progress-container {
+            text-align: center;
+            padding: 1rem 0;
         }
 
-        .progress-circle-svg {
+        .circle-svg {
             transform: rotate(-90deg);
+            width: 150px;
+            height: 150px;
         }
 
-        .progress-circle-bg {
+        .circle-bg {
             fill: none;
             stroke: rgba(255, 255, 255, 0.05);
             stroke-width: 10;
         }
 
-        .progress-circle-bar {
+        .circle-bar {
             fill: none;
             stroke: var(--accent-color);
             stroke-width: 10;
             stroke-linecap: round;
-            stroke-dasharray: 314;
-            /* 2 * PI * 50 */
-            stroke-dashoffset: 314;
-            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            stroke-dasharray: 440;
+            /* 2 * PI * 70 */
+            stroke-dashoffset: 440;
+            transition: stroke-dashoffset 0.5s ease;
         }
 
-        .progress-text {
+        .progress-box {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .progress-val {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            text-align: center;
-        }
-
-        .progress-percent {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent-color);
-        }
-
-        .progress-stage {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            margin-top: -5px;
-        }
-
-        .stems-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        .stem-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 1rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1.5rem;
-        }
-
-        .stem-card h3 {
-            font-size: 0.85rem;
-            width: 130px;
-            color: var(--text-primary);
-        }
-
-        audio {
-            flex-grow: 1;
-            height: 40px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .song-info-row {
-            display: flex;
-            gap: 1rem;
-            padding: 1.5rem;
-            background: rgba(78, 204, 163, 0.08);
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            justify-content: space-around;
-        }
-
-        .info-pill {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .info-pill .val {
             font-size: 1.8rem;
             font-weight: 700;
             color: var(--accent-color);
         }
 
-        .info-pill .lbl {
-            font-size: 0.7rem;
+        .stems-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.2rem;
+        }
+
+        .stem-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.2rem 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .stem-card h3 {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 140px;
+        }
+
+        audio {
+            flex-grow: 1;
+            height: 38px;
+        }
+
+        .song-info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .info-card {
+            background: rgba(78, 204, 163, 0.08);
+            border: 1px solid var(--accent-color);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .info-card .val {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            display: block;
+        }
+
+        .info-card .lbl {
+            font-size: 0.75rem;
             text-transform: uppercase;
             color: var(--text-secondary);
             letter-spacing: 1px;
@@ -291,28 +288,9 @@
         .timer {
             font-family: monospace;
             color: var(--accent-color);
-            font-size: 1rem;
-            margin-top: 1rem;
-            opacity: 0.6;
-        }
-
-        .download-action-bar {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--glass-border);
-        }
-
-        .download-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .download-options .checkmark {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
         }
     </style>
 </head>
@@ -321,106 +299,75 @@
     <div class="container">
         <header>
             <h1>Advanced Stem Splitter</h1>
-            <p class="subtitle">Next-gen audio separation with intelligent Key & Tempo detection</p>
+            <p class="subtitle">AI-powered isolation & architectural song analysis</p>
         </header>
 
         <div class="main-layout">
             <div class="side-panel">
-                <div class="glass-card" id="uploadPanel">
-                    <div class="upload-zone" id="dropZone">
-                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">💿</div>
-                        <h4 style="margin-bottom: 0.3rem;">Upload Track</h4>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary)">Click to browse audio files</p>
-                        <input type="file" id="fileInput" class="hidden" accept="audio/*">
-                    </div>
+                <div class="glass-card" id="controlPanel">
+                    <div id="uploadView">
+                        <div class="upload-zone" id="dropZone">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">💿</div>
+                            <h3 id="fileName" style="margin-bottom: 0.5rem;">Select Audio File</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary)">WAV, MP3, AIFF up to 50MB</p>
+                            <input type="file" id="fileInput" class="hidden" accept="audio/*">
+                        </div>
 
-                    <div id="processingOptions">
-                        <span class="label-title">Separation Mode</span>
+                        <span class="label-title">Analysis Mode</span>
                         <div class="options-group">
-                            <label><input type="checkbox" name="process_opt" value="All" checked
-                                    onclick="toggleAll(this)"><span class="checkmark">Full Split</span></label>
-                            <label><input type="checkbox" name="process_opt" value="Convert to WAV"><span
-                                    class="checkmark">Song WAV</span></label>
-                            <label><input type="checkbox" name="process_opt" value="Vocals"><span
-                                    class="checkmark">Vocals</span></label>
-                            <label><input type="checkbox" name="process_opt" value="Bass"><span
-                                    class="checkmark">Bass</span></label>
-                            <label><input type="checkbox" name="process_opt" value="Other"><span
-                                    class="checkmark">Other</span></label>
-                            <label><input type="checkbox" name="process_opt" value="Drums"><span
-                                    class="checkmark">Drums</span></label>
-                            <label><input type="checkbox" name="process_opt" value="Refine Drums"><span
-                                    class="checkmark">Precise Drums</span></label>
-                            <label><input type="checkbox" name="process_opt" value="Info" checked><span
-                                    class="checkmark">Key & BPM</span></label>
+                            <label class="option-item"><input type="checkbox" id="optAll" checked> <span>Standard 4-Stem
+                                    Split</span></label>
+                            <label class="option-item"><input type="checkbox" id="optFull" checked> <span>Include
+                                    Percussion Detail</span></label>
+                            <label class="option-item"><input type="checkbox" id="optInfo" checked> <span>Key & Tempo
+                                    Detection</span></label>
                         </div>
-                        <button class="btn" id="processBtn">▶ Split Stems</button>
+                        <button class="btn" id="startBtn">BEGIN PROCESSING</button>
                     </div>
 
-                    <div id="loadingPanel" class="hidden" style="text-align: center; padding: 1rem 0;">
-                        <div class="progress-circle-container">
-                            <svg class="progress-circle-svg" width="140" height="140">
-                                <circle class="progress-circle-bg" cx="70" cy="70" r="50"></circle>
-                                <circle id="progressBar" class="progress-circle-bar" cx="70" cy="70" r="50"></circle>
-                            </svg>
-                            <div class="progress-text">
-                                <div class="progress-percent" id="progressPercent">0%</div>
-                                <div class="progress-stage" id="progressStage">ANALYZING</div>
+                    <div id="loadingView" class="hidden">
+                        <div class="progress-container">
+                            <div class="progress-box">
+                                <svg class="circle-svg" viewBox="0 0 160 160">
+                                    <circle class="circle-bg" cx="80" cy="80" r="70"></circle>
+                                    <circle id="circleBar" class="circle-bar" cx="80" cy="80" r="70"></circle>
+                                </svg>
+                                <div class="progress-val" id="progressText">0%</div>
                             </div>
+                            <h3 id="statusText">AI analyzing track...</h3>
+                            <div class="timer" id="timer">00:00</div>
                         </div>
-                        <p id="loadingText" style="font-weight: 600;">AI Engine Processing...</p>
-                        <div class="timer" id="processTimer">00:00</div>
                     </div>
                 </div>
-
-                <button class="btn btn-secondary hidden" id="resetBtn">↻ Start New Song</button>
+                <button class="btn btn-secondary hidden" id="resetBtn">PROCESS ANOTHER SONG</button>
             </div>
 
             <div id="resultsArea">
                 <div class="glass-card"
-                    style="min-height: 500px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary);"
+                    style="min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--text-secondary);"
                     id="emptyState">
-                    <div style="font-size: 5rem; opacity: 0.1; margin-bottom: 2rem;">🎙️</div>
-                    <p>Select your track to begin separation</p>
+                    <div style="font-size: 6rem; opacity: 0.05; margin-bottom: 1.5rem;">🎧</div>
+                    <p>Load a track to reveal the AI stem separation workflow</p>
                 </div>
 
                 <div id="resultsContent" class="hidden">
                     <div class="song-info-row">
-                        <div class="info-pill">
-                            <span class="lbl">Estimated Key</span>
-                            <span id="keyDisplay" class="val">--</span>
+                        <div class="info-card">
+                            <span class="lbl">Harmonic Key</span>
+                            <span id="keyVal" class="val">--</span>
                         </div>
-                        <div class="info-pill">
-                            <span class="lbl">Detected BPM</span>
-                            <span id="bpmDisplay" class="val">--</span>
+                        <div class="info-card">
+                            <span class="lbl">Detected Tempo</span>
+                            <span id="bpmVal" class="val">--</span>
                         </div>
                     </div>
 
                     <div id="stemsList" class="stems-grid"></div>
 
-                    <div class="download-action-bar">
-                        <span class="label-title">Export Options</span>
-                        <div class="download-options" id="downloadSelectedOpts">
-                            <label><input type="checkbox" class="dl-opt" value="Download All" checked
-                                    onclick="toggleAllDl(this)"><span class="checkmark">Entire Bundle</span></label>
-                            <label><input type="checkbox" class="dl-opt" value="WAV"><span class="checkmark">Main
-                                    WAV</span></label>
-                            <label><input type="checkbox" class="dl-opt" value="Vocals"><span
-                                    class="checkmark">Vocals</span></label>
-                            <label><input type="checkbox" class="dl-opt" value="Bass"><span
-                                    class="checkmark">Bass</span></label>
-                            <label><input type="checkbox" class="dl-opt" value="Other"><span
-                                    class="checkmark">Other</span></label>
-                            <label><input type="checkbox" class="dl-opt" value="Drums (Raw)"><span
-                                    class="checkmark">Drums</span></label>
-                            <label><input type="checkbox" class="dl-opt" value="Kick"><span
-                                    class="checkmark">Kick</span></label>
-                            <label><input type="checkbox" class="dl-opt" value="Snare"><span
-                                    class="checkmark">Snare</span></label>
-                            <label><input type="checkbox" class="dl-opt" value="Hi-hat"><span
-                                    class="checkmark">Hi-hat</span></label>
-                        </div>
-                        <button class="btn" id="downloadBtn">⬇ Generate ZIP Package</button>
+                    <div class="glass-card" style="margin-top: 2rem; padding: 2rem; text-align: center;">
+                        <span class="label-title" style="margin-bottom: 1.5rem;">Export Bundle</span>
+                        <button class="btn" id="downloadBtn" style="max-width: 400px; margin: 0 auto;">DOWNLOAD ALL
+                            STEMS (.ZIP)</button>
                     </div>
                 </div>
             </div>
@@ -431,168 +378,143 @@
         import { Client } from "https://esm.sh/@gradio/client";
 
         const SPACE_ID = "tinahmbuz/audiostems";
-        const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const processBtn = document.getElementById('processBtn');
-        const loadingPanel = document.getElementById('loadingPanel');
-        const optionsArea = document.getElementById('processingOptions');
+        const dropZone = document.getElementById('dropZone');
+        const fileNameDisp = document.getElementById('fileName');
+        const startBtn = document.getElementById('startBtn');
+        const uploadView = document.getElementById('uploadView');
+        const loadingView = document.getElementById('loadingView');
+        const progressText = document.getElementById('progressText');
+        const circleBar = document.getElementById('circleBar');
+        const statusText = document.getElementById('statusText');
+        const timerDisp = document.getElementById('timer');
         const resultsContent = document.getElementById('resultsContent');
         const emptyState = document.getElementById('emptyState');
         const stemsList = document.getElementById('stemsList');
-        const downloadBtn = document.getElementById('downloadBtn');
         const resetBtn = document.getElementById('resetBtn');
-        const timerDisplay = document.getElementById('processTimer');
-        const progressBar = document.getElementById('progressBar');
-        const progressPercent = document.getElementById('progressPercent');
-        const progressStage = document.getElementById('progressStage');
 
         let selectedFile = null;
-        let timerInterval;
-        let client = null;
+        let tInterval;
+        let startTime;
 
-        // --- THEME & UI HELPERS ---
-        window.toggleAll = (el) => {
-            if (el.checked) document.querySelectorAll('input[name="process_opt"]').forEach(c => { if (c !== el && c.value !== "Info") c.checked = false; });
-        };
-        window.toggleAllDl = (el) => {
-            if (el.checked) document.querySelectorAll('.dl-opt').forEach(c => { if (c !== el) c.checked = false; });
-        };
-
+        // UI Initialization
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => {
             selectedFile = e.target.files[0];
-            if (selectedFile) dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">🎵</div><h4 style="color: var(--accent-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${selectedFile.name}</h4><p style="font-size: 0.75rem">Ready for engine</p>`;
+            if (selectedFile) fileNameDisp.innerText = selectedFile.name;
         };
 
-        resetBtn.onclick = () => {
-            resultsContent.classList.add('hidden');
-            emptyState.classList.remove('hidden');
-            resetBtn.classList.add('hidden');
-            dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">💿</div><h4 style="margin-bottom: 0.3rem;">Upload Track</h4><p style="font-size: 0.75rem; color: var(--text-secondary)">Click to browse</p>`;
-            selectedFile = null;
-            fileInput.value = '';
-        };
+        resetBtn.onclick = () => location.reload();
 
-        // --- CORE LOGIC ---
-        async function getClient() {
-            if (!client) {
-                progressStage.innerText = "CONNECTING";
-                client = await Client.connect(SPACE_ID);
-            }
-            return client;
-        }
+        // Main Logic
+        startBtn.onclick = async () => {
+            if (!selectedFile) return alert("Select a file first.");
 
-        processBtn.onclick = async () => {
-            if (!selectedFile) return alert("Select a song first!");
-            const opts = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
-
-            optionsArea.classList.add('hidden');
-            loadingPanel.classList.remove('hidden');
+            uploadView.classList.add('hidden');
+            loadingView.classList.remove('hidden');
             emptyState.classList.add('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
 
-            updateProgress(5, "INITIALIZING");
-            startTimer();
+            startProcessingUI();
 
             try {
-                const api = await getClient();
-                const job = api.predict("/process", { song_file: selectedFile, options: opts });
+                const client = await Client.connect(SPACE_ID);
+                const result = await client.predict("/process", {
+                    song_file: selectedFile,
+                    options: ["All"]
+                });
 
-                for await (const msg of job) {
-                    if (msg.type === "status") {
-                        const s = msg.stage;
-                        const p = msg.progress;
-                        if (p) updateProgress(Math.floor(p * 100), s.toUpperCase());
-                        else if (s === "pending") updateProgress(10, "IN QUEUE");
-                        else if (s === "loading") updateProgress(25, "UPLOADING");
-                        else if (s === "processing") updateProgress(Math.max(40, parseInt(progressPercent.innerText)), "AI PROCESSING");
-                    }
-                    if (msg.type === "data") {
-                        updateProgress(100, "COMPLETE");
-                        setTimeout(() => {
-                            displayResults(msg.data);
-                            loadingPanel.classList.add('hidden');
-                            resetBtn.classList.remove('hidden');
-                        }, 500);
-                    }
-                }
+                finishProcessingUI(result.data);
             } catch (err) {
-                alert("AI Engine Error: " + err.message);
-                optionsArea.classList.remove('hidden');
-                loadingPanel.classList.add('hidden');
-            } finally { stopTimer(); }
+                alert("Processing failed. The server might be busy. Error: " + err.message);
+                location.reload();
+            }
         };
 
-        function updateProgress(percent, stage) {
-            const offset = 314 - (percent / 100 * 314);
-            progressBar.style.strokeDashoffset = offset;
-            progressPercent.innerText = `${percent}%`;
-            if (stage) progressStage.innerText = stage;
-        }
+        function startProcessingUI() {
+            startTime = Date.now();
+            let pPercent = 0;
 
-        function startTimer() {
-            let s = 0;
-            timerInterval = setInterval(() => {
-                s++;
-                const m = Math.floor(s / 60).toString().padStart(2, '0'), sc = (s % 60).toString().padStart(2, '0');
-                timerDisplay.innerText = `${m}:${sc}`;
-                // Smooth climb if stuck
-                let curr = parseInt(progressPercent.innerText);
-                if (curr >= 40 && curr < 97) updateProgress(curr + 1, "AI PROCESSING");
+            tInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const s = (elapsed % 60).toString().padStart(2, '0');
+                timerDisp.innerText = `${m}:${s}`;
+
+                // Smooth pseudo-progress
+                if (pPercent < 90) {
+                    pPercent += (95 - pPercent) / 60; // Slows down as it nears 95%
+                    updateCircle(Math.floor(pPercent));
+                }
             }, 1000);
         }
-        const stopTimer = () => clearInterval(timerInterval);
 
-        function displayResults(data) {
-            resultsContent.classList.remove('hidden');
+        function updateCircle(pct) {
+            const offset = 440 - (pct / 100 * 440);
+            circleBar.style.strokeDashoffset = offset;
+            progressText.innerText = `${pct}%`;
+
+            if (pct > 80) statusText.innerText = "Finalizing high-quality stems...";
+            else if (pct > 40) statusText.innerText = "AI splitting audio layers...";
+            else statusText.innerText = "Extracting harmonic data...";
+        }
+
+        function finishProcessingUI(data) {
+            clearInterval(tInterval);
+            updateCircle(100);
+
+            setTimeout(() => {
+                loadingView.classList.add('hidden');
+                resultsContent.classList.remove('hidden');
+                resetBtn.classList.remove('hidden');
+
+                renderResults(data);
+            }, 600);
+        }
+
+        function renderResults(data) {
             stemsList.innerHTML = '';
-            const LABELS = ["Original WAV", "Vocals", "Bass", "Other", "Drums", "Kick", "Snare", "Hi-hat"];
+            const labels = ["Original Song", "Vocals", "Bass", "Other", "Drums", "Kick", "Snare", "Hi-hat"];
 
             for (let i = 0; i < 8; i++) {
                 if (!data[i]?.url) continue;
-                const div = document.createElement('div');
-                div.className = 'stem-card';
-                div.innerHTML = `<h3>${LABELS[i]}</h3><audio controls><source src="${data[i].url}" type="audio/wav"></audio>`;
-                stemsList.appendChild(div);
+                const card = document.createElement('div');
+                card.className = 'stem-card';
+                card.innerHTML = `<h3>${labels[i]}</h3><audio controls><source src="${data[i].url}" type="audio/wav"></audio>`;
+                stemsList.appendChild(card);
             }
 
-            // GIGA-ROBUST BPM/KEY DETECTION
+            // GIGA-PARSER for Key/Tempo
             const raw = data[8] || "";
-            console.log("AI Song Insight:", raw);
-
             let key = "N/A", bpm = "N/A";
 
-            // 1. Look for numbers near "BPM" or "Tempo"
-            const b = raw.match(/(?:BPM|Tempo)[:\s]*(\d+\.?\d*)/i) || raw.match(/(\d+\.?\d*)\s*(?:BPM|Tempo)/i);
-            if (b) bpm = Math.round(parseFloat(b[1]));
-
-            // 2. Look for common Key patterns (e.g. "Ab major", "C# min")
+            // Check for Key
             const k = raw.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || raw.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
             if (k) key = k[1];
 
-            // 3. Last Resort: Split by pipe "|" if standard markers fail
-            if ((bpm === "N/A" || key === "N/A") && raw.includes('|')) {
+            // Check for Tempo/BPM
+            const b = raw.match(/(?:Tempo|BPM)[:\s]*(\d+\.?\d*)/i) || raw.match(/(\d+\.?\d*)\s*(?:Tempo|BPM)/i);
+            if (b) bpm = Math.round(parseFloat(b[1]));
+
+            // Fallback for pipe separation
+            if (raw.includes('|')) {
                 const parts = raw.split('|');
                 if (key === "N/A") key = parts[0].replace(/Estimated Key/i, "").trim();
                 if (bpm === "N/A") bpm = parts[1].replace(/[^\d.]/g, "").trim();
             }
 
-            document.getElementById('keyDisplay').innerText = key || "N/A";
-            document.getElementById('bpmDisplay').innerText = bpm || "N/A";
+            document.getElementById('keyVal').innerText = key;
+            document.getElementById('bpmVal').innerText = bpm;
         }
 
-        downloadBtn.onclick = async () => {
-            const dl = Array.from(document.querySelectorAll('.dl-opt:checked')).map(c => c.value);
-            const t = downloadBtn.innerText;
-            downloadBtn.innerText = "Building Package...";
-            downloadBtn.disabled = true;
+        document.getElementById('downloadBtn').onclick = async () => {
+            const originalText = downloadBtn.innerText;
+            downloadBtn.innerText = "COMPILING ZIP PACKAGE...";
             try {
-                const api = await getClient();
-                const res = await api.predict("/create_download_zip", { selected_files: dl });
-                const a = document.createElement('a'); a.href = res.data[0].url; a.download = "stems.zip"; a.click();
-            } catch (err) { alert(err.message); } finally {
-                downloadBtn.innerText = t; downloadBtn.disabled = false;
-            }
+                const c = await Client.connect(SPACE_ID);
+                const res = await c.predict("/create_download_zip", { selected_files: ["Download All"] });
+                const a = document.createElement('a'); a.href = res.data[0].url; a.download = "stems_pack.zip"; a.click();
+            } catch (e) { alert("Download failed"); }
+            downloadBtn.innerText = originalText;
         };
     </script>
 </body>
