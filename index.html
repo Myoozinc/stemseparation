@@ -189,20 +189,43 @@
             display: none !important;
         }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-left-color: var(--accent-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+        /* Progress Circle Styles */
+        .progress-circle-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
         }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+        .progress-circle-svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 8;
+        }
+
+        .progress-circle-bar {
+            fill: none;
+            stroke: var(--accent-color);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 283;
+            /* 2 * PI * 45 */
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-color);
         }
 
         .stems-grid {
@@ -235,15 +258,8 @@
 
         audio {
             flex-grow: 1;
-            /* Improved visibility on dark mode */
-            height: 32px;
-            border-radius: 4px;
-        }
-
-        /* Styling for the audio player in Chrome/Safari */
-        audio::-webkit-media-controls-enclosure {
-            border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.1);
+            height: 35px;
+            filter: brightness(1.2);
         }
 
         .song-info-row {
@@ -296,8 +312,9 @@
         .timer {
             font-family: monospace;
             color: var(--accent-color);
-            font-size: 1.2rem;
+            font-size: 1rem;
             margin-top: 0.5rem;
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -359,18 +376,19 @@
                     </div>
 
                     <div id="loadingPanel" class="hidden" style="text-align: center; padding: 1rem 0;">
-                        <div class="spinner"></div>
+                        <div class="progress-circle-container">
+                            <svg class="progress-circle-svg" width="120" height="120">
+                                <circle class="progress-circle-bg" cx="60" cy="60" r="45"></circle>
+                                <circle id="progressBar" class="progress-circle-bar" cx="60" cy="60" r="45"></circle>
+                            </svg>
+                            <div class="progress-text" id="progressPercent">0%</div>
+                        </div>
                         <p id="loadingText" style="font-weight: 600;">AI is Processing...</p>
                         <div class="timer" id="processTimer">00:00</div>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;">
-                            Processing can take 30s to 3min depending on song length and server load.
-                        </p>
                     </div>
                 </div>
 
-                <div id="errorDisplay" class="error-msg hidden"
-                    style="color: #ff4b2b; font-size: 0.9rem; text-align: center; margin-bottom: 1rem; padding: 1rem; background: rgba(255,75,43,0.1); border-radius: 8px;">
-                </div>
+                <div id="errorDisplay" class="error-msg hidden"></div>
 
                 <button class="btn btn-secondary hidden" id="resetBtn">↻ Process Another Song</button>
             </div>
@@ -380,7 +398,7 @@
                     style="min-height: 480px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); text-align: center;"
                     id="emptyState">
                     <div style="font-size: 4rem; opacity: 0.2; margin-bottom: 1rem;">🎶</div>
-                    <p>Select a song from your computer<br>and click "Split Song" to start the AI analysis.</p>
+                    <p>Select a song and click "Split Song" to start.</p>
                 </div>
 
                 <div id="resultsContent" class="hidden">
@@ -460,30 +478,27 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const resetBtn = document.getElementById('resetBtn');
         const timerDisplay = document.getElementById('processTimer');
+        const progressBar = document.getElementById('progressBar');
+        const progressPercent = document.getElementById('progressPercent');
 
         let selectedFile = null;
         let timerInterval;
-        let startTime;
 
         window.toggleAll = (el) => {
             const checks = document.querySelectorAll('input[name="process_opt"]');
-            if (el.checked) {
-                checks.forEach(c => { if (c !== el && c.value !== "Info") c.checked = false; });
-            }
+            if (el.checked) checks.forEach(c => { if (c !== el && c.value !== "Info") c.checked = false; });
         };
 
         window.toggleAllDl = (el) => {
             const checks = document.querySelectorAll('.dl-opt');
-            if (el.checked) {
-                checks.forEach(c => { if (c !== el) c.checked = false; });
-            }
+            if (el.checked) checks.forEach(c => { if (c !== el) c.checked = false; });
         };
 
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => {
             selectedFile = e.target.files[0];
             if (selectedFile) {
-                dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">🎵</div><h4 style="color: var(--accent-color)">${selectedFile.name}</h4><p style="font-size: 0.8rem">${(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>`;
+                dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">🎵</div><h4 style="color: var(--accent-color)">${selectedFile.name}</h4><p style="font-size: 0.8rem">Ready</p>`;
             }
         };
 
@@ -491,114 +506,129 @@
             resultsContent.classList.add('hidden');
             emptyState.classList.remove('hidden');
             resetBtn.classList.add('hidden');
-            dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">📁</div><h4 style="margin-bottom: 0.5rem;">Click or Drop Song</h4><p style="font-size: 0.8rem; color: var(--text-secondary)">WAV, MP3, etc. (Max 50MB)</p>`;
+            dropZone.innerHTML = `<div style="font-size: 2.5rem; margin-bottom: 1rem;">📁</div><h4 style="margin-bottom: 0.5rem;">Click or Drop Song</h4>`;
             selectedFile = null;
             fileInput.value = '';
         };
 
         processBtn.onclick = async () => {
             if (!selectedFile) return alert("Please select a song first!");
-
             const selectedOptions = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
 
             optionsArea.classList.add('hidden');
             loadingPanel.classList.remove('hidden');
-            document.getElementById('errorDisplay').classList.add('hidden');
-            emptyState.classList.add('hidden');
-            resultsContent.classList.add('hidden');
-
+            updateProgress(0);
             startTimer();
 
             try {
                 const client = await Client.connect(SPACE_ID);
-                const result = await client.predict("/process", {
+
+                // Track progress using the status callback
+                const job = client.predict("/process", {
                     song_file: selectedFile,
                     options: selectedOptions
                 });
 
-                displayResults(result.data);
-                resetBtn.classList.remove('hidden');
+                // Listen for status updates
+                for await (const message of job) {
+                    if (message.type === "status") {
+                        const stage = message.stage;
+                        const progress = message.progress;
+
+                        if (progress !== undefined && progress !== null) {
+                            // If the API provides actual progress, use it
+                            updateProgress(Math.floor(progress * 100));
+                        } else {
+                            // Fallback pseudo-progress based on stage
+                            if (stage === "pending") updateProgress(5);
+                            if (stage === "loading") updateProgress(20);
+                            if (stage === "processing") updateProgress(processPercent.innerText.includes("95") ? 95 : parseInt(progressPercent.innerText) + 1);
+                        }
+                    }
+
+                    if (message.type === "data") {
+                        updateProgress(100);
+                        displayResults(message.data);
+                        resetBtn.classList.remove('hidden');
+                    }
+                }
             } catch (err) {
-                document.getElementById('errorDisplay').innerText = "Processing failed. The server might be overloaded or the session expired. Try a shorter clip or refresh the page.";
-                document.getElementById('errorDisplay').classList.remove('hidden');
-                emptyState.classList.remove('hidden');
+                alert("Processing failed: " + err.message);
+                optionsArea.classList.remove('hidden');
             } finally {
                 stopTimer();
                 loadingPanel.classList.add('hidden');
-                optionsArea.classList.remove('hidden');
             }
         };
 
+        function updateProgress(percent) {
+            const offset = 283 - (percent / 100 * 283);
+            progressBar.style.strokeDashoffset = offset;
+            progressPercent.innerText = `${percent}%`;
+        }
+
         function startTimer() {
-            startTime = Date.now();
-            timerDisplay.innerText = "00:00";
+            let elapsed = 0;
             timerInterval = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                elapsed++;
                 const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
                 const s = (elapsed % 60).toString().padStart(2, '0');
                 timerDisplay.innerText = `${m}:${s}`;
+
+                // Smoothly increment pseudo-progress if stuck at processing
+                const current = parseInt(progressPercent.innerText);
+                if (current >= 20 && current < 98) {
+                    updateProgress(current + 1);
+                }
             }, 1000);
         }
 
-        function stopTimer() {
-            clearInterval(timerInterval);
-        }
+        function stopTimer() { clearInterval(timerInterval); }
 
         function displayResults(data) {
             emptyState.classList.add('hidden');
             resultsContent.classList.remove('hidden');
             stemsList.innerHTML = '';
 
-            const LABELS = ["Original WAV", "Vocals Only", "Bass Guitar", "Other Instruments", "Drum Kit", "Kick Drum", "Snare Drum", "Hi-Hat"];
-
+            const LABELS = ["Original WAV", "Vocals", "Bass", "Other", "Drums", "Kick", "Snare", "Hi-hat"];
             for (let i = 0; i < 8; i++) {
                 if (!data[i] || !data[i].url) continue;
                 const div = document.createElement('div');
                 div.className = 'stem-card';
-                div.innerHTML = `<h3>${LABELS[i]}</h3><audio controls preload="auto"><source src="${data[i].url}" type="audio/wav"></audio>`;
+                div.innerHTML = `<h3>${LABELS[i]}</h3><audio controls preload="metadata"><source src="${data[i].url}" type="audio/wav"></audio>`;
                 stemsList.appendChild(div);
             }
 
-            // Enhanced Parsing for Key/BPM
             const infoText = data[8] || "";
-            console.log("Debug Info:", infoText);
+            let key = "N/A";
+            let bpm = "N/A";
 
-            // Match Key (handles "Key: C major", "Result: Estimated Key C major", etc.)
-            const keyMatch = infoText.match(/Key:\s*([A-Za-z#\s]+)/i) || infoText.match(/Estimated Key\s*([A-Za-z#\s]+)/i);
-            // Match BPM (handles "BPM: 120", "Result: Detected BPM 124.5", etc.)
-            const bpmMatch = infoText.match(/BPM:\s*([\d.]+)/i) || infoText.match(/Detected BPM\s*([\d.]+)/i);
+            const bpmMatch = infoText.match(/(\d+\.?\d*)\s*BPM/i) || infoText.match(/BPM[:\s]*(\d+\.?\d*)/i);
+            if (bpmMatch) bpm = bpmMatch[1];
 
-            document.getElementById('keyDisplay').innerText = keyMatch ? keyMatch[1].trim() : 'N/A';
-            document.getElementById('bpmDisplay').innerText = bpmMatch ? bpmMatch[1].trim() : 'N/A';
+            const keyMatch = infoText.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || infoText.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
+            if (keyMatch) key = keyMatch[1];
+
+            if (key === "N/A" && infoText.includes('|')) key = infoText.split('|')[0].replace("Estimated Key", "").trim();
+            if (bpm === "N/A" && infoText.includes('|')) bpm = infoText.split('|')[1].replace("Detected BPM", "").trim();
+
+            document.getElementById('keyDisplay').innerText = key;
+            document.getElementById('bpmDisplay').innerText = bpm;
         }
 
         downloadBtn.onclick = async () => {
             const selectedFiles = Array.from(document.querySelectorAll('.dl-opt:checked')).map(c => c.value);
-            if (selectedFiles.length === 0) return alert("Select at least one file to download");
-
             const originalText = downloadBtn.innerText;
-            downloadBtn.innerText = "Generating ZIP Archive...";
+            downloadBtn.innerText = "Creating ZIP...";
             downloadBtn.disabled = true;
-
             try {
                 const client = await Client.connect(SPACE_ID);
-                const result = await client.predict("/create_download_zip", {
-                    selected_files: selectedFiles
-                });
-
-                if (result.data && result.data[0] && result.data[0].url) {
-                    const link = document.createElement('a');
-                    link.href = result.data[0].url;
-                    link.download = "stems_pack.zip";
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                } else {
-                    throw new Error("No download URL returned.");
-                }
-            } catch (err) {
-                alert("Download failed. The temporary audio files may have expired. Try processing the song again.");
-            } finally {
+                const result = await client.predict("/create_download_zip", { selected_files: selectedFiles });
+                const link = document.createElement('a');
+                link.href = result.data[0].url;
+                link.download = "stems.zip";
+                link.click();
+            } catch (err) { alert(err.message); } finally {
                 downloadBtn.innerText = originalText;
                 downloadBtn.disabled = false;
             }
