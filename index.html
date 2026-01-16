@@ -4,20 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stem Separation | AI Audio Tool</title>
+    <title>Stem Separation | Myoozinc Audio Tool</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-gradient: radial-gradient(circle at top left, #1a1a2e, #16213e, #0f3460);
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --accent-color: #4ecca3;
-            --accent-glow: rgba(78, 204, 163, 0.3);
-            --text-primary: #ffffff;
+            /* Myoozinc Aesthetic Tokens */
+            --bg-black: #050505;
+            --header-white: #FFFFFF;
+            --accent-purple: #26014b;
+            --accent-blue: #00DBDE;
+            --neon-glow: rgba(74, 0, 224, 0.5);
+            --text-white: #FFFFFF;
             --text-secondary: rgba(255, 255, 255, 0.6);
-            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --radius: 20px;
         }
 
@@ -29,191 +30,357 @@
 
         body {
             font-family: 'Outfit', sans-serif;
-            background: var(--bg-gradient);
-            background-attachment: fixed;
-            color: var(--text-primary);
+            background-color: var(--bg-black);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(74, 0, 224, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 219, 222, 0.1) 0%, transparent 40%);
+            color: var(--text-white);
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            padding: 2rem;
+            padding: 0;
             line-height: 1.6;
+            overflow-x: hidden;
+            background-attachment: fixed;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
+            pointer-events: none;
+            z-index: 1;
         }
 
         .container {
             width: 100%;
             max-width: 1200px;
+            padding: 2rem;
+            margin-top: 80px;
+            /* Space for fixed header */
         }
 
-        header {
-            text-align: center;
+        /* Fixed Header Mimicking myoozinc.com */
+        nav.custom-header {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1100px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+            border-radius: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px var(--neon-glow));
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .header-tag {
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 5px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+
+        header.tool-header {
+            text-align: left;
             margin-bottom: 3rem;
+            padding-left: 1rem;
         }
 
         h1 {
-            font-size: clamp(2.2rem, 5vw, 3.2rem);
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #4ecca3, #45b7d1);
+            font-size: clamp(3rem, 10vw, 5.5rem);
+            line-height: 0.95;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -3px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(180deg, #fff 30%, rgba(255, 255, 255, 0.2) 100%);
             -webkit-background-clip: text;
-            background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .subtitle {
             color: var(--text-secondary);
-            font-size: 1.1rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
         }
 
         .main-layout {
-            display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 2.5rem;
-            align-items: start;
-        }
-
-        @media (max-width: 950px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
         }
 
         .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid var(--glass-border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 2rem;
+            border-radius: 30px;
+            padding: 3rem;
             margin-bottom: 2rem;
+            transition: transform 0.4s ease, border-color 0.4s ease;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .upload-section {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 3rem;
+            align-items: stretch;
+        }
+
+        @media (max-width: 900px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+            }
         }
 
         .upload-zone {
             border: 2px dashed var(--glass-border);
             border-radius: 12px;
-            padding: 2.5rem 1.5rem;
+            padding: 3rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 1.5rem;
-            background: rgba(255, 255, 255, 0.02);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .upload-zone:hover {
-            border-color: var(--accent-color);
-            background: rgba(78, 204, 163, 0.08);
+            border-color: var(--accent-purple);
+            background: rgba(46, 4, 88, 0.1);
         }
 
-        .btn {
-            background: var(--accent-color);
-            color: #1a1a2e;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 1rem;
-            font-family: inherit;
-            width: 100%;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--accent-glow);
-        }
-
-        .btn:disabled {
-            background: #444;
-            color: #888;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            margin-top: 1rem;
-        }
-
-        .options-group {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.6rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .option-item {
+        /* Logic Styles for Options */
+        .options-container {
             display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .option-item input {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--accent-color);
-            cursor: pointer;
-        }
-
-        .option-item:hover {
-            background: rgba(255, 255, 255, 0.06);
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
         .label-title {
             display: block;
             font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             margin-bottom: 1rem;
-            color: var(--accent-color);
+            color: var(--header-white);
             font-weight: 700;
         }
 
-        .hidden {
-            display: none !important;
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.8rem;
         }
 
-        /* PROGRESS CIRCLE */
-        .progress-container {
+        .option-item {
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .option-item input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            display: block;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            font-size: 0.8rem;
             text-align: center;
-            padding: 1rem 0;
+            transition: all 0.2s;
+            color: var(--text-white);
+            font-weight: 500;
+        }
+
+        .option-item input:checked~.checkmark {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+            font-weight: 700;
+            box-shadow: 0 0 15px rgba(46, 4, 88, 0.4);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, #0032FF 100%);
+            color: white;
+            border: none;
+            padding: 16px 45px;
+            border-radius: 100px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(74, 0, 224, 0.3);
+            position: relative;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(74, 0, 224, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Song Info Cards */
+        .song-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: transparent;
+            border: 1px solid var(--accent-purple);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(46, 4, 88, 0.2);
+        }
+
+        .info-card .val {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent-purple);
+            display: block;
+            filter: brightness(1.5);
+        }
+
+        .info-card .lbl {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+
+        /* Stems Player List */
+        .stems-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .stem-player {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .stem-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            width: 150px;
+        }
+
+        audio {
+            flex-grow: 1;
+            height: 40px;
+            border-radius: 30px;
+            filter: invert(1);
+        }
+
+        /* Progress Circle */
+        .progress-box {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
         }
 
         .circle-svg {
             transform: rotate(-90deg);
-            width: 150px;
-            height: 150px;
+            width: 100%;
+            height: 100%;
         }
 
         .circle-bg {
             fill: none;
             stroke: rgba(255, 255, 255, 0.05);
-            stroke-width: 10;
+            stroke-width: 8;
         }
 
         .circle-bar {
             fill: none;
-            stroke: var(--accent-color);
-            stroke-width: 10;
+            stroke: var(--accent-purple);
+            stroke-width: 8;
             stroke-linecap: round;
-            stroke-dasharray: 440;
-            /* 2 * PI * 70 */
-            stroke-dashoffset: 440;
-            transition: stroke-dashoffset 0.5s ease;
-        }
-
-        .progress-box {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 1.5rem;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 0.8s ease-in-out;
         }
 
         .progress-val {
@@ -221,153 +388,161 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: var(--accent-color);
+            color: var(--accent-purple);
+            filter: brightness(1.5);
         }
 
-        .stems-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.2rem;
-        }
-
-        .stem-card {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1.2rem 1.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 2rem;
-        }
-
-        .stem-card h3 {
-            font-size: 0.9rem;
-            color: var(--text-primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            width: 140px;
-        }
-
-        audio {
-            flex-grow: 1;
-            height: 38px;
-        }
-
-        .song-info-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .info-card {
-            background: rgba(78, 204, 163, 0.08);
-            border: 1px solid var(--accent-color);
-            border-radius: 15px;
-            padding: 1.5rem;
-            text-align: center;
-        }
-
-        .info-card .val {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: var(--accent-color);
-            display: block;
-        }
-
-        .info-card .lbl {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            letter-spacing: 1px;
-        }
-
-        .timer {
-            font-family: monospace;
-            color: var(--accent-color);
-            font-size: 1.1rem;
-            opacity: 0.8;
-            margin-top: 0.5rem;
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
 
 <body>
+    <nav class="custom-header">
+        <div class="logo-container">
+            <img src="logo.png" alt="Myoozinc Logo" class="logo-img">
+            <div class="logo-text">MYOOZ INC</div>
+        </div>
+        <div class="header-tag">POWERED BY MYOOZ LABS</div>
+    </nav>
+
     <div class="container">
-        <header>
-            <h1>Advanced Stem Splitter</h1>
-            <p class="subtitle">AI-powered isolation & architectural song analysis</p>
+        <header class="tool-header">
+            <h1>Stem Separation</h1>
+            <p class="subtitle">Studio-Grade Audio Decomposition</p>
         </header>
 
         <div class="main-layout">
-            <div class="side-panel">
-                <div class="glass-card" id="controlPanel">
-                    <div id="uploadView">
-                        <div class="upload-zone" id="dropZone">
-                            <div style="font-size: 3rem; margin-bottom: 1rem;">💿</div>
-                            <h3 id="fileName" style="margin-bottom: 0.5rem;">Select Audio File</h3>
-                            <p style="font-size: 0.8rem; color: var(--text-secondary)">WAV, MP3, AIFF up to 50MB</p>
-                            <input type="file" id="fileInput" class="hidden" accept="audio/*">
-                        </div>
+            <!-- Processing View -->
+            <div id="uploadView" class="glass-card upload-section">
+                <div class="upload-zone" id="dropZone">
+                    <div style="font-size: 3rem; margin-bottom: 1.5rem; opacity: 0.5;">💿</div>
+                    <h3 id="fileName" style="margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
+                        Drag Track Here</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 1px;">WAV, MP3, AIFF</p>
+                    <input type="file" id="fileInput" class="hidden" accept="audio/*">
+                </div>
 
-                        <span class="label-title">Analysis Mode</span>
-                        <div class="options-group">
-                            <label class="option-item"><input type="checkbox" id="optAll" checked> <span>Standard 4-Stem
-                                    Split</span></label>
-                            <label class="option-item"><input type="checkbox" id="optFull" checked> <span>Include
-                                    Percussion Detail</span></label>
-                            <label class="option-item"><input type="checkbox" id="optInfo" checked> <span>Key & Tempo
-                                    Detection</span></label>
-                        </div>
-                        <button class="btn" id="startBtn">BEGIN PROCESSING</button>
+                <div class="options-container">
+                    <span class="label-title">Processing Options</span>
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="All" checked onclick="toggleAll(this)">
+                            <span class="checkmark">Full Split</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Convert to WAV">
+                            <span class="checkmark">Song WAV</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Vocals">
+                            <span class="checkmark">Vocals</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Bass">
+                            <span class="checkmark">Bass</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Other">
+                            <span class="checkmark">Other</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Drums">
+                            <span class="checkmark">Drums</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Refine Drums">
+                            <span class="checkmark">Precise Drums</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Info" checked>
+                            <span class="checkmark">Key & BPM</span>
+                        </label>
                     </div>
-
-                    <div id="loadingView" class="hidden">
-                        <div class="progress-container">
-                            <div class="progress-box">
-                                <svg class="circle-svg" viewBox="0 0 160 160">
-                                    <circle class="circle-bg" cx="80" cy="80" r="70"></circle>
-                                    <circle id="circleBar" class="circle-bar" cx="80" cy="80" r="70"></circle>
-                                </svg>
-                                <div class="progress-val" id="progressText">0%</div>
-                            </div>
-                            <h3 id="statusText">AI analyzing track...</h3>
-                            <div class="timer" id="timer">00:00</div>
-                        </div>
+                    <div style="margin-top: auto; padding-top: 1rem; text-align: right;">
+                        <button class="btn" id="startBtn">PROCESS AUDIO</button>
                     </div>
                 </div>
-                <button class="btn btn-secondary hidden" id="resetBtn">PROCESS ANOTHER SONG</button>
             </div>
 
-            <div id="resultsArea">
-                <div class="glass-card"
-                    style="min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--text-secondary);"
-                    id="emptyState">
-                    <div style="font-size: 6rem; opacity: 0.05; margin-bottom: 1.5rem;">🎧</div>
-                    <p>Load a track to reveal the AI stem separation workflow</p>
+            <!-- Loading View -->
+            <div id="loadingView" class="glass-card hidden" style="text-align: center;">
+                <div class="progress-box">
+                    <svg class="circle-svg" viewBox="0 0 100 100">
+                        <circle class="circle-bg" cx="50" cy="50" r="45"></circle>
+                        <circle id="circleBar" class="circle-bar" cx="50" cy="50" r="45"></circle>
+                    </svg>
+                    <div class="progress-val" id="progressText">0%</div>
+                </div>
+                <h3 style="text-transform: uppercase; letter-spacing: 2px;">Separating Stems...</h3>
+                <div id="timer" style="margin-top: 10px; font-family: monospace; opacity: 0.5;">00:00</div>
+            </div>
+
+            <!-- Results View -->
+            <div id="resultsContent" class="hidden">
+                <div class="song-info-grid">
+                    <div class="info-card">
+                        <span class="lbl">Harmonic Key</span>
+                        <span id="keyVal" class="val">--</span>
+                    </div>
+                    <div class="info-card">
+                        <span class="lbl">Detected Tempo</span>
+                        <span id="bpmVal" class="val">--</span>
+                    </div>
                 </div>
 
-                <div id="resultsContent" class="hidden">
-                    <div class="song-info-row">
-                        <div class="info-card">
-                            <span class="lbl">Harmonic Key</span>
-                            <span id="keyVal" class="val">--</span>
-                        </div>
-                        <div class="info-card">
-                            <span class="lbl">Detected Tempo</span>
-                            <span id="bpmVal" class="val">--</span>
-                        </div>
+                <div id="stemsList" class="stems-container"></div>
+
+                <div class="glass-card" style="margin-top: 2rem;">
+                    <span class="label-title">Export Options</span>
+                    <div class="options-grid" style="margin-bottom: 2rem;">
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Download All" checked
+                                onclick="toggleAllDl(this)">
+                            <span class="checkmark">Download All</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="WAV">
+                            <span class="checkmark">Song WAV</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Vocals">
+                            <span class="checkmark">Vocals</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Bass">
+                            <span class="checkmark">Bass</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Other">
+                            <span class="checkmark">Other</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Drums (Raw)">
+                            <span class="checkmark">Drums (Raw)</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Kick">
+                            <span class="checkmark">Kick</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Snare">
+                            <span class="checkmark">Snare</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Hi-hat">
+                            <span class="checkmark">Hi-hat</span>
+                        </label>
                     </div>
-
-                    <div id="stemsList" class="stems-grid"></div>
-
-                    <div class="glass-card" style="margin-top: 2rem; padding: 2rem; text-align: center;">
-                        <span class="label-title" style="margin-bottom: 1.5rem;">Export Bundle</span>
-                        <button class="btn" id="downloadBtn" style="max-width: 400px; margin: 0 auto;">DOWNLOAD ALL
-                            STEMS (.ZIP)</button>
+                    <div style="text-align: center; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
+                        <button class="btn" id="downloadAllBtn">DOWNLOAD SELECTED STEMS</button>
+                        <div style="margin-top: 1.5rem;">
+                            <button class="btn" style="background: transparent; border: 1px solid var(--accent-purple);"
+                                id="resetBtn">START NEW TRACK</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -386,10 +561,8 @@
         const loadingView = document.getElementById('loadingView');
         const progressText = document.getElementById('progressText');
         const circleBar = document.getElementById('circleBar');
-        const statusText = document.getElementById('statusText');
         const timerDisp = document.getElementById('timer');
         const resultsContent = document.getElementById('resultsContent');
-        const emptyState = document.getElementById('emptyState');
         const stemsList = document.getElementById('stemsList');
         const resetBtn = document.getElementById('resetBtn');
 
@@ -397,7 +570,21 @@
         let tInterval;
         let startTime;
 
-        // UI Initialization
+        // UI Logic for checkboxes
+        window.toggleAll = (el) => {
+            const checks = document.querySelectorAll('input[name="process_opt"]');
+            if (el.checked) {
+                checks.forEach(c => { if (c !== el && c.value !== "Info") c.checked = false; });
+            }
+        };
+
+        window.toggleAllDl = (el) => {
+            const checks = document.querySelectorAll('.dl-opt');
+            if (el.checked) {
+                checks.forEach(c => { if (c !== el) c.checked = false; });
+            }
+        };
+
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => {
             selectedFile = e.target.files[0];
@@ -406,13 +593,13 @@
 
         resetBtn.onclick = () => location.reload();
 
-        // Main Logic
         startBtn.onclick = async () => {
             if (!selectedFile) return alert("Select a file first.");
 
+            const selectedOptions = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
+
             uploadView.classList.add('hidden');
             loadingView.classList.remove('hidden');
-            emptyState.classList.add('hidden');
 
             startProcessingUI();
 
@@ -420,101 +607,80 @@
                 const client = await Client.connect(SPACE_ID);
                 const result = await client.predict("/process", {
                     song_file: selectedFile,
-                    options: ["All"]
+                    options: selectedOptions
                 });
 
-                finishProcessingUI(result.data);
+                renderResults(result.data);
             } catch (err) {
-                alert("Processing failed. The server might be busy. Error: " + err.message);
+                alert("Error: " + err.message);
                 location.reload();
             }
         };
 
         function startProcessingUI() {
             startTime = Date.now();
-            let pPercent = 0;
-
+            let p = 0;
             tInterval = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
                 const s = (elapsed % 60).toString().padStart(2, '0');
                 timerDisp.innerText = `${m}:${s}`;
-
-                // Smooth pseudo-progress
-                if (pPercent < 90) {
-                    pPercent += (95 - pPercent) / 60; // Slows down as it nears 95%
-                    updateCircle(Math.floor(pPercent));
-                }
+                if (p < 95) { p += (98 - p) / 40; updateCircle(Math.floor(p)); }
             }, 1000);
         }
 
         function updateCircle(pct) {
-            const offset = 440 - (pct / 100 * 440);
+            const offset = 283 - (pct / 100 * 283);
             circleBar.style.strokeDashoffset = offset;
             progressText.innerText = `${pct}%`;
-
-            if (pct > 80) statusText.innerText = "Finalizing high-quality stems...";
-            else if (pct > 40) statusText.innerText = "AI splitting audio layers...";
-            else statusText.innerText = "Extracting harmonic data...";
         }
 
-        function finishProcessingUI(data) {
+        function renderResults(data) {
             clearInterval(tInterval);
             updateCircle(100);
 
             setTimeout(() => {
                 loadingView.classList.add('hidden');
                 resultsContent.classList.remove('hidden');
-                resetBtn.classList.remove('hidden');
 
-                renderResults(data);
-            }, 600);
+                stemsList.innerHTML = '';
+                const labels = ["ORIGINAL SONG", "VOCALS", "BASS", "OTHER", "DRUMS", "KICK", "SNARE", "HI-HAT"];
+
+                for (let i = 0; i < 8; i++) {
+                    if (!data[i]?.url) continue;
+                    const card = document.createElement('div');
+                    card.className = 'stem-player';
+                    card.innerHTML = `
+                        <div class="stem-label">${labels[i]}</div>
+                        <audio controls preload="auto"><source src="${data[i].url}" type="audio/wav"></audio>
+                    `;
+                    stemsList.appendChild(card);
+                }
+
+                // Giga-Parser for Key/Tempo
+                const raw = data[8] || "";
+                let key = "N/A", bpm = "N/A";
+                const k = raw.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || raw.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
+                if (k) key = k[1];
+                const b = raw.match(/(?:Tempo|BPM)[:\s]*(\d+\.?\d*)/i) || raw.match(/(\d+\.?\d*)\s*(?:Tempo|BPM)/i);
+                if (b) bpm = Math.round(parseFloat(b[1]));
+
+                document.getElementById('keyVal').innerText = key;
+                document.getElementById('bpmVal').innerText = bpm;
+            }, 500);
         }
 
-        function renderResults(data) {
-            stemsList.innerHTML = '';
-            const labels = ["Original Song", "Vocals", "Bass", "Other", "Drums", "Kick", "Snare", "Hi-hat"];
-
-            for (let i = 0; i < 8; i++) {
-                if (!data[i]?.url) continue;
-                const card = document.createElement('div');
-                card.className = 'stem-card';
-                card.innerHTML = `<h3>${labels[i]}</h3><audio controls><source src="${data[i].url}" type="audio/wav"></audio>`;
-                stemsList.appendChild(card);
-            }
-
-            // GIGA-PARSER for Key/Tempo
-            const raw = data[8] || "";
-            let key = "N/A", bpm = "N/A";
-
-            // Check for Key
-            const k = raw.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || raw.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
-            if (k) key = k[1];
-
-            // Check for Tempo/BPM
-            const b = raw.match(/(?:Tempo|BPM)[:\s]*(\d+\.?\d*)/i) || raw.match(/(\d+\.?\d*)\s*(?:Tempo|BPM)/i);
-            if (b) bpm = Math.round(parseFloat(b[1]));
-
-            // Fallback for pipe separation
-            if (raw.includes('|')) {
-                const parts = raw.split('|');
-                if (key === "N/A") key = parts[0].replace(/Estimated Key/i, "").trim();
-                if (bpm === "N/A") bpm = parts[1].replace(/[^\d.]/g, "").trim();
-            }
-
-            document.getElementById('keyVal').innerText = key;
-            document.getElementById('bpmVal').innerText = bpm;
-        }
-
-        document.getElementById('downloadBtn').onclick = async () => {
-            const originalText = downloadBtn.innerText;
-            downloadBtn.innerText = "COMPILING ZIP PACKAGE...";
+        document.getElementById('downloadAllBtn').onclick = async () => {
+            const btn = document.getElementById('downloadAllBtn');
+            const selectedFiles = Array.from(document.querySelectorAll('.dl-opt:checked')).map(c => c.value);
+            const originalText = btn.innerText;
+            btn.innerText = "PREPARING ZIP...";
             try {
                 const c = await Client.connect(SPACE_ID);
-                const res = await c.predict("/create_download_zip", { selected_files: ["Download All"] });
+                const res = await c.predict("/create_download_zip", { selected_files: selectedFiles });
                 const a = document.createElement('a'); a.href = res.data[0].url; a.download = "stems_pack.zip"; a.click();
             } catch (e) { alert("Download failed"); }
-            downloadBtn.innerText = originalText;
+            btn.innerText = originalText;
         };
     </script>
 </body>
