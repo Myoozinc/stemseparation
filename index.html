@@ -550,7 +550,7 @@
     </div>
 
     <script type="module">
-        import { Client } from "https://esm.sh/@gradio/client";
+        import { Client, handle_file } from "https://esm.sh/@gradio/client";
 
         const SPACE_ID = "tinahmbuz/audiostems";
         const fileInput = document.getElementById('fileInput');
@@ -606,9 +606,10 @@
             try {
                 const client = await Client.connect(SPACE_ID);
                 const result = await client.predict("/process", {
-                    song_file: selectedFile,
+                    song_file: handle_file(selectedFile),
                     options: selectedOptions
                 });
+
 
                 renderResults(result.data);
             } catch (err) {
