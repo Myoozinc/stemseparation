@@ -397,6 +397,11 @@
         .hidden {
             display: none !important;
         }
+        .upload-zone.dragover {
+            border-color: var(--accent-blue);
+            background: rgba(0, 219, 222, 0.08);
+        }
+
     </style>
 </head>
 
@@ -590,6 +595,36 @@
             selectedFile = e.target.files[0];
             if (selectedFile) fileNameDisp.innerText = selectedFile.name;
         };
+      
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropZone.classList.add("dragover");
+        });
+        
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.classList.remove("dragover");
+        });
+        
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropZone.classList.remove("dragover");
+        });
+
+            const file = e.dataTransfer.files[0];
+        
+            if (file) {
+                // Only allow MP3/WAV
+                if (!file.name.endsWith(".mp3") && !file.name.endsWith(".wav")) {
+                    alert("Only MP3 or WAV files are allowed.");
+                    return;
+                }
+        
+                selectedFile = file;
+                fileNameDisp.innerText = file.name;
+            }
+        
+            dropZone.style.borderColor = "rgba(255, 255, 255, 0.1)";
+        });
 
         resetBtn.onclick = () => location.reload();
 
