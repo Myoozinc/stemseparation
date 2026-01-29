@@ -591,29 +591,31 @@
         };
 
         dropZone.onclick = () => fileInput.click();
+
         fileInput.onchange = (e) => {
             selectedFile = e.target.files[0];
             if (selectedFile) fileNameDisp.innerText = selectedFile.name;
         };
-      
+        
+        // Drag Over
         dropZone.addEventListener("dragover", (e) => {
             e.preventDefault();
             dropZone.classList.add("dragover");
         });
         
+        // Drag Leave
         dropZone.addEventListener("dragleave", () => {
             dropZone.classList.remove("dragover");
         });
         
+        // Drop File
         dropZone.addEventListener("drop", (e) => {
             e.preventDefault();
             dropZone.classList.remove("dragover");
-        });
-
+        
             const file = e.dataTransfer.files[0];
         
             if (file) {
-                // Only allow MP3/WAV
                 if (!file.name.endsWith(".mp3") && !file.name.endsWith(".wav")) {
                     alert("Only MP3 or WAV files are allowed.");
                     return;
@@ -622,9 +624,20 @@
                 selectedFile = file;
                 fileNameDisp.innerText = file.name;
             }
-        
-            dropZone.style.borderColor = "rgba(255, 255, 255, 0.1)";
-        });
+        });     
+                    if (file) {
+                        // Only allow MP3/WAV
+                        if (!file.name.endsWith(".mp3") && !file.name.endsWith(".wav")) {
+                            alert("Only MP3 or WAV files are allowed.");
+                            return;
+                        }
+                
+                        selectedFile = file;
+                        fileNameDisp.innerText = file.name;
+                    }
+                
+                    dropZone.style.borderColor = "rgba(255, 255, 255, 0.1)";
+                });
 
         resetBtn.onclick = () => location.reload();
 
