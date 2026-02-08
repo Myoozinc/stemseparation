@@ -491,7 +491,7 @@
             border: 2px solid var(--accent-magenta);
             border-radius: 15px;
             padding: 2rem;
-            margin: 2rem 0;
+            margin-bottom: 2rem;
             text-align: center;
         }
 
@@ -507,31 +507,6 @@
             color: var(--text-white);
             font-size: 0.95rem;
             line-height: 1.8;
-        }
-
-        .debug-panel {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid var(--accent-magenta);
-            border-radius: 10px;
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.75rem;
-            color: var(--accent-magenta);
-            max-width: 300px;
-            z-index: 9999;
-        }
-
-        .debug-panel h4 {
-            margin-bottom: 0.5rem;
-            color: var(--text-white);
-        }
-
-        .debug-panel .debug-line {
-            margin: 0.25rem 0;
-            color: var(--text-secondary);
         }
 
         .hidden {
@@ -554,13 +529,6 @@
         </div>
         <div class="header-tag">BY MYOOZ LABS</div>
     </nav>
-
-    <!-- <div class="debug-panel" id="debugPanel">
-        <h4>USAGE TRACKER</h4>
-        <div class="debug-line">Daily: <span id="debugDaily">-/-</span></div>
-        <div class="debug-line">Monthly: <span id="debugMonthly">-/-</span></div>
-        <div class="debug-line">Status: <span id="debugStatus">Ready</span></div>
-    </div> -->
 
     <div class="container">
         <header class="tool-header">
@@ -720,21 +688,10 @@
         const stemsList = document.getElementById('stemsList');
         const resetBtn = document.getElementById('resetBtn');
 
-        // Get debug elements (may be null if commented out in HTML)
-        const debugDaily = document.getElementById('debugDaily');
-        const debugMonthly = document.getElementById('debugMonthly');
-        const debugStatus = document.getElementById('debugStatus');
-
-        // Helper function to safely update debug elements
-        function updateDebug(element, text) {
-            if (element) {
-                element.innerText = text;
-            }
-        }
-
         let selectedFile = null;
         let tInterval;
         let startTime;
+        let errorShown = false;
 
         window.toggleAll = (el) => {
             const checks = document.querySelectorAll('input[name="process_opt"]');
@@ -782,52 +739,44 @@
         
         resetBtn.onclick = () => location.reload();
 
+        function clearExistingErrors() {
+            const existingErrors = uploadView.querySelectorAll('.error-message');
+            existingErrors.forEach(err => err.remove());
+        }
+
+        function showError(title, message) {
+            clearExistingErrors();
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `
+                <h3>${title}</h3>
+                <p>${message}</p>
+            `;
+            uploadView.insertBefore(errorDiv, uploadView.firstChild);
+            
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 15000);
+        }
+
         startBtn.onclick = async () => {
             if (!selectedFile) return alert("Select a file first.");
+            
+            errorShown = false;
+            clearExistingErrors();
 
             try {
-                // STEP 1: Check limits BEFORE processing (instant feedback)
-                const client = await Client.connect(SPACE_ID);
-                
-                console.log("[DEBUG] Checking usage limits...");
-                const limitCheck = await client.predict("/check_limit_only", {});
-                const limitStatus = limitCheck.data;
-                
-                console.log("[DEBUG] Limit check result:", limitStatus);
-
-                // If daily limit reached, show error and STOP
-                if (limitStatus.startsWith("LIMIT_ERROR:DAILY:")) {
-                    const resetTime = limitStatus.split(":")[2];
-                    showError(
-                        `⚠️ Daily Limit Reached`,
-                        `You've used all 3 free processes today.<br><br>Your daily limit will reset in: <strong>${resetTime}</strong>`
-                    );
-                    updateDebug(debugStatus, "Daily Limit");
-                    return; // STOP - don't process
-                }
-
-                // If monthly limit reached, show error and STOP
-                if (limitStatus.startsWith("LIMIT_ERROR:MONTHLY:")) {
-                    const resetTime = limitStatus.split(":")[2];
-                    showError(
-                        `⚠️ Monthly Limit Reached`,
-                        `You've used all 15 free processes this month.<br><br>Your monthly limit will reset in: <strong>${resetTime}</strong>`
-                    );
-                    updateDebug(debugStatus, "Monthly Limit");
-                    return; // STOP - don't process
-                }
-
-                // STEP 2: Limits OK - proceed with processing
-                console.log("[DEBUG] Limits OK, starting processing...");
-                
                 const selectedOptions = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
 
                 uploadView.classList.add('hidden');
                 loadingView.classList.remove('hidden');
-                updateDebug(debugStatus, "Processing...");
 
                 startProcessingUI();
 
+                const client = await Client.connect(SPACE_ID);
                 const result = await client.predict("/process", {
                     song_file: handle_file(selectedFile),
                     options: selectedOptions
@@ -837,91 +786,80 @@
                 
             } catch (err) {
                 console.error("API Error:", err);
-                showError("⚠️ Processing Error", "An unexpected error occurred. Please try again or contact support if the issue persists.");
-                updateDebug(debugStatus, "Error");
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
+                
+                if (!errorShown) {
+                    showError("⚠️ Connection Error", "Unable to connect to the server. Please check your internet connection and try again.");
+                    errorShown = true;
+                }
             }
         };
 
         function handleBackendResponse(data) {
+            if (errorShown) return;
+            
             const statusMsg = data[8] || "";
             console.log("[DEBUG] Backend response:", statusMsg);
 
-            if (statusMsg.startsWith("LIMIT_ERROR:DAILY:")) {
-                const parts = statusMsg.split(":");
-                const resetTime = parts[2];
+            // Check for daily limit
+            if (statusMsg.includes("LIMIT_ERROR:DAILY:")) {
+                const match = statusMsg.match(/LIMIT_ERROR:DAILY:(.+)/);
+                const resetTime = match ? match[1] : "24 hours";
                 clearInterval(tInterval);
                 loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
                 showError(
                     `⚠️ Daily Limit Reached`,
-                    `You've used all 3 free processes today.<br><br>Your daily limit will reset in: <strong>${resetTime}</strong>`
+                    `You've used all 3 free processes today.<br><br>Your limit resets in: <strong>${resetTime}</strong>`
                 );
-                updateDebug(debugDaily, "3/3 (LIMIT HIT)");
-                updateDebug(debugStatus, "Daily Limit");
+                errorShown = true;
                 return;
             }
 
-            if (statusMsg.startsWith("LIMIT_ERROR:MONTHLY:")) {
-                const parts = statusMsg.split(":");
-                const resetTime = parts[2];
+            // Check for monthly limit
+            if (statusMsg.includes("LIMIT_ERROR:MONTHLY:")) {
+                const match = statusMsg.match(/LIMIT_ERROR:MONTHLY:(.+)/);
+                const resetTime = match ? match[1] : "the start of next month";
                 clearInterval(tInterval);
                 loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
                 showError(
                     `⚠️ Monthly Limit Reached`,
-                    `You've used all 15 free processes this month.<br><br>Your monthly limit will reset in: <strong>${resetTime}</strong>`
+                    `You've used all 15 free processes this month.<br><br>Your limit resets: <strong>${resetTime}</strong>`
                 );
-                updateDebug(debugMonthly, "15/15 (LIMIT HIT)");
-                updateDebug(debugStatus, "Monthly Limit");
+                errorShown = true;
                 return;
             }
 
-            if (statusMsg.startsWith("UPLOAD_REQUIRED:")) {
-                const parts = statusMsg.split(":");
-                const dailyRemaining = parts[1];
-                const monthlyRemaining = parts[2];
-                updateDebug(debugDaily, `${3 - dailyRemaining}/3`);
-                updateDebug(debugMonthly, `${15 - monthlyRemaining}/15`);
-                updateDebug(debugStatus, "No file uploaded");
-                return;
-            }
-
+            // Check for generic processing error
             if (statusMsg === "PROCESSING_ERROR") {
                 clearInterval(tInterval);
                 loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
                 showError(
                     `⚠️ Processing Error`,
-                    `An unexpected error occurred while processing your file.<br><br>Please try again or contact support if the issue persists.`
+                    `Something went wrong while processing your file.<br><br>Please try again with a different file or contact support.`
                 );
-                updateDebug(debugStatus, "Processing Error");
+                errorShown = true;
                 return;
             }
 
-            if (statusMsg.includes("|SUCCESS:")) {
-                const parts = statusMsg.split("|SUCCESS:");
-                const usageData = parts[1].split(":");
-                const dailyRemaining = parseInt(usageData[0]);
-                const monthlyRemaining = parseInt(usageData[1]);
-                
-                updateDebug(debugDaily, `${3 - dailyRemaining}/3`);
-                updateDebug(debugMonthly, `${15 - monthlyRemaining}/15`);
-                updateDebug(debugStatus, "Success");
-
-                renderResults(data, dailyRemaining, monthlyRemaining);
+            // Success case - look for "SUCCESS:" anywhere in the message
+            if (statusMsg.includes("SUCCESS:") || data[0]?.url) {
+                renderResults(data);
             } else {
-                renderResults(data, "?", "?");
+                // Fallback if we don't recognize the response
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
+                showError(
+                    `⚠️ Unexpected Response`,
+                    `Received an unexpected response from the server. Please try again.`
+                );
+                errorShown = true;
             }
-        }
-
-        function showError(title, message) {
-            uploadView.classList.remove('hidden');
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.innerHTML = `
-                <h3>${title}</h3>
-                <p>${message}</p>
-            `;
-            uploadView.insertBefore(errorDiv, uploadView.firstChild);
-            
-            setTimeout(() => errorDiv.remove(), 10000);
         }
 
         function startProcessingUI() {
@@ -939,7 +877,7 @@
             }, 1000);
         }
 
-        function renderResults(data, dailyRemaining, monthlyRemaining) {
+        function renderResults(data) {
             clearInterval(tInterval);
             progressText.innerText = '100%';
 
@@ -973,7 +911,7 @@
                 document.getElementById('keyVal').innerText = key;
                 document.getElementById('bpmVal').innerText = bpm;
 
-                console.log(`[SUCCESS] Daily remaining: ${dailyRemaining}, Monthly remaining: ${monthlyRemaining}`);
+                console.log("[SUCCESS] Processing completed");
             }, 500);
         }
 
