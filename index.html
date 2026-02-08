@@ -108,7 +108,6 @@
             text-transform: uppercase;
         }
 
-        /* FIXED: "BY MYOOZ LABS" gradient - magenta LEFT to purple RIGHT */
         .header-tag {
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
@@ -119,14 +118,12 @@
             border-radius: 50px;
             background: rgba(255, 255, 255, 0.05);
             position: relative;
-            /* Gradient text: magenta left → purple right */
             background-image: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
-        /* Gradient border: magenta left → purple right */
         .header-tag::before {
             content: '';
             position: absolute;
@@ -298,7 +295,6 @@
             box-shadow: 0 0 15px rgba(46, 4, 88, 0.4);
         }
 
-        /* FIXED: PROCESS AUDIO button - magenta TOP to purple BOTTOM */
         .btn {
             background: linear-gradient(180deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
             color: white;
@@ -458,7 +454,6 @@
             z-index: 10;
         }
 
-        /* ERROR MESSAGE STYLING - Plain text, no gradients */
         .error-message {
             background: rgba(217, 70, 239, 0.1);
             border: 2px solid var(--accent-magenta);
@@ -482,7 +477,6 @@
             line-height: 1.8;
         }
 
-        /* DEBUG PANEL for testing limits */
         .debug-panel {
             position: fixed;
             bottom: 20px;
@@ -529,7 +523,6 @@
         <div class="header-tag">BY MYOOZ LABS</div>
     </nav>
 
-    <!-- DEBUG PANEL - Remove this in production -->
     <div class="debug-panel" id="debugPanel">
         <h4>🔍 USAGE TRACKER</h4>
         <div class="debug-line">Daily: <span id="debugDaily">-/-</span></div>
@@ -544,7 +537,6 @@
         </header>
 
         <div class="main-layout">
-            <!-- Processing View -->
             <div id="uploadView" class="glass-card upload-section">
                 <div class="upload-zone" id="dropZone">
                     <svg class="upload-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -600,7 +592,6 @@
                 </div>
             </div>
 
-            <!-- Loading View -->
             <div id="loadingView" class="glass-card hidden" style="text-align: center;">
                 <div class="progress-box">
                     <div class="progress-ring" id="progressRing">
@@ -619,7 +610,6 @@
                 <div id="timer" style="margin-top: 10px; font-family: 'Outfit', sans-serif; opacity: 0.5;">00:00</div>
             </div>
 
-            <!-- Results View -->
             <div id="resultsContent" class="hidden">
                 <div class="song-info-grid">
                     <div class="info-card">
@@ -702,7 +692,6 @@
         const stemsList = document.getElementById('stemsList');
         const resetBtn = document.getElementById('resetBtn');
 
-        // Debug panel elements
         const debugDaily = document.getElementById('debugDaily');
         const debugMonthly = document.getElementById('debugMonthly');
         const debugStatus = document.getElementById('debugStatus');
@@ -787,21 +776,17 @@
             const statusMsg = data[8] || "";
             console.log("[DEBUG] Backend response:", statusMsg);
 
-            // Parse backend error codes
+            // FIXED: Daily limit - NO monthly info shown
             if (statusMsg.startsWith("LIMIT_ERROR:DAILY:")) {
                 const parts = statusMsg.split(":");
                 const resetTime = parts[2];
-                const monthlyRemaining = parts[3];
                 clearInterval(tInterval);
                 loadingView.classList.add('hidden');
                 showError(
                     `⚠️ Daily Limit Reached`,
-                    `You've used all 3 free processes today.<br><br>
-                    Your daily limit will reset in: <strong>${resetTime}</strong><br><br>
-                    Monthly uses remaining: <strong>${monthlyRemaining}/15</strong>`
+                    `You've used all 3 free processes today.<br><br>Your daily limit will reset in: <strong>${resetTime}</strong>`
                 );
                 debugDaily.innerText = "3/3 (LIMIT HIT)";
-                debugMonthly.innerText = `${15 - monthlyRemaining}/15`;
                 debugStatus.innerText = "Daily Limit";
                 return;
             }
@@ -813,8 +798,7 @@
                 loadingView.classList.add('hidden');
                 showError(
                     `⚠️ Monthly Limit Reached`,
-                    `You've used all 15 free processes this month.<br><br>
-                    Your monthly limit will reset in: <strong>${resetTime}</strong>`
+                    `You've used all 15 free processes this month.<br><br>Your monthly limit will reset in: <strong>${resetTime}</strong>`
                 );
                 debugMonthly.innerText = "15/15 (LIMIT HIT)";
                 debugStatus.innerText = "Monthly Limit";
@@ -836,28 +820,24 @@
                 loadingView.classList.add('hidden');
                 showError(
                     `⚠️ Processing Error`,
-                    `An unexpected error occurred while processing your file.<br><br>
-                    Please try again or contact support if the issue persists.`
+                    `An unexpected error occurred while processing your file.<br><br>Please try again or contact support if the issue persists.`
                 );
                 debugStatus.innerText = "Processing Error";
                 return;
             }
 
-            // SUCCESS case - parse usage stats
             if (statusMsg.includes("|SUCCESS:")) {
                 const parts = statusMsg.split("|SUCCESS:");
                 const usageData = parts[1].split(":");
                 const dailyRemaining = parseInt(usageData[0]);
                 const monthlyRemaining = parseInt(usageData[1]);
                 
-                // Update debug panel
                 debugDaily.innerText = `${3 - dailyRemaining}/3`;
                 debugMonthly.innerText = `${15 - monthlyRemaining}/15`;
                 debugStatus.innerText = "Success";
 
                 renderResults(data, dailyRemaining, monthlyRemaining);
             } else {
-                // Fallback for older format
                 renderResults(data, "?", "?");
             }
         }
@@ -912,15 +892,12 @@
                     stemsList.appendChild(card);
                 }
 
-                // Parse Key/Tempo
                 const raw = data[8] || "";
                 let key = "N/A", bpm = "N/A";
                 
-                // Extract key
                 const k = raw.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || raw.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
                 if (k) key = k[1];
                 
-                // Extract BPM
                 const b = raw.match(/(?:Tempo|BPM)[:\s]*(\d+\.?\d*)/i) || raw.match(/(\d+\.?\d*)\s*(?:Tempo|BPM)/i);
                 if (b) bpm = Math.round(parseFloat(b[1]));
 
