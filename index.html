@@ -7,15 +7,22 @@
     <title>Stem Separation | Myooz Labs Audio Tool</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Distinctive font choices -->
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Kaushan+Script&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Myoozinc Aesthetic Tokens */
+            /* Myooz Brand Tokens - Two colors only */
             --bg-black: #050505;
             --header-white: #FFFFFF;
+            
+            /* Deep purple - from option buttons */
             --accent-purple: #26014b;
-            --accent-blue: #00DBDE;
-            --neon-glow: rgba(74, 0, 224, 0.5);
+            --accent-purple-glow: rgba(38, 1, 75, 0.5);
+            
+            /* Vibrant magenta/purple - from logo */
+            --accent-magenta: #D946EF;
+            --accent-magenta-glow: rgba(217, 70, 239, 0.5);
+            
             --text-white: #FFFFFF;
             --text-secondary: rgba(255, 255, 255, 0.6);
             --glass-border: rgba(255, 255, 255, 0.1);
@@ -32,8 +39,8 @@
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-black);
             background-image:
-                radial-gradient(circle at 10% 20%, rgba(74, 0, 224, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(0, 219, 222, 0.1) 0%, transparent 40%);
+                radial-gradient(circle at 10% 20%, rgba(38, 1, 75, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(217, 70, 239, 0.08) 0%, transparent 40%);
             color: var(--text-white);
             min-height: 100vh;
             display: flex;
@@ -61,10 +68,9 @@
             max-width: 1200px;
             padding: 2rem;
             margin-top: 80px;
-            /* Space for fixed header */
         }
 
-        /* Fixed Header Mimicking myoozinc.com */
+        /* Fixed Header */
         nav.custom-header {
             position: fixed;
             top: 20px;
@@ -98,29 +104,54 @@
             height: 45px;
             object-fit: contain;
             border-radius: 50%;
-            filter: drop-shadow(0 0 10px var(--neon-glow));
+            filter: drop-shadow(0 0 10px var(--accent-purple-glow));
         }
 
+        /* Distinctive font for logo - Righteous is bold and stylish */
         .logo-text {
-            font-weight: 700;
-            font-size: 1.2rem;
-            letter-spacing: 2px;
+            font-family: 'Righteous', sans-serif;
+            font-weight: 400;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
             color: #fff;
             text-transform: uppercase;
         }
 
+        /* Pill-shaped tag with gradient text and border - same font as STEM SEPARATION */
         .header-tag {
-            background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-family: 'Outfit', sans-serif;
             font-weight: 800;
-            font-size: 0.75rem;
-            letter-spacing: 2px;
+            font-size: 0.7rem;
+            letter-spacing: 4px;
             text-transform: uppercase;
-            padding: 5px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            padding: 10px 24px;
+            border: 2px solid transparent;
+            border-radius: 50px;
+            background: linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)) padding-box,
+                        linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple) 45%, var(--accent-magenta) 100%) border-box;
+            background-clip: padding-box, border-box;
+            -webkit-background-clip: padding-box, border-box;
+            color: transparent;
+            -webkit-background-clip: text, border-box;
+            background-clip: text, border-box;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple) 45%, var(--accent-magenta) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            position: relative;
+        }
+        
+        .header-tag::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50px;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple) 45%, var(--accent-magenta) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
         }
 
         header.tool-header {
@@ -129,7 +160,9 @@
             padding-left: 1rem;
         }
 
+        /* Back to original heading style with Outfit */
         h1 {
+            font-family: 'Outfit', sans-serif;
             font-size: clamp(3rem, 10vw, 5.5rem);
             line-height: 0.95;
             font-weight: 800;
@@ -201,11 +234,29 @@
         }
 
         .upload-zone:hover {
-            border-color: var(--accent-purple);
-            background: rgba(46, 4, 88, 0.1);
+            border-color: var(--accent-magenta);
+            background: rgba(217, 70, 239, 0.1);
         }
 
-        /* Logic Styles for Options */
+        /* SVG Upload Icon - smaller */
+        .upload-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 1.5rem;
+            opacity: 0.4;
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover .upload-icon {
+            opacity: 0.7;
+            transform: translateY(-5px);
+        }
+
+        .upload-icon path {
+            stroke: var(--text-white);
+            fill: none;
+        }
+
         .options-container {
             display: flex;
             flex-direction: column;
@@ -219,7 +270,8 @@
             letter-spacing: 2px;
             margin-bottom: 1rem;
             color: var(--header-white);
-            font-weight: 700;
+            font-weight: 400;
+            font-family: 'Righteous', sans-serif;
         }
 
         .options-grid {
@@ -262,26 +314,44 @@
             box-shadow: 0 0 15px rgba(46, 4, 88, 0.4);
         }
 
+        /* Button with gradient fill - no glow */
         .btn {
-            background: linear-gradient(135deg, var(--accent-purple) 0%, #0032FF 100%);
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple) 45%, var(--accent-magenta) 100%);
             color: white;
             border: none;
             padding: 16px 45px;
             border-radius: 100px;
-            font-weight: 800;
+            font-weight: 400;
             cursor: pointer;
             font-size: 0.85rem;
-            font-family: inherit;
+            font-family: 'Righteous', sans-serif;
             text-transform: uppercase;
             letter-spacing: 3px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(74, 0, 224, 0.3);
+            transition: all 0.3s ease;
             position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn:hover:not(:disabled) {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(74, 0, 224, 0.5);
+            transform: translateY(-2px);
         }
 
         .btn:disabled {
@@ -309,9 +379,9 @@
         .info-card .val {
             font-size: 2.5rem;
             font-weight: 800;
-            color: var(--accent-purple);
+            color: var(--accent-magenta);
             display: block;
-            filter: brightness(1.5);
+            filter: brightness(1.2);
         }
 
         .info-card .lbl {
@@ -354,34 +424,39 @@
             filter: invert(1);
         }
 
-        /* Progress Circle */
+        /* Distinctive Progress Design - Hexagon */
         .progress-box {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 140px;
+            height: 140px;
             margin: 0 auto 1.5rem;
         }
 
-        .circle-svg {
-            transform: rotate(-90deg);
+        .progress-hexagon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+        }
+
+        .hex-segment {
+            position: absolute;
             width: 100%;
             height: 100%;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
         }
 
-        .circle-bg {
-            fill: none;
-            stroke: rgba(255, 255, 255, 0.05);
-            stroke-width: 8;
+        .hex-bg {
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        .circle-bar {
-            fill: none;
-            stroke: var(--accent-purple);
-            stroke-width: 8;
-            stroke-linecap: round;
-            stroke-dasharray: 283;
-            stroke-dashoffset: 283;
-            transition: stroke-dashoffset 0.8s ease-in-out;
+        .hex-fill {
+            background: var(--accent-magenta);
+            transform-origin: center;
+            transition: transform 0.8s ease-out;
+            box-shadow: 0 0 30px var(--accent-magenta-glow);
         }
 
         .progress-val {
@@ -389,18 +464,54 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent-purple);
-            filter: brightness(1.5);
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--accent-magenta);
+            filter: brightness(1.2);
+            z-index: 10;
         }
+
+        /* Rotating ring alternative */
+        .progress-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .ring-segment {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-magenta);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-magenta-glow);
+        }
+
+        .ring-segment:nth-child(1) { top: 0%; left: 50%; transform: translateX(-50%); }
+        .ring-segment:nth-child(2) { top: 15%; right: 15%; }
+        .ring-segment:nth-child(3) { top: 50%; right: 0%; transform: translateY(-50%); }
+        .ring-segment:nth-child(4) { bottom: 15%; right: 15%; }
+        .ring-segment:nth-child(5) { bottom: 0%; left: 50%; transform: translateX(-50%); }
+        .ring-segment:nth-child(6) { bottom: 15%; left: 15%; }
+        .ring-segment:nth-child(7) { top: 50%; left: 0%; transform: translateY(-50%); }
+        .ring-segment:nth-child(8) { top: 15%; left: 15%; }
 
         .hidden {
             display: none !important;
         }
+
         .upload-zone.dragover {
-            border-color: var(--accent-blue);
-            background: rgba(0, 219, 222, 0.08);
+            border-color: var(--accent-magenta);
+            background: rgba(217, 70, 239, 0.15);
         }
 
     </style>
@@ -425,8 +536,13 @@
             <!-- Processing View -->
             <div id="uploadView" class="glass-card upload-section">
                 <div class="upload-zone" id="dropZone">
-                    <div style="font-size: 3rem; margin-bottom: 1.5rem; opacity: 0.5;">🎶</div>
-                    <h3 id="fileName" style="margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
+                    <!-- SVG Upload Icon instead of emoji -->
+                    <svg class="upload-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L12 16M12 2L8 6M12 2L16 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3 16L3 20C3 21.1046 3.89543 22 5 22L19 22C20.1046 22 21 21.1046 21 20L21 16" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity="0.3"/>
+                    </svg>
+                    <h3 id="fileName" style="margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; font-family: 'Righteous', sans-serif;">
                         Drag Track Here</h3>
                     <p style="font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 1px;">MP3 & WAV only</p>
                     <input type="file" id="fileInput" class="hidden" accept=".mp3,.wav">
@@ -477,14 +593,21 @@
             <!-- Loading View -->
             <div id="loadingView" class="glass-card hidden" style="text-align: center;">
                 <div class="progress-box">
-                    <svg class="circle-svg" viewBox="0 0 100 100">
-                        <circle class="circle-bg" cx="50" cy="50" r="45"></circle>
-                        <circle id="circleBar" class="circle-bar" cx="50" cy="50" r="45"></circle>
-                    </svg>
+                    <!-- Rotating ring of dots -->
+                    <div class="progress-ring" id="progressRing">
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                    </div>
                     <div class="progress-val" id="progressText">0%</div>
                 </div>
                 <h3 style="text-transform: uppercase; letter-spacing: 2px;">Separating Stems...</h3>
-                <div id="timer" style="margin-top: 10px; font-family: monospace; opacity: 0.5;">00:00</div>
+                <div id="timer" style="margin-top: 10px; font-family: 'Outfit', sans-serif; opacity: 0.5;">00:00</div>
             </div>
 
             <!-- Results View -->
@@ -546,7 +669,7 @@
                     <div style="text-align: center; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
                         <button class="btn" id="downloadAllBtn">DOWNLOAD SELECTED STEMS</button>
                         <div style="margin-top: 1.5rem;">
-                            <button class="btn" style="background: transparent; border: 1px solid var(--accent-purple);"
+                            <button class="btn" style="background: transparent; border: 2px solid; border-image: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple) 45%, var(--accent-magenta) 100%) 1;"
                                 id="resetBtn">START NEW TRACK</button>
                         </div>
                     </div>
@@ -566,7 +689,6 @@
         const uploadView = document.getElementById('uploadView');
         const loadingView = document.getElementById('loadingView');
         const progressText = document.getElementById('progressText');
-        const circleBar = document.getElementById('circleBar');
         const timerDisp = document.getElementById('timer');
         const resultsContent = document.getElementById('resultsContent');
         const stemsList = document.getElementById('stemsList');
@@ -643,7 +765,6 @@
                     options: selectedOptions
                 });
 
-
                 renderResults(result.data);
             } catch (err) {
                 alert("Error: " + err.message);
@@ -659,19 +780,16 @@
                 const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
                 const s = (elapsed % 60).toString().padStart(2, '0');
                 timerDisp.innerText = `${m}:${s}`;
-                if (p < 95) { p += (98 - p) / 40; updateCircle(Math.floor(p)); }
+                if (p < 95) { 
+                    p += (98 - p) / 40; 
+                    progressText.innerText = `${Math.floor(p)}%`;
+                }
             }, 1000);
-        }
-
-        function updateCircle(pct) {
-            const offset = 283 - (pct / 100 * 283);
-            circleBar.style.strokeDashoffset = offset;
-            progressText.innerText = `${pct}%`;
         }
 
         function renderResults(data) {
             clearInterval(tInterval);
-            updateCircle(100);
+            progressText.innerText = '100%';
 
             setTimeout(() => {
                 loadingView.classList.add('hidden');
@@ -691,7 +809,7 @@
                     stemsList.appendChild(card);
                 }
 
-                // Giga-Parser for Key/Tempo
+                // Parser for Key/Tempo
                 const raw = data[8] || "";
                 let key = "N/A", bpm = "N/A";
                 const k = raw.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || raw.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
