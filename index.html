@@ -785,22 +785,56 @@
         startBtn.onclick = async () => {
             if (!selectedFile) return alert("Select a file first.");
 
-            const selectedOptions = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
-
-            uploadView.classList.add('hidden');
-            loadingView.classList.remove('hidden');
-            updateDebug(debugStatus, "Processing...");
-
-            startProcessingUI();
-
             try {
+                // STEP 1: Check limits BEFORE processing (instant feedback)
                 const client = await Client.connect(SPACE_ID);
+                
+                console.log("[DEBUG] Checking usage limits...");
+                const limitCheck = await client.predict("/check_limit_only", {});
+                const limitStatus = limitCheck.data;
+                
+                console.log("[DEBUG] Limit check result:", limitStatus);
+
+                // If daily limit reached, show error and STOP
+                if (limitStatus.startsWith("LIMIT_ERROR:DAILY:")) {
+                    const resetTime = limitStatus.split(":")[2];
+                    showError(
+                        `⚠️ Daily Limit Reached`,
+                        `You've used all 3 free processes today.<br><br>Your daily limit will reset in: <strong>${resetTime}</strong>`
+                    );
+                    updateDebug(debugStatus, "Daily Limit");
+                    return; // STOP - don't process
+                }
+
+                // If monthly limit reached, show error and STOP
+                if (limitStatus.startsWith("LIMIT_ERROR:MONTHLY:")) {
+                    const resetTime = limitStatus.split(":")[2];
+                    showError(
+                        `⚠️ Monthly Limit Reached`,
+                        `You've used all 15 free processes this month.<br><br>Your monthly limit will reset in: <strong>${resetTime}</strong>`
+                    );
+                    updateDebug(debugStatus, "Monthly Limit");
+                    return; // STOP - don't process
+                }
+
+                // STEP 2: Limits OK - proceed with processing
+                console.log("[DEBUG] Limits OK, starting processing...");
+                
+                const selectedOptions = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
+
+                uploadView.classList.add('hidden');
+                loadingView.classList.remove('hidden');
+                updateDebug(debugStatus, "Processing...");
+
+                startProcessingUI();
+
                 const result = await client.predict("/process", {
                     song_file: handle_file(selectedFile),
                     options: selectedOptions
                 });
 
                 handleBackendResponse(result.data);
+                
             } catch (err) {
                 console.error("API Error:", err);
                 showError("⚠️ Processing Error", "An unexpected error occurred. Please try again or contact support if the issue persists.");
