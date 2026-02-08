@@ -720,9 +720,17 @@
         const stemsList = document.getElementById('stemsList');
         const resetBtn = document.getElementById('resetBtn');
 
+        // Get debug elements (may be null if commented out in HTML)
         const debugDaily = document.getElementById('debugDaily');
         const debugMonthly = document.getElementById('debugMonthly');
         const debugStatus = document.getElementById('debugStatus');
+
+        // Helper function to safely update debug elements
+        function updateDebug(element, text) {
+            if (element) {
+                element.innerText = text;
+            }
+        }
 
         let selectedFile = null;
         let tInterval;
@@ -781,7 +789,7 @@
 
             uploadView.classList.add('hidden');
             loadingView.classList.remove('hidden');
-            debugStatus.innerText = "Processing...";
+            updateDebug(debugStatus, "Processing...");
 
             startProcessingUI();
 
@@ -795,8 +803,8 @@
                 handleBackendResponse(result.data);
             } catch (err) {
                 console.error("API Error:", err);
-                showError("An unexpected error occurred. Please try again or contact support if the issue persists.");
-                debugStatus.innerText = "Error";
+                showError("⚠️ Processing Error", "An unexpected error occurred. Please try again or contact support if the issue persists.");
+                updateDebug(debugStatus, "Error");
             }
         };
 
@@ -813,8 +821,8 @@
                     `⚠️ Daily Limit Reached`,
                     `You've used all 3 free processes today.<br><br>Your daily limit will reset in: <strong>${resetTime}</strong>`
                 );
-                debugDaily.innerText = "3/3 (LIMIT HIT)";
-                debugStatus.innerText = "Daily Limit";
+                updateDebug(debugDaily, "3/3 (LIMIT HIT)");
+                updateDebug(debugStatus, "Daily Limit");
                 return;
             }
 
@@ -827,8 +835,8 @@
                     `⚠️ Monthly Limit Reached`,
                     `You've used all 15 free processes this month.<br><br>Your monthly limit will reset in: <strong>${resetTime}</strong>`
                 );
-                debugMonthly.innerText = "15/15 (LIMIT HIT)";
-                debugStatus.innerText = "Monthly Limit";
+                updateDebug(debugMonthly, "15/15 (LIMIT HIT)");
+                updateDebug(debugStatus, "Monthly Limit");
                 return;
             }
 
@@ -836,9 +844,9 @@
                 const parts = statusMsg.split(":");
                 const dailyRemaining = parts[1];
                 const monthlyRemaining = parts[2];
-                debugDaily.innerText = `${3 - dailyRemaining}/3`;
-                debugMonthly.innerText = `${15 - monthlyRemaining}/15`;
-                debugStatus.innerText = "No file uploaded";
+                updateDebug(debugDaily, `${3 - dailyRemaining}/3`);
+                updateDebug(debugMonthly, `${15 - monthlyRemaining}/15`);
+                updateDebug(debugStatus, "No file uploaded");
                 return;
             }
 
@@ -849,7 +857,7 @@
                     `⚠️ Processing Error`,
                     `An unexpected error occurred while processing your file.<br><br>Please try again or contact support if the issue persists.`
                 );
-                debugStatus.innerText = "Processing Error";
+                updateDebug(debugStatus, "Processing Error");
                 return;
             }
 
@@ -859,9 +867,9 @@
                 const dailyRemaining = parseInt(usageData[0]);
                 const monthlyRemaining = parseInt(usageData[1]);
                 
-                debugDaily.innerText = `${3 - dailyRemaining}/3`;
-                debugMonthly.innerText = `${15 - monthlyRemaining}/15`;
-                debugStatus.innerText = "Success";
+                updateDebug(debugDaily, `${3 - dailyRemaining}/3`);
+                updateDebug(debugMonthly, `${15 - monthlyRemaining}/15`);
+                updateDebug(debugStatus, "Success");
 
                 renderResults(data, dailyRemaining, monthlyRemaining);
             } else {
