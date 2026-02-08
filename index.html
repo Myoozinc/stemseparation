@@ -7,22 +7,15 @@
     <title>Stem Separation | Myooz Labs Audio Tool</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Distinctive font choices -->
     <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Kaushan+Script&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Myooz Brand Tokens - Two colors only */
             --bg-black: #050505;
             --header-white: #FFFFFF;
-            
-            /* Deep purple - from option buttons */
             --accent-purple: #26014b;
             --accent-purple-glow: rgba(38, 1, 75, 0.5);
-            
-            /* Vibrant magenta/purple - from logo */
             --accent-magenta: #D946EF;
             --accent-magenta-glow: rgba(217, 70, 239, 0.5);
-            
             --text-white: #FFFFFF;
             --text-secondary: rgba(255, 255, 255, 0.6);
             --glass-border: rgba(255, 255, 255, 0.1);
@@ -70,7 +63,6 @@
             margin-top: 80px;
         }
 
-        /* Fixed Header */
         nav.custom-header {
             position: fixed;
             top: 20px;
@@ -107,7 +99,6 @@
             filter: drop-shadow(0 0 10px var(--accent-purple-glow));
         }
 
-        /* Distinctive font for logo - Righteous is bold and stylish */
         .logo-text {
             font-family: 'Righteous', sans-serif;
             font-weight: 400;
@@ -117,7 +108,7 @@
             text-transform: uppercase;
         }
 
-        /* Pill-shaped tag with gradient text and border - same font as STEM SEPARATION */
+        /* FIXED: "BY MYOOZ LABS" gradient - magenta LEFT to purple RIGHT */
         .header-tag {
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
@@ -125,29 +116,24 @@
             letter-spacing: 4px;
             text-transform: uppercase;
             padding: 10px 24px;
-            border: 2px solid transparent;
             border-radius: 50px;
-            background: linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)) padding-box,
-                        linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple) 45%, var(--accent-magenta) 100%) border-box;
-            background-clip: padding-box, border-box;
-            -webkit-background-clip: padding-box, border-box;
-            color: transparent;
-            -webkit-background-clip: text, border-box;
-            background-clip: text, border-box;
-            -webkit-text-fill-color: transparent;
-            background-image: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple) 45%, var(--accent-magenta) 100%);
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            /* Gradient text: magenta left → purple right */
+            background-image: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
             -webkit-background-clip: text;
             background-clip: text;
-            position: relative;
+            -webkit-text-fill-color: transparent;
         }
         
+        /* Gradient border: magenta left → purple right */
         .header-tag::before {
             content: '';
             position: absolute;
             inset: 0;
             border-radius: 50px;
             padding: 2px;
-            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple) 45%, var(--accent-magenta) 100%);
+            background: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
@@ -160,7 +146,6 @@
             padding-left: 1rem;
         }
 
-        /* Back to original heading style with Outfit */
         h1 {
             font-family: 'Outfit', sans-serif;
             font-size: clamp(3rem, 10vw, 5.5rem);
@@ -238,7 +223,6 @@
             background: rgba(217, 70, 239, 0.1);
         }
 
-        /* SVG Upload Icon - smaller */
         .upload-icon {
             width: 60px;
             height: 60px;
@@ -314,9 +298,9 @@
             box-shadow: 0 0 15px rgba(46, 4, 88, 0.4);
         }
 
-        /* Button with gradient fill - no glow */
+        /* FIXED: PROCESS AUDIO button - magenta TOP to purple BOTTOM */
         .btn {
-            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple) 45%, var(--accent-magenta) 100%);
+            background: linear-gradient(180deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
             color: white;
             border: none;
             padding: 16px 45px;
@@ -359,7 +343,6 @@
             cursor: not-allowed;
         }
 
-        /* Song Info Cards */
         .song-info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -391,7 +374,6 @@
             letter-spacing: 2px;
         }
 
-        /* Stems Player List */
         .stems-container {
             display: flex;
             flex-direction: column;
@@ -424,7 +406,6 @@
             filter: invert(1);
         }
 
-        /* Distinctive Progress Design - Hexagon */
         .progress-box {
             position: relative;
             width: 140px;
@@ -432,47 +413,6 @@
             margin: 0 auto 1.5rem;
         }
 
-        .progress-hexagon {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 120px;
-            height: 120px;
-        }
-
-        .hex-segment {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-        }
-
-        .hex-bg {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .hex-fill {
-            background: var(--accent-magenta);
-            transform-origin: center;
-            transition: transform 0.8s ease-out;
-            box-shadow: 0 0 30px var(--accent-magenta-glow);
-        }
-
-        .progress-val {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--accent-magenta);
-            filter: brightness(1.2);
-            z-index: 10;
-        }
-
-        /* Rotating ring alternative */
         .progress-ring {
             position: absolute;
             top: 0;
@@ -505,6 +445,69 @@
         .ring-segment:nth-child(7) { top: 50%; left: 0%; transform: translateY(-50%); }
         .ring-segment:nth-child(8) { top: 15%; left: 15%; }
 
+        .progress-val {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--accent-magenta);
+            filter: brightness(1.2);
+            z-index: 10;
+        }
+
+        /* ERROR MESSAGE STYLING - Plain text, no gradients */
+        .error-message {
+            background: rgba(217, 70, 239, 0.1);
+            border: 2px solid var(--accent-magenta);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .error-message h3 {
+            color: var(--accent-magenta);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .error-message p {
+            color: var(--text-white);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        /* DEBUG PANEL for testing limits */
+        .debug-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--accent-magenta);
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-magenta);
+            max-width: 300px;
+            z-index: 9999;
+        }
+
+        .debug-panel h4 {
+            margin-bottom: 0.5rem;
+            color: var(--text-white);
+        }
+
+        .debug-panel .debug-line {
+            margin: 0.25rem 0;
+            color: var(--text-secondary);
+        }
+
         .hidden {
             display: none !important;
         }
@@ -526,6 +529,14 @@
         <div class="header-tag">BY MYOOZ LABS</div>
     </nav>
 
+    <!-- DEBUG PANEL - Remove this in production -->
+    <div class="debug-panel" id="debugPanel">
+        <h4>🔍 USAGE TRACKER</h4>
+        <div class="debug-line">Daily: <span id="debugDaily">-/-</span></div>
+        <div class="debug-line">Monthly: <span id="debugMonthly">-/-</span></div>
+        <div class="debug-line">Status: <span id="debugStatus">Ready</span></div>
+    </div>
+
     <div class="container">
         <header class="tool-header">
             <h1>Stem Separation</h1>
@@ -536,10 +547,9 @@
             <!-- Processing View -->
             <div id="uploadView" class="glass-card upload-section">
                 <div class="upload-zone" id="dropZone">
-                    <!-- SVG Upload Icon instead of emoji -->
                     <svg class="upload-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 2L12 16M12 2L8 6M12 2L16 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M3 16L3 20C3 21.1046 3.89543 22 5 22L19 22C20.1046 22 21 21.1046 21 20L21 16" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M3 16L3 20C3 21.1046 3.89543 22 5 22L19 22C20.1046 22 21 20L21 16" stroke-width="2" stroke-linecap="round"/>
                         <circle cx="12" cy="12" r="1.5" fill="currentColor" opacity="0.3"/>
                     </svg>
                     <h3 id="fileName" style="margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; font-family: 'Righteous', sans-serif;">
@@ -593,7 +603,6 @@
             <!-- Loading View -->
             <div id="loadingView" class="glass-card hidden" style="text-align: center;">
                 <div class="progress-box">
-                    <!-- Rotating ring of dots -->
                     <div class="progress-ring" id="progressRing">
                         <div class="ring-segment"></div>
                         <div class="ring-segment"></div>
@@ -629,8 +638,7 @@
                     <span class="label-title">Export Options</span>
                     <div class="options-grid" style="margin-bottom: 2rem;">
                         <label class="option-item">
-                            <input type="checkbox" class="dl-opt" value="Download All" checked
-                                onclick="toggleAllDl(this)">
+                            <input type="checkbox" class="dl-opt" value="Download All" checked onclick="toggleAllDl(this)">
                             <span class="checkmark">Download All</span>
                         </label>
                         <label class="option-item">
@@ -669,7 +677,7 @@
                     <div style="text-align: center; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
                         <button class="btn" id="downloadAllBtn">DOWNLOAD SELECTED STEMS</button>
                         <div style="margin-top: 1.5rem;">
-                            <button class="btn" style="background: transparent; border: 2px solid; border-image: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple) 45%, var(--accent-magenta) 100%) 1;"
+                            <button class="btn" style="background: transparent; border: 2px solid; border-image: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%) 1;"
                                 id="resetBtn">START NEW TRACK</button>
                         </div>
                     </div>
@@ -694,11 +702,15 @@
         const stemsList = document.getElementById('stemsList');
         const resetBtn = document.getElementById('resetBtn');
 
+        // Debug panel elements
+        const debugDaily = document.getElementById('debugDaily');
+        const debugMonthly = document.getElementById('debugMonthly');
+        const debugStatus = document.getElementById('debugStatus');
+
         let selectedFile = null;
         let tInterval;
         let startTime;
 
-        // UI Logic for checkboxes
         window.toggleAll = (el) => {
             const checks = document.querySelectorAll('input[name="process_opt"]');
             if (el.checked) {
@@ -732,15 +744,12 @@
         dropZone.addEventListener("drop", (e) => {
             e.preventDefault();
             dropZone.classList.remove("dragover");
-        
             const file = e.dataTransfer.files[0];
-        
             if (file) {
                 if (!file.name.endsWith(".mp3") && !file.name.endsWith(".wav")) {
                     alert("Only MP3 or WAV files are allowed.");
                     return;
                 }
-        
                 selectedFile = file;
                 fileNameDisp.innerText = file.name;
             }
@@ -755,6 +764,7 @@
 
             uploadView.classList.add('hidden');
             loadingView.classList.remove('hidden');
+            debugStatus.innerText = "Processing...";
 
             startProcessingUI();
 
@@ -765,12 +775,105 @@
                     options: selectedOptions
                 });
 
-                renderResults(result.data);
+                handleBackendResponse(result.data);
             } catch (err) {
-                alert("Error: " + err.message);
-                location.reload();
+                console.error("API Error:", err);
+                showError("An unexpected error occurred. Please try again or contact support if the issue persists.");
+                debugStatus.innerText = "Error";
             }
         };
+
+        function handleBackendResponse(data) {
+            const statusMsg = data[8] || "";
+            console.log("[DEBUG] Backend response:", statusMsg);
+
+            // Parse backend error codes
+            if (statusMsg.startsWith("LIMIT_ERROR:DAILY:")) {
+                const parts = statusMsg.split(":");
+                const resetTime = parts[2];
+                const monthlyRemaining = parts[3];
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                showError(
+                    `⚠️ Daily Limit Reached`,
+                    `You've used all 3 free processes today.<br><br>
+                    Your daily limit will reset in: <strong>${resetTime}</strong><br><br>
+                    Monthly uses remaining: <strong>${monthlyRemaining}/15</strong>`
+                );
+                debugDaily.innerText = "3/3 (LIMIT HIT)";
+                debugMonthly.innerText = `${15 - monthlyRemaining}/15`;
+                debugStatus.innerText = "Daily Limit";
+                return;
+            }
+
+            if (statusMsg.startsWith("LIMIT_ERROR:MONTHLY:")) {
+                const parts = statusMsg.split(":");
+                const resetTime = parts[2];
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                showError(
+                    `⚠️ Monthly Limit Reached`,
+                    `You've used all 15 free processes this month.<br><br>
+                    Your monthly limit will reset in: <strong>${resetTime}</strong>`
+                );
+                debugMonthly.innerText = "15/15 (LIMIT HIT)";
+                debugStatus.innerText = "Monthly Limit";
+                return;
+            }
+
+            if (statusMsg.startsWith("UPLOAD_REQUIRED:")) {
+                const parts = statusMsg.split(":");
+                const dailyRemaining = parts[1];
+                const monthlyRemaining = parts[2];
+                debugDaily.innerText = `${3 - dailyRemaining}/3`;
+                debugMonthly.innerText = `${15 - monthlyRemaining}/15`;
+                debugStatus.innerText = "No file uploaded";
+                return;
+            }
+
+            if (statusMsg === "PROCESSING_ERROR") {
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                showError(
+                    `⚠️ Processing Error`,
+                    `An unexpected error occurred while processing your file.<br><br>
+                    Please try again or contact support if the issue persists.`
+                );
+                debugStatus.innerText = "Processing Error";
+                return;
+            }
+
+            // SUCCESS case - parse usage stats
+            if (statusMsg.includes("|SUCCESS:")) {
+                const parts = statusMsg.split("|SUCCESS:");
+                const usageData = parts[1].split(":");
+                const dailyRemaining = parseInt(usageData[0]);
+                const monthlyRemaining = parseInt(usageData[1]);
+                
+                // Update debug panel
+                debugDaily.innerText = `${3 - dailyRemaining}/3`;
+                debugMonthly.innerText = `${15 - monthlyRemaining}/15`;
+                debugStatus.innerText = "Success";
+
+                renderResults(data, dailyRemaining, monthlyRemaining);
+            } else {
+                // Fallback for older format
+                renderResults(data, "?", "?");
+            }
+        }
+
+        function showError(title, message) {
+            uploadView.classList.remove('hidden');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `
+                <h3>${title}</h3>
+                <p>${message}</p>
+            `;
+            uploadView.insertBefore(errorDiv, uploadView.firstChild);
+            
+            setTimeout(() => errorDiv.remove(), 10000);
+        }
 
         function startProcessingUI() {
             startTime = Date.now();
@@ -787,7 +890,7 @@
             }, 1000);
         }
 
-        function renderResults(data) {
+        function renderResults(data, dailyRemaining, monthlyRemaining) {
             clearInterval(tInterval);
             progressText.innerText = '100%';
 
@@ -809,16 +912,22 @@
                     stemsList.appendChild(card);
                 }
 
-                // Parser for Key/Tempo
+                // Parse Key/Tempo
                 const raw = data[8] || "";
                 let key = "N/A", bpm = "N/A";
+                
+                // Extract key
                 const k = raw.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || raw.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
                 if (k) key = k[1];
+                
+                // Extract BPM
                 const b = raw.match(/(?:Tempo|BPM)[:\s]*(\d+\.?\d*)/i) || raw.match(/(\d+\.?\d*)\s*(?:Tempo|BPM)/i);
                 if (b) bpm = Math.round(parseFloat(b[1]));
 
                 document.getElementById('keyVal').innerText = key;
                 document.getElementById('bpmVal').innerText = bpm;
+
+                console.log(`[SUCCESS] Daily remaining: ${dailyRemaining}, Monthly remaining: ${monthlyRemaining}`);
             }, 500);
         }
 
@@ -830,8 +939,13 @@
             try {
                 const c = await Client.connect(SPACE_ID);
                 const res = await c.predict("/create_download_zip", { selected_files: selectedFiles });
-                const a = document.createElement('a'); a.href = res.data[0].url; a.download = "stems_pack.zip"; a.click();
-            } catch (e) { alert("Download failed"); }
+                const a = document.createElement('a'); 
+                a.href = res.data[0].url; 
+                a.download = "stems_pack.zip"; 
+                a.click();
+            } catch (e) { 
+                alert("Download failed"); 
+            }
             btn.innerText = originalText;
         };
     </script>
