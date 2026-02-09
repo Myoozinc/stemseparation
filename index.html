@@ -5,6 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stem Separation | Myooz Labs Audio Tool</title>
+    
+    <!-- Clerk Authentication -->
+    <script
+        async
+        crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_ZWFzeS1wb2xlY2F0LTIyLmNsZXJrLmFjY291bnRzLmRldiQ"
+        src="https://easy-polecat-22.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+        type="text/javascript"
+    ></script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Kaushan+Script&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -85,7 +95,6 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
-        /* Mobile responsive header */
         @media (max-width: 600px) {
             nav.custom-header {
                 height: auto;
@@ -142,6 +151,58 @@
             letter-spacing: 3px;
             color: #fff;
             text-transform: uppercase;
+        }
+
+        /* User Profile Button */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-magenta);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-magenta);
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-white);
+        }
+
+        /* Auth Buttons */
+        .auth-button {
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid;
+            border-image: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%) 1;
+            background: transparent;
+            color: var(--text-white);
+            font-family: 'Righteous', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .auth-button:hover {
+            background: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
+            border-image: none;
+            border: 2px solid transparent;
         }
 
         .header-tag {
@@ -256,7 +317,6 @@
             background: rgba(217, 70, 239, 0.1);
         }
 
-        /* PNG upload icon */
         .upload-icon-img {
             width: 80px;
             height: 80px;
@@ -527,7 +587,9 @@
             <img src="logo.png" alt="stemerlogo" class="logo-img">
             <div class="logo-text">STEMER</div>
         </div>
-        <div class="header-tag">BY MYOOZ LABS</div>
+        
+        <!-- Auth Section -->
+        <div id="authSection"></div>
     </nav>
 
     <div class="container">
@@ -676,6 +738,56 @@
         import { Client, handle_file } from "https://esm.sh/@gradio/client";
 
         const SPACE_ID = "tinahmbuz/audiostems";
+        
+        let clerk;
+        let currentUser = null;
+        let currentToken = null;
+
+        // Initialize Clerk
+        window.addEventListener('load', async () => {
+            clerk = window.Clerk;
+            await clerk.load();
+            
+            if (clerk.user) {
+                currentUser = clerk.user;
+                currentToken = await clerk.session.getToken();
+                updateAuthUI(true);
+            } else {
+                updateAuthUI(false);
+            }
+        });
+
+        function updateAuthUI(isSignedIn) {
+            const authSection = document.getElementById('authSection');
+            
+            if (isSignedIn && clerk.user) {
+                authSection.innerHTML = `
+                    <div class="user-profile" onclick="clerk.openUserProfile()">
+                        <img src="${clerk.user.imageUrl}" alt="Profile" class="user-avatar">
+                        <span class="user-name">${clerk.user.firstName || clerk.user.emailAddresses[0].emailAddress}</span>
+                    </div>
+                `;
+            } else {
+                authSection.innerHTML = `
+                    <button class="auth-button" onclick="clerk.openSignIn()">SIGN IN</button>
+                `;
+            }
+        }
+
+        // Listen for auth state changes
+        clerk?.addListener((user) => {
+            currentUser = user;
+            if (user) {
+                clerk.session.getToken().then(token => {
+                    currentToken = token;
+                    updateAuthUI(true);
+                });
+            } else {
+                currentToken = null;
+                updateAuthUI(false);
+            }
+        });
+
         const fileInput = document.getElementById('fileInput');
         const dropZone = document.getElementById('dropZone');
         const fileNameDisp = document.getElementById('fileName');
@@ -765,6 +877,11 @@
         startBtn.onclick = async () => {
             if (!selectedFile) return alert("Select a file first.");
             
+            // Get fresh token if logged in
+            if (clerk?.user) {
+                currentToken = await clerk.session.getToken();
+            }
+            
             errorShown = false;
             clearExistingErrors();
 
@@ -777,9 +894,12 @@
                 startProcessingUI();
 
                 const client = await Client.connect(SPACE_ID);
+                
+                // Send auth token if available
                 const result = await client.predict("/process", {
                     song_file: handle_file(selectedFile),
-                    options: selectedOptions
+                    options: selectedOptions,
+                    auth_token: currentToken || ""
                 });
 
                 handleBackendResponse(result.data);
@@ -803,7 +923,20 @@
             const statusMsg = data[8] || "";
             console.log("[DEBUG] Backend response:", statusMsg);
 
-            // Check for daily limit
+            // AUTH_REQUIRED - prompt login
+            if (statusMsg.includes("AUTH_REQUIRED")) {
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
+                showError(
+                    `Sign In Required`,
+                    `You've used your 3 free anonymous tries.<br><br>
+                    <button class="auth-button" onclick="clerk.openSignIn()" style="margin-top: 1rem;">Sign In for More Uses</button>`
+                );
+                errorShown = true;
+                return;
+            }
+
             if (statusMsg.includes("LIMIT_ERROR:DAILY:")) {
                 const match = statusMsg.match(/LIMIT_ERROR:DAILY:(.+)/);
                 const resetTime = match ? match[1] : "24 hours";
@@ -818,7 +951,6 @@
                 return;
             }
 
-            // Check for monthly limit
             if (statusMsg.includes("LIMIT_ERROR:MONTHLY:")) {
                 const match = statusMsg.match(/LIMIT_ERROR:MONTHLY:(.+)/);
                 const resetTime = match ? match[1] : "the start of next month";
@@ -833,7 +965,6 @@
                 return;
             }
 
-            // Check for generic processing error
             if (statusMsg === "PROCESSING_ERROR") {
                 clearInterval(tInterval);
                 loadingView.classList.add('hidden');
@@ -846,11 +977,9 @@
                 return;
             }
 
-            // Success case - look for "SUCCESS:" anywhere in the message
             if (statusMsg.includes("SUCCESS:") || data[0]?.url) {
                 renderResults(data);
             } else {
-                // Fallback if we don't recognize the response
                 clearInterval(tInterval);
                 loadingView.classList.add('hidden');
                 uploadView.classList.remove('hidden');
@@ -932,6 +1061,9 @@
             }
             btn.innerText = originalText;
         };
+
+        // Make clerk globally available
+        window.clerk = clerk;
     </script>
 </body>
 
