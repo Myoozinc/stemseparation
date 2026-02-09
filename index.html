@@ -1152,7 +1152,7 @@
                 uploadView.classList.remove('hidden');
                 showError(
                     `Daily Limit Reached`,
-                    `You've used all 3 free processes today.<br><br>Your limit resets in: <strong>${resetTime}</strong>`
+                    `You've used all 3 free processes today.<br>`
                 );
                 errorShown = true;
                 return;
@@ -1165,7 +1165,7 @@
                 uploadView.classList.remove('hidden');
                 showError(
                     `Free Use Complete`,
-                    `You've used your 1 free daily process.<br><br>Sign in to get 3 more free processes per day!`
+                    `You've used your 1 free daily process.<br><br>Sign up to get 3 more free processes per day!`
                 );
                 errorShown = true;
                 return;
@@ -1180,7 +1180,7 @@
                 uploadView.classList.remove('hidden');
                 showError(
                     `Monthly Limit Reached`,
-                    `You've used all 15 free processes this month.<br><br>Your limit resets: <strong>${resetTime}</strong>`
+                    `You've used all 15 free processes this month.<br>
                 );
                 errorShown = true;
                 return;
