@@ -791,7 +791,7 @@
                 uploadView.classList.remove('hidden');
                 
                 if (!errorShown) {
-                    showError("⚠️ Connection Error", "Unable to connect to the server. Please check your internet connection and try again.");
+                    showError("Connection Error", "Unable to connect to the server. Please check your internet connection and try again.");
                     errorShown = true;
                 }
             }
@@ -811,7 +811,7 @@
                 loadingView.classList.add('hidden');
                 uploadView.classList.remove('hidden');
                 showError(
-                    `⚠️ Daily Limit Reached`,
+                    `Daily Limit Reached`,
                     `You've used all 3 free processes today.<br><br>Your limit resets in: <strong>${resetTime}</strong>`
                 );
                 errorShown = true;
@@ -826,7 +826,7 @@
                 loadingView.classList.add('hidden');
                 uploadView.classList.remove('hidden');
                 showError(
-                    `⚠️ Monthly Limit Reached`,
+                    `Monthly Limit Reached`,
                     `You've used all 15 free processes this month.<br><br>Your limit resets: <strong>${resetTime}</strong>`
                 );
                 errorShown = true;
@@ -839,7 +839,7 @@
                 loadingView.classList.add('hidden');
                 uploadView.classList.remove('hidden');
                 showError(
-                    `⚠️ Processing Error`,
+                    `Processing Error`,
                     `Something went wrong while processing your file.<br><br>Please try again with a different file or contact support.`
                 );
                 errorShown = true;
@@ -855,7 +855,7 @@
                 loadingView.classList.add('hidden');
                 uploadView.classList.remove('hidden');
                 showError(
-                    `⚠️ Unexpected Response`,
+                    `Unexpected Response`,
                     `Received an unexpected response from the server. Please try again.`
                 );
                 errorShown = true;
