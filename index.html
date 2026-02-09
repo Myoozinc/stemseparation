@@ -8,6 +8,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Kaushan+Script&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Clerk SDK -->
+    <script async crossorigin="anonymous" 
+            src="https://easy-polecat-22.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+    </script>
+    
     <style>
         :root {
             --bg-black: #050505;
@@ -93,6 +99,125 @@
             margin-left: auto;
         }
 
+        /* Auth dropdown */
+        .auth-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .sign-in-btn {
+            background: transparent;
+            color: var(--accent-magenta);
+            border: 2px solid var(--accent-magenta);
+            padding: 10px 24px;
+            border-radius: 2px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sign-in-btn:hover {
+            background: rgba(217, 70, 239, 0.1);
+            border-color: #E956F5;
+            color: #E956F5;
+            transform: translateY(-2px);
+        }
+
+        .dropdown-arrow {
+            font-size: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .auth-dropdown.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid var(--accent-magenta);
+            border-radius: 12px;
+            min-width: 180px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-dropdown.open .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-white);
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(217, 70, 239, 0.2);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(217, 70, 239, 0.2);
+            color: var(--accent-magenta);
+            padding-left: 25px;
+        }
+
+        .user-info {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            padding: 10px 24px;
+            background: rgba(217, 70, 239, 0.1);
+            border: 2px solid var(--accent-magenta);
+            border-radius: 50px;
+        }
+
+        .sign-out-btn {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            padding: 6px 16px;
+            background: transparent;
+            color: var(--accent-magenta);
+            border: 1px solid var(--accent-magenta);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sign-out-btn:hover {
+            background: rgba(217, 70, 239, 0.2);
+        }
+
         /* Mobile responsive header */
         @media (max-width: 600px) {
             nav.custom-header {
@@ -145,6 +270,31 @@
                 padding: 6px 14px !important;
                 font-size: 0.5rem !important;
                 letter-spacing: 2px !important;
+                gap: 4px;
+            }
+
+            .dropdown-arrow {
+                font-size: 0.4rem;
+            }
+
+            .dropdown-menu {
+                min-width: 140px;
+            }
+
+            .dropdown-item {
+                padding: 10px 14px;
+                font-size: 0.6rem;
+            }
+
+            .user-info {
+                font-size: 0.5rem;
+                padding: 6px 14px;
+                letter-spacing: 1px;
+            }
+
+            .sign-out-btn {
+                font-size: 0.5rem;
+                padding: 4px 12px;
             }
         }
 
@@ -199,29 +349,6 @@
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
-        }
-
-        .sign-in-btn {
-            background: transparent;
-            color: var(--accent-magenta);
-            border: 2px solid var(--accent-magenta);
-            padding: 10px 24px;
-            border-radius: 2px;
-            font-weight: 800;
-            cursor: pointer;
-            font-size: 0.7rem;
-            font-family: 'Outfit', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-        
-        .sign-in-btn:hover {
-            background: rgba(217, 70, 239, 0.1);
-            border-color: #E956F5;
-            color: #E956F5;
-            transform: translateY(-2px);
         }
 
         header.tool-header {
@@ -579,7 +706,24 @@
             <div class="logo-text">STEMER</div>
         </div>
         <div class="header-right">
-            <button class="sign-in-btn">SIGN IN</button>
+            <!-- Auth Dropdown -->
+            <div class="auth-dropdown" id="authDropdown">
+                <button class="sign-in-btn" id="authBtn">
+                    <span>SIGN IN</span>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <div class="dropdown-item" id="signInOption">Sign In</div>
+                    <div class="dropdown-item" id="signUpOption">Sign Up</div>
+                </div>
+            </div>
+            
+            <!-- User Info (shown when logged in) -->
+            <div class="user-info" id="userInfo">
+                <span id="userName"></span>
+                <button class="sign-out-btn" id="signOutBtn">SIGN OUT</button>
+            </div>
+            
             <div class="header-tag">BY MYOOZ LABS</div>
         </div>
     </nav>
@@ -730,6 +874,13 @@
         import { Client, handle_file } from "https://esm.sh/@gradio/client";
 
         const SPACE_ID = "tinahmbuz/audiostems";
+        
+        // Clerk variables
+        let clerkInstance;
+        let currentUser = null;
+        let authToken = null;
+
+        // DOM elements
         const fileInput = document.getElementById('fileInput');
         const dropZone = document.getElementById('dropZone');
         const fileNameDisp = document.getElementById('fileName');
@@ -741,11 +892,143 @@
         const resultsContent = document.getElementById('resultsContent');
         const stemsList = document.getElementById('stemsList');
         const resetBtn = document.getElementById('resetBtn');
+        
+        // Auth elements
+        const authDropdown = document.getElementById('authDropdown');
+        const authBtn = document.getElementById('authBtn');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const signInOption = document.getElementById('signInOption');
+        const signUpOption = document.getElementById('signUpOption');
+        const userInfo = document.getElementById('userInfo');
+        const userName = document.getElementById('userName');
+        const signOutBtn = document.getElementById('signOutBtn');
 
         let selectedFile = null;
         let tInterval;
         let startTime;
         let errorShown = false;
+
+        // Initialize Clerk
+        async function initClerk() {
+            try {
+                if (window.Clerk) {
+                    clerkInstance = window.Clerk;
+                    await clerkInstance.load();
+
+                    // Check if user is already signed in
+                    if (clerkInstance.user) {
+                        currentUser = clerkInstance.user;
+                        authToken = await clerkInstance.session.getToken();
+                        updateUIForSignedInUser();
+                    }
+
+                    // Listen for auth changes
+                    clerkInstance.addListener((event) => {
+                        if (event.user) {
+                            currentUser = event.user;
+                            clerkInstance.session.getToken().then(token => {
+                                authToken = token;
+                                updateUIForSignedInUser();
+                            });
+                        } else {
+                            currentUser = null;
+                            authToken = null;
+                            updateUIForSignedOutUser();
+                        }
+                    });
+                    
+                    console.log("[AUTH] ✓ Clerk initialized");
+                }
+            } catch (error) {
+                console.error('[AUTH] Failed to initialize Clerk:', error);
+            }
+        }
+
+        function updateUIForSignedInUser() {
+            authDropdown.style.display = 'none';
+            userInfo.style.display = 'flex';
+            
+            const displayName = currentUser.firstName || 
+                               currentUser.emailAddresses[0].emailAddress.split('@')[0];
+            userName.textContent = displayName.toUpperCase();
+            
+            console.log('[AUTH] ✓ User signed in:', displayName);
+        }
+
+        function updateUIForSignedOutUser() {
+            authDropdown.style.display = 'inline-block';
+            userInfo.style.display = 'none';
+            console.log('[AUTH] User signed out');
+        }
+
+        // Dropdown toggle - works without Clerk
+        authBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            authDropdown.classList.toggle('open');
+            console.log('[DROPDOWN] Toggled:', authDropdown.classList.contains('open'));
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!authDropdown.contains(e.target)) {
+                authDropdown.classList.remove('open');
+            }
+        });
+
+        // Sign In option
+        signInOption.addEventListener('click', async () => {
+            authDropdown.classList.remove('open');
+            console.log('[AUTH] Sign In clicked');
+            try {
+                if (clerkInstance) {
+                    await clerkInstance.openSignIn();
+                } else {
+                    alert('Authentication system is loading. Please try again in a moment.');
+                }
+            } catch (error) {
+                console.error('[AUTH] Sign in error:', error);
+                alert('Sign in unavailable. Please refresh the page.');
+            }
+        });
+
+        // Sign Up option
+        signUpOption.addEventListener('click', async () => {
+            authDropdown.classList.remove('open');
+            console.log('[AUTH] Sign Up clicked');
+            try {
+                if (clerkInstance) {
+                    await clerkInstance.openSignUp();
+                } else {
+                    alert('Authentication system is loading. Please try again in a moment.');
+                }
+            } catch (error) {
+                console.error('[AUTH] Sign up error:', error);
+                alert('Sign up unavailable. Please refresh the page.');
+            }
+        });
+
+        // Sign out
+        signOutBtn.addEventListener('click', async () => {
+            console.log('[AUTH] Sign Out clicked');
+            try {
+                if (clerkInstance) {
+                    await clerkInstance.signOut();
+                } else {
+                    alert('Please refresh the page and try again.');
+                }
+            } catch (error) {
+                console.error('[AUTH] Sign out error:', error);
+            }
+        });
+
+        // Initialize Clerk on page load
+        window.addEventListener('load', () => {
+            console.log('[INIT] Page loaded, initializing Clerk...');
+            initClerk();
+        });
+        
+        // Also initialize dropdown immediately (don't wait for Clerk)
+        console.log('[INIT] Dropdown ready');
 
         window.toggleAll = (el) => {
             const checks = document.querySelectorAll('input[name="process_opt"]');
@@ -831,9 +1114,12 @@
                 startProcessingUI();
 
                 const client = await Client.connect(SPACE_ID);
+                
+                // Pass auth token to backend if user is signed in
                 const result = await client.predict("/process", {
                     song_file: handle_file(selectedFile),
-                    options: selectedOptions
+                    options: selectedOptions,
+                    auth_token: authToken || ""
                 });
 
                 handleBackendResponse(result.data);
@@ -999,6 +1285,37 @@
             }
             btn.innerText = originalText;
         };
+    </script>
+
+    <script>
+        // Dropdown functionality (non-module, loads immediately)
+        document.addEventListener('DOMContentLoaded', () => {
+            const authDropdown = document.getElementById('authDropdown');
+            const authBtn = document.getElementById('authBtn');
+            
+            console.log('[DROPDOWN] Initializing...');
+            console.log('authDropdown:', authDropdown);
+            console.log('authBtn:', authBtn);
+            
+            if (authBtn && authDropdown) {
+                authBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    authDropdown.classList.toggle('open');
+                    console.log('[DROPDOWN] Toggled! Open:', authDropdown.classList.contains('open'));
+                });
+                
+                document.addEventListener('click', (e) => {
+                    if (!authDropdown.contains(e.target)) {
+                        authDropdown.classList.remove('open');
+                    }
+                });
+                
+                console.log('[DROPDOWN] ✓ Ready');
+            } else {
+                console.error('[DROPDOWN] Elements not found!');
+            }
+        });
     </script>
 </body>
 
