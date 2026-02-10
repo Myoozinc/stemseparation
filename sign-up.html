@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Myooz Labs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_ZWFzeS1wb2xlY2F0LTIyLmNsZXJrLmFjY291bnRzLmRldiQ"
+        src="https://easy-polecat-22.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+        type="text/javascript">
+        </script>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #ffffff;
+            --accent-purple: #9D4EDD;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at center, rgba(157, 78, 221, 0.1) 0%, transparent 60%);
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        #sign-up-container {
+            width: 100%;
+            max-width: 400px;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">← Back to Home</a>
+    <div class="container">
+        <div id="sign-up-container">
+            <p class="loading">Loading authentication...</p>
+        </div>
+        <p id="error-msg" class="error-msg">Authentication service unavailable. Please try again later.</p>
+    </div>
+
+    <script>
+        window.addEventListener('load', async function () {
+            const container = document.getElementById('sign-up-container');
+            const errorMsg = document.getElementById('error-msg');
+
+            // Wait for Clerk to be available
+            let attempts = 0;
+            const maxAttempts = 50; // 5 seconds max
+
+            const waitForClerk = setInterval(async () => {
+                attempts++;
+
+                if (window.Clerk) {
+                    clearInterval(waitForClerk);
+                    try {
+                        await window.Clerk.load();
+
+                        if (window.Clerk.user) {
+                            window.location.href = 'index.html';
+                        } else {
+                            container.innerHTML = '';
+                            window.Clerk.mountSignUp(container, {
+                                appearance: {
+                                    baseTheme: 'dark',
+                                    variables: {
+                                        colorPrimary: '#26014b',
+                                        colorBackground: '#0a0a0a',
+                                        colorText: '#ffffff'
+                                    },
+                                    elements: {
+                                        footerActionLink: {
+                                            color: '#9D4EDD'
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Clerk mount error:', e);
+                        errorMsg.style.display = 'block';
+                    }
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(waitForClerk);
+                    console.error('Clerk SDK did not load');
+                    errorMsg.style.display = 'block';
+                }
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>
