@@ -104,6 +104,9 @@
                         } else {
                             container.innerHTML = '';
                             window.Clerk.mountSignIn(container, {
+                                afterSignInUrl: 'index.html',
+                                afterSignUpUrl: 'index.html',
+                                signUpUrl: 'sign-up.html',
                                 appearance: {
                                     baseTheme: 'dark',
                                     variables: {

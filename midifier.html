@@ -310,7 +310,9 @@
 
     <!-- Clerk SDK -->
     <script async crossorigin="anonymous"
-        src="https://easy-polecat-22.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+        data-clerk-publishable-key="pk_test_ZWFzeS1wb2xlY2F0LTIyLmNsZXJrLmFjY291bnRzLmRldiQ"
+        src="https://easy-polecat-22.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+        type="text/javascript"></script>
 
     <script>
         // Auth Logic for Midifier
@@ -336,28 +338,34 @@
             }
         });
 
-        // Clerk Init
-        window.addEventListener('load', async () => {
-            try {
-                if (window.Clerk) {
+        // Clerk Init (poll until SDK is available)
+        let clerkAttempts = 0;
+        const clerkMaxAttempts = 50;
+        const waitForClerk = setInterval(async () => {
+            clerkAttempts++;
+            if (window.Clerk) {
+                clearInterval(waitForClerk);
+                try {
                     await window.Clerk.load();
-
                     if (window.Clerk.user) {
                         updateUI(window.Clerk.user);
                     }
-
                     window.Clerk.addListener((e) => {
                         if (e.user) updateUI(e.user);
                         else resetUI();
                     });
-                }
-            } catch (e) { console.error("Auth Error", e); }
-        });
+                    console.log('[AUTH] ✓ Clerk initialized');
+                } catch (e) { console.error('Auth Error', e); }
+            } else if (clerkAttempts >= clerkMaxAttempts) {
+                clearInterval(waitForClerk);
+                console.warn('[AUTH] Clerk SDK did not load in time');
+            }
+        }, 100);
 
         function updateUI(user) {
             document.getElementById('authDropdown').style.display = 'none';
             document.getElementById('userInfo').style.display = 'flex';
-            document.getElementById('userName').innerText = (user.firstName || user.emailAddresses[0].emailAddress.split('@')[0]).toUpperCase();
+            document.getElementById('userName').innerText = user.emailAddresses[0]?.emailAddress || '';
 
             document.getElementById('signOutBtn').onclick = () => window.Clerk.signOut();
         }

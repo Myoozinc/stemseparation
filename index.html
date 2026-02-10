@@ -15,7 +15,9 @@
 
     <!-- Clerk SDK -->
     <script async crossorigin="anonymous"
-        src="https://easy-polecat-22.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js">
+        data-clerk-publishable-key="pk_test_ZWFzeS1wb2xlY2F0LTIyLmNsZXJrLmFjY291bnRzLmRldiQ"
+        src="https://easy-polecat-22.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+        type="text/javascript">
         </script>
 
     <!-- Navigation to other tools -->
@@ -125,10 +127,6 @@
             padding-left: 25px;
         }
 
-        .user-info {
-            background: rgba(217, 70, 239, 0.1);
-            border: 2px solid var(--accent-magenta);
-        }
 
         .sign-out-btn:hover {
             background: rgba(217, 70, 239, 0.2);
@@ -765,51 +763,61 @@
         let errorShown = false;
         let lastProcessedData = null; // Store stem data for cross-tool transfer
 
-        // Initialize Clerk
-        async function initClerk() {
-            try {
+        // Initialize Clerk (poll until SDK is available)
+        function initClerk() {
+            let attempts = 0;
+            const maxAttempts = 50; // 5 seconds max
+
+            const waitForClerk = setInterval(async () => {
+                attempts++;
+
                 if (window.Clerk) {
-                    clerkInstance = window.Clerk;
-                    await clerkInstance.load();
+                    clearInterval(waitForClerk);
+                    try {
+                        clerkInstance = window.Clerk;
+                        await clerkInstance.load();
 
-                    // Check if user is already signed in
-                    if (clerkInstance.user) {
-                        currentUser = clerkInstance.user;
-                        authToken = await clerkInstance.session.getToken();
-                        updateUIForSignedInUser();
-                    }
-
-                    // Listen for auth changes
-                    clerkInstance.addListener((event) => {
-                        if (event.user) {
-                            currentUser = event.user;
-                            clerkInstance.session.getToken().then(token => {
-                                authToken = token;
-                                updateUIForSignedInUser();
-                            });
-                        } else {
-                            currentUser = null;
-                            authToken = null;
-                            updateUIForSignedOutUser();
+                        // Check if user is already signed in
+                        if (clerkInstance.user) {
+                            currentUser = clerkInstance.user;
+                            authToken = await clerkInstance.session.getToken();
+                            updateUIForSignedInUser();
                         }
-                    });
 
-                    console.log("[AUTH] ✓ Clerk initialized");
+                        // Listen for auth changes
+                        clerkInstance.addListener((event) => {
+                            if (event.user) {
+                                currentUser = event.user;
+                                clerkInstance.session.getToken().then(token => {
+                                    authToken = token;
+                                    updateUIForSignedInUser();
+                                });
+                            } else {
+                                currentUser = null;
+                                authToken = null;
+                                updateUIForSignedOutUser();
+                            }
+                        });
+
+                        console.log('[AUTH] ✓ Clerk initialized');
+                    } catch (error) {
+                        console.error('[AUTH] Failed to initialize Clerk:', error);
+                    }
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(waitForClerk);
+                    console.warn('[AUTH] Clerk SDK did not load in time');
                 }
-            } catch (error) {
-                console.error('[AUTH] Failed to initialize Clerk:', error);
-            }
+            }, 100);
         }
 
         function updateUIForSignedInUser() {
             authDropdown.style.display = 'none';
             userInfo.style.display = 'flex';
 
-            const displayName = currentUser.firstName ||
-                currentUser.emailAddresses[0].emailAddress.split('@')[0];
-            userName.textContent = displayName.toUpperCase();
+            const email = currentUser.emailAddresses[0]?.emailAddress || '';
+            userName.textContent = email;
 
-            console.log('[AUTH] ✓ User signed in:', displayName);
+            console.log('[AUTH] ✓ User signed in:', email);
         }
 
         function updateUIForSignedOutUser() {
