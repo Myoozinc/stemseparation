@@ -102,11 +102,14 @@
                         if (window.Clerk.user) {
                             window.location.href = 'index.html';
                         } else {
+                            const redirectUrl = new URL('index.html', window.location.href).href;
+                            const signInUrl = new URL('sign-in.html', window.location.href).href;
+
                             container.innerHTML = '';
                             window.Clerk.mountSignUp(container, {
-                                afterSignUpUrl: 'index.html',
-                                afterSignInUrl: 'index.html',
-                                signInUrl: 'sign-in.html',
+                                afterSignUpUrl: redirectUrl,
+                                afterSignInUrl: redirectUrl,
+                                signInUrl: signInUrl,
                                 appearance: {
                                     baseTheme: 'dark',
                                     variables: {
