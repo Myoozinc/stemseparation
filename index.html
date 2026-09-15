@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stem Separation | Myooz Labs Audio Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Kaushan+Script&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+
+
+    <style>
+        :root {
+            --bg-black: #050505;
+            --header-white: #FFFFFF;
+            --accent-purple: #26014b;
+            --accent-purple-glow: rgba(38, 1, 75, 0.5);
+            --accent-magenta: #D946EF;
+            --accent-magenta-glow: rgba(217, 70, 239, 0.5);
+            --text-white: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --radius: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-black);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(38, 1, 75, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(217, 70, 239, 0.08) 0%, transparent 40%);
+            color: var(--text-white);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-attachment: fixed;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 2rem;
+            margin-top: 80px;
+        }
+
+        nav.custom-header {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1100px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+            border-radius: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            gap: 1rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+        }
+
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            border-radius: 50%;
+            filter: drop-shadow(0 0 10px var(--accent-purple-glow));
+        }
+
+        .logo-text {
+            font-family: 'Righteous', sans-serif;
+            font-weight: 400;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .header-tag {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            padding: 10px 24px;
+            border-radius: 50px;
+            background: transparent;
+            position: relative;
+            background-image: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+        }
+        
+        .header-tag::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50px;
+            padding: 2px;
+            background: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        header.tool-header {
+            text-align: left;
+            margin-bottom: 3rem;
+            padding-left: 1rem;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(3rem, 10vw, 5.5rem);
+            line-height: 0.95;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -3px;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(180deg, #fff 30%, rgba(255, 255, 255, 0.2) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            transition: transform 0.4s ease, border-color 0.4s ease;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .upload-section {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 3rem;
+            align-items: stretch;
+        }
+
+        @media (max-width: 900px) {
+            .upload-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--glass-border);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent-magenta);
+            background: rgba(217, 70, 239, 0.1);
+        }
+
+        /* PNG upload icon */
+        .upload-icon-img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1.5rem;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover .upload-icon-img {
+            opacity: 0.8;
+            transform: translateY(-5px);
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .label-title {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            color: var(--header-white);
+            font-weight: 400;
+            font-family: 'Righteous', sans-serif;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.8rem;
+        }
+
+        .option-item {
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .option-item input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            display: block;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            font-size: 0.8rem;
+            text-align: center;
+            transition: all 0.2s;
+            color: var(--text-white);
+            font-weight: 500;
+        }
+
+        .option-item input:checked~.checkmark {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+            font-weight: 700;
+            box-shadow: 0 0 15px rgba(46, 4, 88, 0.4);
+        }
+
+        .btn {
+            background: linear-gradient(180deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
+            color: white;
+            border: none;
+            padding: 16px 45px;
+            border-radius: 100px;
+            font-weight: 400;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: 'Righteous', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .song-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card {
+            background: transparent;
+            border: 1px solid var(--accent-purple);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(46, 4, 88, 0.2);
+        }
+
+        .info-card .val {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent-magenta);
+            display: block;
+            filter: brightness(1.2);
+        }
+
+        .info-card .lbl {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+
+        .stems-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .stem-player {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        .stem-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            width: 150px;
+        }
+
+        audio {
+            flex-grow: 1;
+            height: 40px;
+            border-radius: 30px;
+            filter: invert(1);
+        }
+
+        .progress-box {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .progress-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            animation: rotate 3s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .ring-segment {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-magenta);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-magenta-glow);
+        }
+
+        .ring-segment:nth-child(1) { top: 0%; left: 50%; transform: translateX(-50%); }
+        .ring-segment:nth-child(2) { top: 15%; right: 15%; }
+        .ring-segment:nth-child(3) { top: 50%; right: 0%; transform: translateY(-50%); }
+        .ring-segment:nth-child(4) { bottom: 15%; right: 15%; }
+        .ring-segment:nth-child(5) { bottom: 0%; left: 50%; transform: translateX(-50%); }
+        .ring-segment:nth-child(6) { bottom: 15%; left: 15%; }
+        .ring-segment:nth-child(7) { top: 50%; left: 0%; transform: translateY(-50%); }
+        .ring-segment:nth-child(8) { top: 15%; left: 15%; }
+
+        .progress-val {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--accent-magenta);
+            filter: brightness(1.2);
+            z-index: 10;
+        }
+
+        .error-message {
+            background: rgba(217, 70, 239, 0.1);
+            border: 2px solid var(--accent-magenta);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .error-message h3 {
+            color: var(--accent-magenta);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .error-message p {
+            color: var(--text-white);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--accent-magenta);
+            background: rgba(217, 70, 239, 0.15);
+        }
+
+    </style>
+</head>
+
+<body>
+    <nav class="custom-header">
+        <div class="logo-container">
+            <img src="logo.png" alt="stemerlogo" class="logo-img">
+            <div class="logo-text">STEMER</div>
+        </div>
+        <div class="header-right">
+            <div class="header-tag">BY MYOOZ LABS</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="tool-header">
+            <h1>Stem Separation</h1>
+            <p class="subtitle">Studio-Grade Audio Decomposition</p>
+        </header>
+
+        <div class="main-layout">
+            <div id="uploadView" class="glass-card upload-section">
+                <div class="upload-zone" id="dropZone">
+                    <img src="upload.png" alt="Upload" class="upload-icon-img">
+                    <h3 id="fileName" style="margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; font-family: 'Righteous', sans-serif;">
+                        Upload Track Here</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 1px;">MP3 & WAV only</p>
+                    <input type="file" id="fileInput" class="hidden" accept=".mp3,.wav">
+                </div>
+
+                <div class="options-container">
+                    <span class="label-title">Processing Options</span>
+                    <div class="options-grid">
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="All" checked onclick="toggleAll(this)">
+                            <span class="checkmark">Full Split</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Convert to WAV">
+                            <span class="checkmark">Song WAV</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Vocals">
+                            <span class="checkmark">Vocals</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Bass">
+                            <span class="checkmark">Bass</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Other">
+                            <span class="checkmark">Other</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Drums">
+                            <span class="checkmark">Drums</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Refine Drums">
+                            <span class="checkmark">Precise Drums</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" name="process_opt" value="Info" checked>
+                            <span class="checkmark">Key & BPM</span>
+                        </label>
+                    </div>
+                    <div style="margin-top: auto; padding-top: 1rem; text-align: right;">
+                        <button class="btn" id="startBtn">PROCESS AUDIO</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loadingView" class="glass-card hidden" style="text-align: center;">
+                <div class="progress-box">
+                    <div class="progress-ring" id="progressRing">
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                        <div class="ring-segment"></div>
+                    </div>
+                    <div class="progress-val" id="progressText">0%</div>
+                </div>
+                <h3 style="text-transform: uppercase; letter-spacing: 2px;">Separating Stems...</h3>
+                <div id="timer" style="margin-top: 10px; font-family: 'Outfit', sans-serif; opacity: 0.5;">00:00</div>
+            </div>
+
+            <div id="resultsContent" class="hidden">
+                <div class="song-info-grid">
+                    <div class="info-card">
+                        <span class="lbl">Harmonic Key</span>
+                        <span id="keyVal" class="val">--</span>
+                    </div>
+                    <div class="info-card">
+                        <span class="lbl">Detected Tempo</span>
+                        <span id="bpmVal" class="val">--</span>
+                    </div>
+                </div>
+
+                <div id="stemsList" class="stems-container"></div>
+
+                <div class="glass-card" style="margin-top: 2rem;">
+                    <span class="label-title">Export Options</span>
+                    <div class="options-grid" style="margin-bottom: 2rem;">
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Download All" checked onclick="toggleAllDl(this)">
+                            <span class="checkmark">Download All</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="WAV">
+                            <span class="checkmark">Song WAV</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Vocals">
+                            <span class="checkmark">Vocals</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Bass">
+                            <span class="checkmark">Bass</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Other">
+                            <span class="checkmark">Other</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Drums (Raw)">
+                            <span class="checkmark">Drums (Raw)</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Kick">
+                            <span class="checkmark">Kick</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Snare">
+                            <span class="checkmark">Snare</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="checkbox" class="dl-opt" value="Hi-hat">
+                            <span class="checkmark">Hi-hat</span>
+                        </label>
+                    </div>
+                    <div style="text-align: center; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
+                        <button class="btn" id="downloadAllBtn">DOWNLOAD SELECTED STEMS</button>
+                        <div style="margin-top: 1.5rem;">
+                            <button class="btn" style="background: transparent; border: 2px solid; border-image: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%) 1;"
+                                id="resetBtn">START NEW TRACK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Client, handle_file } from "https://esm.sh/@gradio/client";
+
+        const SPACE_ID = "tinahmbuz/audiostems";
+
+        // DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const fileNameDisp = document.getElementById('fileName');
+        const startBtn = document.getElementById('startBtn');
+        const uploadView = document.getElementById('uploadView');
+        const loadingView = document.getElementById('loadingView');
+        const progressText = document.getElementById('progressText');
+        const timerDisp = document.getElementById('timer');
+        const resultsContent = document.getElementById('resultsContent');
+        const stemsList = document.getElementById('stemsList');
+        const resetBtn = document.getElementById('resetBtn');
+
+        let selectedFile = null;
+        let tInterval;
+        let startTime;
+        let errorShown = false;
+
+        window.toggleAll = (el) => {
+            const checks = document.querySelectorAll('input[name="process_opt"]');
+            if (el.checked) {
+                checks.forEach(c => { if (c !== el && c.value !== "Info") c.checked = false; });
+            }
+        };
+
+        window.toggleAllDl = (el) => {
+            const checks = document.querySelectorAll('.dl-opt');
+            if (el.checked) {
+                checks.forEach(c => { if (c !== el) c.checked = false; });
+            }
+        };
+
+        dropZone.onclick = () => fileInput.click();
+
+        fileInput.onchange = (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) fileNameDisp.innerText = selectedFile.name;
+        };
+        
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropZone.classList.add("dragover");
+        });
+        
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.classList.remove("dragover");
+        });
+        
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropZone.classList.remove("dragover");
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                if (!file.name.endsWith(".mp3") && !file.name.endsWith(".wav")) {
+                    alert("Only MP3 or WAV files are allowed.");
+                    return;
+                }
+                selectedFile = file;
+                fileNameDisp.innerText = file.name;
+            }
+        });     
+        
+        resetBtn.onclick = () => location.reload();
+
+        function clearExistingErrors() {
+            const existingErrors = uploadView.querySelectorAll('.error-message');
+            existingErrors.forEach(err => err.remove());
+        }
+
+        function showError(title, message) {
+            clearExistingErrors();
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `
+                <h3>${title}</h3>
+                <p>${message}</p>
+            `;
+            uploadView.insertBefore(errorDiv, uploadView.firstChild);
+            
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 15000);
+        }
+
+        startBtn.onclick = async () => {
+            if (!selectedFile) return alert("Select a file first.");
+            
+            errorShown = false;
+            clearExistingErrors();
+
+            try {
+                const selectedOptions = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
+
+                uploadView.classList.add('hidden');
+                loadingView.classList.remove('hidden');
+
+                startProcessingUI();
+
+                const client = await Client.connect(SPACE_ID);
+                
+                const result = await client.predict("/process", {
+                    song_file: handle_file(selectedFile),
+                    options: selectedOptions,
+                    auth_token: ""
+                });
+
+                handleBackendResponse(result.data);
+                
+            } catch (err) {
+                console.error("API Error:", err);
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
+                
+                if (!errorShown) {
+                    showError("Connection Error", "Unable to connect to the server. Please check your internet connection and try again.");
+                    errorShown = true;
+                }
+            }
+        };
+
+        function handleBackendResponse(data) {
+            if (errorShown) return;
+            
+            const statusMsg = data[8] || "";
+            console.log("[DEBUG] Backend response:", statusMsg);
+
+            // Check for daily limit
+            if (statusMsg.includes("LIMIT_ERROR:DAILY:")) {
+                const match = statusMsg.match(/LIMIT_ERROR:DAILY:(.+)/);
+                const resetTime = match ? match[1] : "24 hours";
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
+                showError(
+                    `Daily Limit Reached`,
+                    `You've used all 3 free processes today.<br>`
+                );
+                errorShown = true;
+                return;
+            }
+            
+            // Check for auth required (anonymous user hit their 1 daily limit)
+            if (statusMsg === "AUTH_REQUIRED") {
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
+                showError(
+                    `Free Use Complete`,
+                    `You've used your 1 free daily process.<br><br>Sign up to get 3 more free processes per day!`
+                );
+                errorShown = true;
+                return;
+            }
+
+            // Check for monthly limit
+            if (statusMsg.includes("LIMIT_ERROR:MONTHLY:")) {
+                const match = statusMsg.match(/LIMIT_ERROR:MONTHLY:(.+)/);
+                const resetTime = match ? match[1] : "the start of next month";
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
+                showError(
+                    `Monthly Limit Reached`,
+                    `You've used all 15 free processes this month.<br>
+                );
+                errorShown = true;
+                return;
+            }
+
+            // Check for generic processing error
+            if (statusMsg === "PROCESSING_ERROR") {
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
+                showError(
+                    `Processing Error`,
+                    `Something went wrong while processing your file.<br><br>Please try again with a different file or contact support.`
+                );
+                errorShown = true;
+                return;
+            }
+
+            // Success case - look for "SUCCESS:" anywhere in the message
+            if (statusMsg.includes("SUCCESS:") || data[0]?.url) {
+                renderResults(data);
+            } else {
+                // Fallback if we don't recognize the response
+                clearInterval(tInterval);
+                loadingView.classList.add('hidden');
+                uploadView.classList.remove('hidden');
+                showError(
+                    `Unexpected Response`,
+                    `Received an unexpected response from the server. Please try again.`
+                );
+                errorShown = true;
+            }
+        }
+
+        function startProcessingUI() {
+            startTime = Date.now();
+            let p = 0;
+            tInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const s = (elapsed % 60).toString().padStart(2, '0');
+                timerDisp.innerText = `${m}:${s}`;
+                if (p < 95) { 
+                    p += (98 - p) / 40; 
+                    progressText.innerText = `${Math.floor(p)}%`;
+                }
+            }, 1000);
+        }
+
+        function renderResults(data) {
+            clearInterval(tInterval);
+            progressText.innerText = '100%';
+
+            setTimeout(() => {
+                loadingView.classList.add('hidden');
+                resultsContent.classList.remove('hidden');
+
+                stemsList.innerHTML = '';
+                const labels = ["ORIGINAL SONG", "VOCALS", "BASS", "OTHER", "DRUMS", "KICK", "SNARE", "HI-HAT"];
+
+                for (let i = 0; i < 8; i++) {
+                    if (!data[i]?.url) continue;
+                    const card = document.createElement('div');
+                    card.className = 'stem-player';
+                    card.innerHTML = `
+                        <div class="stem-label">${labels[i]}</div>
+                        <audio controls preload="auto"><source src="${data[i].url}" type="audio/wav"></audio>
+                    `;
+                    stemsList.appendChild(card);
+                }
+
+                const raw = data[8] || "";
+                let key = "N/A", bpm = "N/A";
+                
+                const k = raw.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || raw.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
+                if (k) key = k[1];
+                
+                const b = raw.match(/(?:Tempo|BPM)[:\s]*(\d+\.?\d*)/i) || raw.match(/(\d+\.?\d*)\s*(?:Tempo|BPM)/i);
+                if (b) bpm = Math.round(parseFloat(b[1]));
+
+                document.getElementById('keyVal').innerText = key;
+                document.getElementById('bpmVal').innerText = bpm;
+
+                console.log("[SUCCESS] Processing completed");
+            }, 500);
+        }
+
+        document.getElementById('downloadAllBtn').onclick = async () => {
+            const btn = document.getElementById('downloadAllBtn');
+            const selectedFiles = Array.from(document.querySelectorAll('.dl-opt:checked')).map(c => c.value);
+            const originalText = btn.innerText;
+            btn.innerText = "PREPARING ZIP...";
+            try {
+                const c = await Client.connect(SPACE_ID);
+                const res = await c.predict("/create_download_zip", { selected_files: selectedFiles });
+                const a = document.createElement('a'); 
+                a.href = res.data[0].url; 
+                a.download = "stems_pack.zip"; 
+                a.click();
+            } catch (e) { 
+                alert("Download failed"); 
+            }
+            btn.innerText = originalText;
+        };
+    </script>
+
+</body>
+
+</html>
