@@ -688,12 +688,20 @@
             }
         };
 
-        dropZone.onclick = () => fileInput.click();
+        dropZone.addEventListener('click', (e) => {
+            if (e.target !== fileInput) {
+                fileInput.click();
+            }
+        });
 
-        fileInput.onchange = (e) => {
+        fileInput.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        fileInput.addEventListener('change', (e) => {
             selectedFile = e.target.files[0];
             if (selectedFile) fileNameDisp.innerText = selectedFile.name;
-        };
+        });
         
         dropZone.addEventListener("dragover", (e) => {
             e.preventDefault();
@@ -823,7 +831,7 @@
                 uploadView.classList.remove('hidden');
                 showError(
                     `Monthly Limit Reached`,
-                    `You've used all 15 free processes this month.<br>
+                    `You've used all 15 free processes this month.<br>`
                 );
                 errorShown = true;
                 return;
