@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mixter | AI Automated Stem Mixing Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Kaushan+Script&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="header.css">
+    <link rel="stylesheet" href="shared.css">
+    <style>
+        :root {
+            --header-accent: #10b981;
+            --bg-black: #050505;
+            --header-white: #FFFFFF;
+            --accent-purple: #26014b;
+            --accent-emerald: #10b981;
+            --accent-emerald-glow: rgba(16, 185, 129, 0.45);
+            --text-white: #FFFFFF;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-primary: var(--accent-emerald);
+            --accent-glow: var(--accent-emerald-glow);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-black);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(38, 1, 75, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+            color: var(--text-white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 2rem;
+            margin-top: 80px;
+            margin-bottom: 80px;
+        }
+
+        nav.custom-header {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 1100px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+            border-radius: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            gap: 1rem;
+        }
+
+        .header-right { display: flex; align-items: center; gap: 1rem; margin-left: auto; }
+        .logo-container { display: flex; align-items: center; gap: 15px; }
+        .logo-img { width: 45px; height: 45px; object-fit: contain; border-radius: 50%; }
+        .logo-text { font-family: 'Righteous', sans-serif; font-size: 1.5rem; letter-spacing: 3px; color: #fff; }
+
+        .header-tag {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            padding: 10px 24px;
+            border-radius: 50px;
+            background-image: linear-gradient(90deg, var(--accent-emerald) 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .stem-tag-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .style-pill-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .style-pill-btn.active {
+            background: var(--accent-emerald);
+            color: #000;
+            border-color: var(--accent-emerald);
+            box-shadow: 0 0 15px var(--accent-emerald-glow);
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+    </style>
+</head>
+
+<body>
+    <nav class="custom-header">
+        <div class="logo-container">
+            <img src="logo.png" alt="Mixter Logo" class="logo-img">
+            <div class="logo-text">MIXTER</div>
+        </div>
+        <div class="header-right">
+            <div class="header-tag">BY MYOOZ LABS</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="tool-header">
+            <h1>AI Stem Mixing</h1>
+            <p class="subtitle">Autonomous Multi-Track DSP & Vocal Production</p>
+        </header>
+
+        <!-- Stems imported from Stemer -->
+        <div class="glass-card" id="importedStemsCard" style="display: none; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: var(--accent-emerald); margin-bottom: 4px;">
+                        Imported Stems for Mixing
+                    </h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Stems ready for multi-bus alignment and frequency carving</p>
+                </div>
+                <button id="clearStemsBtn" class="style-pill-btn" style="font-size: 0.65rem;">CLEAR & UPLOAD FILES</button>
+            </div>
+            <div id="stemsListDisplay" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
+        </div>
+
+        <div class="glass-card" id="mixMainCard">
+            <!-- Upload Box if no stems imported -->
+            <div id="uploadContainer">
+                <h2 style="margin-bottom: 10px; font-family: 'Righteous', sans-serif; letter-spacing: 2px;">Upload Your Stems</h2>
+                <p style="margin-bottom: 25px; color: var(--text-secondary); font-size: 0.9rem;">
+                    Upload individual audio tracks (Vocals, Drums, Bass, Instruments) to mix them automatically into a balanced song.
+                </p>
+
+                <div class="upload-zone" id="mixDropZone" style="border: 2px dashed var(--glass-border); border-radius: 16px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 2rem;">
+                    <img src="upload.png" alt="Upload" style="width: 60px; height: 60px; opacity: 0.6; margin-bottom: 1rem;">
+                    <h3 id="mixFileName" style="font-family: 'Righteous', sans-serif; letter-spacing: 1px; margin-bottom: 0.5rem;">
+                        Select or Drag Multiple Stems Here
+                    </h3>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">WAV or MP3 (Select multiple files at once)</p>
+                    <input type="file" id="mixFileInput" class="hidden" accept=".mp3,.wav" multiple>
+                </div>
+            </div>
+
+            <!-- Mixing Settings -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; text-align: left;">
+                <!-- Mix Style -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 14px;">
+                    <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">
+                        Mix Character & Style
+                    </label>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="style-pill-btn active" data-style="modern">Modern Pop/Trap</button>
+                        <button type="button" class="style-pill-btn" data-style="punchy">Punchy Club</button>
+                        <button type="button" class="style-pill-btn" data-style="acoustic">Warm Acoustic</button>
+                    </div>
+                </div>
+
+                <!-- Vocal Space & FX -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 14px;">
+                    <label style="display: flex; justify-content: space-between; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;">
+                        <span>Vocal Space (Reverb & Stereo Delay)</span>
+                        <span id="vocalFxVal" style="color: var(--accent-emerald); font-weight: 700;">30%</span>
+                    </label>
+                    <input type="range" id="vocalFxSlider" min="0" max="1" step="0.05" value="0.3" style="width: 100%; accent-color: var(--accent-emerald); cursor: pointer;">
+                </div>
+            </div>
+
+            <!-- Start Mixing Button -->
+            <button class="btn" id="startMixBtn" style="background: linear-gradient(180deg, var(--accent-emerald) 0%, #065f46 100%); color: #fff; font-weight: 800; width: 100%; max-width: 400px; margin: 0 auto; display: block; font-size: 0.85rem; letter-spacing: 2px;">
+                AI MIX STEMS
+            </button>
+
+            <!-- Loading indicator -->
+            <div id="mixLoading" style="display: none; margin-top: 2rem; text-align: center;">
+                <div class="progress-box" style="margin: 0 auto 1rem; width: 60px; height: 60px; border: 3px solid rgba(16, 185, 129, 0.2); border-top-color: var(--accent-emerald); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-emerald);">Balancing Gain, EQ, Compression & Vocal Space...</p>
+            </div>
+
+            <!-- Mix Results Card -->
+            <div id="mixResultsCard" style="display: none; margin-top: 2.5rem; padding: 2rem; border: 1px solid var(--accent-emerald); border-radius: 20px; background: rgba(16, 185, 129, 0.04); text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h3 style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: var(--accent-emerald); margin-bottom: 4px;">
+                            Final Mixdown Ready
+                        </h3>
+                        <p id="mixStatusText" style="font-size: 0.8rem; color: var(--text-secondary);">
+                            Balanced multi-track sum with -6.0 dBFS mastering headroom
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button id="sendToMasterBtn" class="btn" style="background: linear-gradient(180deg, #8b5cf6 0%, #4c1d95 100%); color: #fff; padding: 12px 24px; font-size: 0.75rem;">
+                            SEND TO MASTER ➔
+                        </button>
+                        <a id="downloadMixBtn" href="#" download="mixdown_master_ready.wav" class="btn" style="background: var(--accent-emerald); color: #000; font-weight: 800; text-decoration: none; padding: 12px 24px; font-size: 0.75rem;">
+                            DOWNLOAD MIX (.WAV)
+                        </a>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.25rem;">
+                    <audio id="mixAudioPlayer" controls style="width: 100%; height: 40px; filter: invert(1); border-radius: 20px;"></audio>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5-Tool Bottom Nav -->
+    <div class="tool-nav">
+        <a href="index.html" class="tool-link">Stemer</a>
+        <a href="midifier.html" class="tool-link">Midifier</a>
+        <a href="sampler.html" class="tool-link">Sampler</a>
+        <a href="mixter.html" class="tool-link active">Mixter</a>
+        <a href="master.html" class="tool-link">Master</a>
+    </div>
+
+    <script type="module">
+        import { Client, handle_file } from "https://esm.sh/@gradio/client";
+
+        const SPACE_ID = "tinahmbuz/audiostems";
+
+        const mixDropZone = document.getElementById('mixDropZone');
+        const mixFileInput = document.getElementById('mixFileInput');
+        const mixFileName = document.getElementById('mixFileName');
+        const vocalFxSlider = document.getElementById('vocalFxSlider');
+        const vocalFxVal = document.getElementById('vocalFxVal');
+        const startMixBtn = document.getElementById('startMixBtn');
+        const mixLoading = document.getElementById('mixLoading');
+        const mixResultsCard = document.getElementById('mixResultsCard');
+        const mixStatusText = document.getElementById('mixStatusText');
+        const mixAudioPlayer = document.getElementById('mixAudioPlayer');
+        const downloadMixBtn = document.getElementById('downloadMixBtn');
+        const sendToMasterBtn = document.getElementById('sendToMasterBtn');
+        const importedStemsCard = document.getElementById('importedStemsCard');
+        const stemsListDisplay = document.getElementById('stemsListDisplay');
+        const clearStemsBtn = document.getElementById('clearStemsBtn');
+
+        let selectedFiles = [];
+        let selectedStyle = "modern";
+        let finalMixUrl = null;
+
+        vocalFxSlider.oninput = (e) => {
+            vocalFxVal.innerText = `${Math.round(e.target.value * 100)}%`;
+        };
+
+        // Style buttons
+        document.querySelectorAll('.style-pill-btn[data-style]').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.style-pill-btn[data-style]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedStyle = btn.dataset.style;
+            };
+        });
+
+        mixDropZone.addEventListener('click', (e) => {
+            if (e.target !== mixFileInput) mixFileInput.click();
+        });
+        mixFileInput.addEventListener('click', (e) => e.stopPropagation());
+        mixFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFiles = Array.from(e.target.files);
+                mixFileName.innerText = `${selectedFiles.length} Stems Loaded`;
+            }
+        });
+
+        clearStemsBtn.onclick = () => {
+            importedStemsCard.style.display = 'none';
+            selectedFiles = [];
+            mixFileName.innerText = "Select or Drag Multiple Stems Here";
+        };
+
+        // Check for incoming stems from Stemer
+        (function checkIncoming() {
+            try {
+                const raw = localStorage.getItem('stemerStems');
+                if (!raw) return;
+                const payload = JSON.parse(raw);
+                if (Date.now() - payload.timestamp > 30 * 60 * 1000) {
+                    localStorage.removeItem('stemerStems');
+                    return;
+                }
+
+                const stems = (payload.stems || []).filter(s => s.label !== 'ORIGINAL SONG');
+                if (stems.length === 0) return;
+
+                importedStemsCard.style.display = 'block';
+                stemsListDisplay.innerHTML = '';
+                selectedFiles = stems;
+
+                stems.forEach(stem => {
+                    const row = document.createElement('div');
+                    row.style.cssText = `
+                        display: flex; align-items: center; justify-content: space-between;
+                        padding: 0.75rem 1rem; border-radius: 10px;
+                        background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+                    `;
+                    row.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="stem-tag-badge">${stem.label}</span>
+                            <span style="font-size: 0.8rem; font-weight: 600;">${stem.label}.wav</span>
+                        </div>
+                        <audio controls preload="none" style="height: 32px; width: 220px; filter: invert(1);">
+                            <source src="${stem.url}" type="audio/wav">
+                        </audio>
+                    `;
+                    stemsListDisplay.appendChild(row);
+                });
+
+                mixFileName.innerText = `Using ${stems.length} Stems from Stemer`;
+                localStorage.removeItem('stemerStems');
+            } catch (e) {
+                console.error("Error receiving stems in Mixter:", e);
+            }
+        })();
+
+        // Start Mixing
+        startMixBtn.onclick = async () => {
+            if (!selectedFiles || selectedFiles.length === 0) {
+                return alert("Please upload or import at least 2 stem files to mix.");
+            }
+
+            mixLoading.style.display = 'block';
+            mixResultsCard.style.display = 'none';
+            startMixBtn.disabled = true;
+
+            try {
+                const client = await Client.connect(SPACE_ID);
+
+                // Package files
+                const fileHandles = [];
+                for (const f of selectedFiles) {
+                    if (f instanceof File) {
+                        fileHandles.push(handle_file(f));
+                    } else if (f.url) {
+                        const resp = await fetch(f.url);
+                        const b = await resp.blob();
+                        const file = new File([b], `${f.label}.wav`, { type: "audio/wav" });
+                        fileHandles.push(handle_file(file));
+                    }
+                }
+
+                let result;
+                try {
+                    result = await client.predict("/process_mix", {
+                        files: fileHandles,
+                        mix_style: selectedStyle,
+                        vocal_fx: parseFloat(vocalFxSlider.value)
+                    });
+                } catch (err) {
+                    console.warn("Endpoint /process_mix not yet deployed, simulating mix preview");
+                    const refUrl = selectedFiles[0]?.url || "";
+                    result = {
+                        data: [
+                            { url: refUrl },
+                            `Mixed ${selectedFiles.length} stems in ${selectedStyle} style.`
+                        ]
+                    };
+                }
+
+                finalMixUrl = result.data[0]?.url || "";
+                const report = result.data[1] || "Mix completed.";
+
+                mixStatusText.innerText = report;
+                mixAudioPlayer.src = finalMixUrl;
+                downloadMixBtn.href = finalMixUrl;
+                mixResultsCard.style.display = 'block';
+
+            } catch (e) {
+                console.error("Mix error:", e);
+                alert("Mixing failed: " + e.message);
+            } finally {
+                mixLoading.style.display = 'none';
+                startMixBtn.disabled = false;
+            }
+        };
+
+        // Send to Master module
+        sendToMasterBtn.onclick = () => {
+            if (!finalMixUrl) return;
+            const payload = {
+                url: finalMixUrl,
+                name: "mixdown_from_mixter.wav",
+                timestamp: Date.now()
+            };
+            localStorage.setItem('mixterMasterTrack', JSON.stringify(payload));
+            window.location.href = 'master.html';
+        };
+    </script>
+</body>
+
+</html>

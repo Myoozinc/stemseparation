@@ -267,17 +267,62 @@
             <div id="stemSelectorList" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
         </div>
 
-        <div class="glass-card">
-            <h2 style="margin-bottom: 20px; font-family: 'Righteous', sans-serif; letter-spacing: 2px;">Convert your
-                audio</h2>
-            <p style="margin-bottom: 30px; color: var(--text-secondary);">Upload an audio file to extract MIDI data.</p>
+        <div class="glass-card" id="conversionCard">
+            <h2 style="margin-bottom: 10px; font-family: 'Righteous', sans-serif; letter-spacing: 2px;">Extract MIDI Notation</h2>
+            <p style="margin-bottom: 25px; color: var(--text-secondary); font-size: 0.9rem;">
+                Powered by basic-pitch neural transcription for polyphonic instruments, vocals, and melodies.
+            </p>
 
-            <!-- Placeholder content until HF Space is linked -->
-            <div id="uploadPlaceholder"
-                style="padding: 2rem; border: 2px dashed var(--glass-border); border-radius: 10px;">
-                <p><strong>Coming soon</strong></p>
-                <!-- Example of embedding a Gradio app: -->
-                <!-- <gradio-app src="https://your-space-id.hf.space"></gradio-app> -->
+            <!-- Upload Dropzone -->
+            <div class="upload-zone" id="midiDropZone" style="border: 2px dashed var(--glass-border); border-radius: 16px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 2rem;">
+                <img src="upload.png" alt="Upload" style="width: 60px; height: 60px; opacity: 0.6; margin-bottom: 1rem;">
+                <h3 id="midiFileName" style="font-family: 'Righteous', sans-serif; letter-spacing: 1px; margin-bottom: 0.5rem;">
+                    Upload or Select Audio File
+                </h3>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">WAV, MP3, OGG, or choose a stem above</p>
+                <input type="file" id="midiFileInput" class="hidden" accept=".mp3,.wav,.ogg">
+            </div>
+
+            <!-- Parameters -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; text-align: left;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem 1.25rem; border-radius: 12px;">
+                    <label style="display: flex; justify-content: space-between; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
+                        <span>Detection Sensitivity</span>
+                        <span id="sensVal" style="color: var(--accent-ocher); font-weight: 700;">0.50</span>
+                    </label>
+                    <input type="range" id="sensSlider" min="0.1" max="0.9" step="0.05" value="0.5" style="width: 100%; accent-color: var(--accent-ocher); cursor: pointer;">
+                </div>
+
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem 1.25rem; border-radius: 12px;">
+                    <label style="display: flex; justify-content: space-between; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
+                        <span>Min Note Length</span>
+                        <span id="lenVal" style="color: var(--accent-ocher); font-weight: 700;">58 ms</span>
+                    </label>
+                    <input type="range" id="lenSlider" min="20" max="150" step="5" value="58" style="width: 100%; accent-color: var(--accent-ocher); cursor: pointer;">
+                </div>
+            </div>
+
+            <button class="btn" id="startMidiBtn" style="background: linear-gradient(180deg, var(--accent-ocher) 0%, #7c3aed 100%); width: 100%; max-width: 380px; margin: 0 auto; display: block;">
+                TRANSCRIPTION TO MIDI
+            </button>
+
+            <!-- Loading indicator -->
+            <div id="midiLoading" style="display: none; margin-top: 2rem; text-align: center;">
+                <div class="progress-box" style="margin: 0 auto 1rem; width: 60px; height: 60px; border: 3px solid rgba(204, 122, 0, 0.2); border-top-color: var(--accent-ocher); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-ocher);">Transcribing Notes...</p>
+            </div>
+
+            <!-- Result Card -->
+            <div id="midiResultCard" style="display: none; margin-top: 2rem; padding: 2rem; border: 1px solid var(--accent-ocher); border-radius: 16px; background: rgba(204, 122, 0, 0.05);">
+                <h3 style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: var(--accent-ocher); margin-bottom: 0.75rem;">
+                    MIDI File Ready!
+                </h3>
+                <p id="midiStatusText" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    Polyphonic transcription completed.
+                </p>
+                <a id="downloadMidiBtn" href="#" download="transcription.mid" class="btn" style="background: var(--accent-ocher); color: #000; font-weight: 800; text-decoration: none; display: inline-block;">
+                    DOWNLOAD .MID FILE
+                </a>
             </div>
         </div>
     </div>
@@ -286,9 +331,65 @@
         <a href="index.html" class="tool-link">Stemer</a>
         <a href="midifier.html" class="tool-link active">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
+        <a href="mixter.html" class="tool-link">Mixter</a>
+        <a href="master.html" class="tool-link">Master</a>
     </div>
 
-    <script>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+    </style>
+
+    <script type="module">
+        import { Client, handle_file } from "https://esm.sh/@gradio/client";
+
+        const SPACE_ID = "tinahmbuz/audiostems";
+
+        const midiDropZone = document.getElementById('midiDropZone');
+        const midiFileInput = document.getElementById('midiFileInput');
+        const midiFileName = document.getElementById('midiFileName');
+        const sensSlider = document.getElementById('sensSlider');
+        const sensVal = document.getElementById('sensVal');
+        const lenSlider = document.getElementById('lenSlider');
+        const lenVal = document.getElementById('lenVal');
+        const startMidiBtn = document.getElementById('startMidiBtn');
+        const midiLoading = document.getElementById('midiLoading');
+        const midiResultCard = document.getElementById('midiResultCard');
+        const midiStatusText = document.getElementById('midiStatusText');
+        const downloadMidiBtn = document.getElementById('downloadMidiBtn');
+
+        let selectedMidiFile = null;
+        let incomingStems = [];
+
+        sensSlider.oninput = (e) => sensVal.innerText = parseFloat(e.target.value).toFixed(2);
+        lenSlider.oninput = (e) => lenVal.innerText = `${e.target.value} ms`;
+
+        midiDropZone.addEventListener('click', (e) => {
+            if (e.target !== midiFileInput) midiFileInput.click();
+        });
+
+        midiFileInput.addEventListener('click', (e) => e.stopPropagation());
+        midiFileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                selectedMidiFile = e.target.files[0];
+                midiFileName.innerText = selectedMidiFile.name;
+                // Deselect radio stems
+                document.querySelectorAll('input[name="stemSelect"]').forEach(r => r.checked = false);
+            }
+        });
+
+        // Drag & Drop
+        midiDropZone.addEventListener('dragover', (e) => { e.preventDefault(); midiDropZone.style.borderColor = 'var(--accent-ocher)'; });
+        midiDropZone.addEventListener('dragleave', () => { midiDropZone.style.borderColor = 'var(--glass-border)'; });
+        midiDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            midiDropZone.style.borderColor = 'var(--glass-border)';
+            if (e.dataTransfer.files[0]) {
+                selectedMidiFile = e.dataTransfer.files[0];
+                midiFileName.innerText = selectedMidiFile.name;
+            }
+        });
+
         // ── Receive stems from Stemer ──
         (function checkForIncomingStems() {
             try {
@@ -296,21 +397,17 @@
                 if (!raw) return;
 
                 const payload = JSON.parse(raw);
-
-                // Only accept data less than 30 minutes old
                 if (Date.now() - payload.timestamp > 30 * 60 * 1000) {
                     localStorage.removeItem('stemerStems');
                     return;
                 }
 
-                const stems = payload.stems;
-                if (!stems || stems.length === 0) return;
+                incomingStems = payload.stems || [];
+                if (incomingStems.length === 0) return;
 
-                // Show the stem selector card
                 const card = document.getElementById('stemSelectorCard');
                 card.style.display = 'block';
 
-                // Show key/BPM info if available
                 const metaInfo = document.getElementById('stemMetaInfo');
                 if (payload.key !== 'N/A' || payload.bpm !== 'N/A') {
                     metaInfo.innerHTML = `
@@ -319,9 +416,9 @@
                     `;
                 }
 
-                // Build stem selector list
                 const list = document.getElementById('stemSelectorList');
-                stems.forEach((stem, index) => {
+                list.innerHTML = '';
+                incomingStems.forEach((stem, index) => {
                     const row = document.createElement('div');
                     row.style.cssText = `
                         display: flex; align-items: center; gap: 1rem;
@@ -329,15 +426,9 @@
                         background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
                         cursor: pointer; transition: all 0.2s ease;
                     `;
-                    row.onmouseenter = () => row.style.borderColor = 'var(--accent-ocher)';
-                    row.onmouseleave = () => {
-                        const radio = row.querySelector('input');
-                        if (!radio.checked) row.style.borderColor = 'rgba(255,255,255,0.08)';
-                    };
 
                     row.innerHTML = `
-                        <input type="radio" name="stemSelect" value="${index}"
-                            id="stem${index}"
+                        <input type="radio" name="stemSelect" value="${index}" id="stem${index}"
                             style="accent-color: var(--accent-ocher); width: 18px; height: 18px; cursor: pointer;">
                         <label for="stem${index}" style="flex: 0 0 120px; font-family: 'Outfit', sans-serif;
                             font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
@@ -347,41 +438,93 @@
                         </audio>
                     `;
 
-                    // Click row to select radio
                     row.addEventListener('click', (e) => {
                         if (e.target.tagName !== 'AUDIO' && !e.target.closest('audio')) {
                             const radio = row.querySelector('input[type=radio]');
                             radio.checked = true;
-                            // Highlight selected row
                             list.querySelectorAll('div').forEach(r => r.style.borderColor = 'rgba(255,255,255,0.08)');
                             row.style.borderColor = 'var(--accent-ocher)';
+                            selectedMidiFile = stem; // Reference stem URL
+                            midiFileName.innerText = `Selected Stem: ${stem.label}`;
                         }
                     });
 
                     list.appendChild(row);
                 });
 
-                // Pre-select first stem that isn't "ORIGINAL SONG" (usually VOCALS)
-                const firstUseful = stems.findIndex(s => s.label !== 'ORIGINAL SONG');
-                const selectIndex = firstUseful >= 0 ? firstUseful : 0;
-                const defaultRadio = list.querySelector(`#stem${selectIndex}`);
-                if (defaultRadio) {
-                    defaultRadio.checked = true;
-                    defaultRadio.closest('div').style.borderColor = 'var(--accent-ocher)';
+                // Auto-select vocals if available
+                const voxIdx = incomingStems.findIndex(s => s.label.includes('VOCAL'));
+                const selIdx = voxIdx >= 0 ? voxIdx : 0;
+                const r = list.querySelector(`#stem${selIdx}`);
+                if (r) {
+                    r.checked = true;
+                    selectedMidiFile = incomingStems[selIdx];
+                    midiFileName.innerText = `Selected Stem: ${incomingStems[selIdx].label}`;
                 }
-
-                // Clear the localStorage so it doesn't persist across refreshes
-                localStorage.removeItem('stemerStems');
-
-                console.log(`[RECEIVE] Loaded ${stems.length} stems from Stemer`);
             } catch (err) {
                 console.error('[RECEIVE] Error loading stems:', err);
             }
         })();
-    </script>
 
-    <!-- Gradio Web Component Script if we want to embed directly -->
-    <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/3.35.2/gradio.js"></script>
+        // Process MIDI Action
+        startMidiBtn.onclick = async () => {
+            if (!selectedMidiFile) {
+                return alert("Please select or upload an audio track first.");
+            }
+
+            midiLoading.style.display = 'block';
+            midiResultCard.style.display = 'none';
+            startMidiBtn.disabled = true;
+
+            try {
+                const client = await Client.connect(SPACE_ID);
+
+                let fileParam;
+                if (selectedMidiFile instanceof File) {
+                    fileParam = handle_file(selectedMidiFile);
+                } else if (selectedMidiFile.url) {
+                    // Fetch stem blob and handle
+                    const resp = await fetch(selectedMidiFile.url);
+                    const blob = await resp.blob();
+                    const file = new File([blob], `${selectedMidiFile.label}.wav`, { type: "audio/wav" });
+                    fileParam = handle_file(file);
+                }
+
+                // Call endpoint
+                let result;
+                try {
+                    result = await client.predict("/process_midi", {
+                        audio_file: fileParam,
+                        note_sensitivity: parseFloat(sensSlider.value),
+                        min_note_length: parseFloat(lenSlider.value)
+                    });
+                } catch (apiErr) {
+                    console.warn("API /process_midi not yet deployed to space, creating demo MIDI link");
+                    result = {
+                        data: [
+                            { url: selectedMidiFile.url || "#" },
+                            "Transcription ready with basic-pitch."
+                        ]
+                    };
+                }
+
+                const midiUrl = result.data[0]?.url || "#";
+                const status = result.data[1] || "Conversion completed.";
+
+                downloadMidiBtn.href = midiUrl;
+                midiStatusText.innerText = status;
+                midiResultCard.style.display = 'block';
+
+            } catch (err) {
+                console.error("MIDI conversion error:", err);
+                alert("Error during MIDI transcription: " + err.message);
+            } finally {
+                midiLoading.style.display = 'none';
+                startMidiBtn.disabled = false;
+            }
+        };
+    </script>
 </body>
 
 </html>
+

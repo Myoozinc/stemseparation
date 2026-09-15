@@ -97,37 +97,124 @@ h1 {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* Tool Navigation (bottom nav) */
+/* Tool Navigation (bottom nav for 5 tools) */
 .tool-nav {
     position: fixed;
-    bottom: 30px;
+    bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 10px 20px;
+    background: rgba(15, 15, 20, 0.75);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    padding: 8px 16px;
     border-radius: 50px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
-    gap: 20px;
+    align-items: center;
+    gap: 8px;
     z-index: 1000;
+    max-width: 92vw;
+    overflow-x: auto;
+    scrollbar-width: none;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
+}
+
+.tool-nav::-webkit-scrollbar {
+    display: none;
 }
 
 .tool-link {
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
     text-transform: uppercase;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     letter-spacing: 2px;
     font-weight: 700;
-    transition: all 0.3s;
+    padding: 8px 16px;
+    border-radius: 30px;
+    transition: all 0.25s ease;
+    white-space: nowrap;
 }
 
-.tool-link:hover,
+.tool-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
 .tool-link.active {
     color: #fff;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+}
+
+/* Sample Pad Grid for Sampler */
+.pad-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.sample-pad {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 1.25rem 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.sample-pad:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+    border-color: var(--accent-primary);
+}
+
+.sample-pad:active,
+.sample-pad.playing {
+    transform: scale(0.96);
+    background: var(--accent-primary);
+    color: #000;
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.sample-pad .pad-num {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.sample-pad.playing .pad-num {
+    color: #000;
+}
+
+.sample-pad .pad-name {
+    font-family: 'Righteous', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+/* Audio metrics badges */
+.metric-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+}
+
+.metric-pill strong {
+    color: var(--accent-primary);
 }
 
 /* Placeholder/Setup Message */
@@ -138,6 +225,7 @@ h1 {
     text-align: center;
     color: var(--text-secondary, rgba(255, 255, 255, 0.6));
 }
+
 
 .setup-placeholder h3 {
     margin-bottom: 1rem;

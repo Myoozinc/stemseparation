@@ -1045,6 +1045,10 @@
                                 style="background: transparent; border: 2px solid #00e5ff; border-radius: 50px; color: #00e5ff; font-size: 0.75rem; padding: 12px 30px; min-width: 190px; font-family: 'Righteous', sans-serif; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease;">
                                 Send to Sampler
                             </button>
+                            <button onclick="sendToTool('mixter')" class="btn"
+                                style="background: transparent; border: 2px solid #10b981; border-radius: 50px; color: #10b981; font-size: 0.75rem; padding: 12px 30px; min-width: 190px; font-family: 'Righteous', sans-serif; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease;">
+                                Send to Mixter
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1675,6 +1679,10 @@
                 window.location.href = 'midifier.html';
             } else if (tool === 'sampler') {
                 window.location.href = 'sampler.html';
+            } else if (tool === 'mixter') {
+                window.location.href = 'mixter.html';
+            } else if (tool === 'master') {
+                window.location.href = 'master.html';
             }
         };
 
@@ -1701,6 +1709,8 @@
         <a href="index.html" class="tool-link active">Stemer</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
+        <a href="mixter.html" class="tool-link">Mixter</a>
+        <a href="master.html" class="tool-link">Master</a>
     </div>
 
 </body>

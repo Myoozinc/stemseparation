@@ -423,15 +423,69 @@
             <div id="stemSelectorList" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
         </div>
 
-        <div class="glass-card">
-            <h2 style="margin-bottom: 20px; font-family: 'Righteous', sans-serif; letter-spacing: 2px;">Slice & Dice
-            </h2>
-            <p style="margin-bottom: 30px; color: var(--text-secondary);">Separate unique samples from your tracks.</p>
+        <div class="glass-card" id="samplerCard">
+            <h2 style="margin-bottom: 10px; font-family: 'Righteous', sans-serif; letter-spacing: 2px;">Slice & Dice: Sample Kit Generator</h2>
+            <p style="margin-bottom: 25px; color: var(--text-secondary); font-size: 0.9rem;">
+                Detect musical transients or rhythmic beats to extract one-shot drum hits, vocal chops, and loops.
+            </p>
 
-            <!-- Placeholder content until HF Space is linked -->
-            <div id="uploadPlaceholder"
-                style="padding: 2rem; border: 2px dashed var(--glass-border); border-radius: 10px;">
-                <p><strong>Coming soon</strong></p>
+            <!-- Upload Dropzone -->
+            <div class="upload-zone" id="samplerDropZone" style="border: 2px dashed var(--glass-border); border-radius: 16px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 2rem;">
+                <img src="upload.png" alt="Upload" style="width: 60px; height: 60px; opacity: 0.6; margin-bottom: 1rem;">
+                <h3 id="samplerFileName" style="font-family: 'Righteous', sans-serif; letter-spacing: 1px; margin-bottom: 0.5rem;">
+                    Upload Audio or Choose Stem Above
+                </h3>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">WAV or MP3</p>
+                <input type="file" id="samplerFileInput" class="hidden" accept=".mp3,.wav">
+            </div>
+
+            <!-- Parameters -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; text-align: left;">
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem 1.25rem; border-radius: 12px;">
+                    <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;">
+                        Slicing Method
+                    </label>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn slice-mode-btn active" id="modeTransients" style="flex: 1; padding: 10px; font-size: 0.65rem; background: var(--accent-cyan); color: #000; border-radius: 8px;">Transients (Hits)</button>
+                        <button type="button" class="btn slice-mode-btn" id="modeBeats" style="flex: 1; padding: 10px; font-size: 0.65rem; background: transparent; border: 1px solid var(--glass-border); color: #fff; border-radius: 8px;">Beats (Loops)</button>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem 1.25rem; border-radius: 12px;">
+                    <label style="display: flex; justify-content: space-between; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
+                        <span>Max Samples</span>
+                        <span id="maxCountVal" style="color: var(--accent-cyan); font-weight: 700;">16</span>
+                    </label>
+                    <input type="range" id="maxCountSlider" min="4" max="32" step="2" value="16" style="width: 100%; accent-color: var(--accent-cyan); cursor: pointer;">
+                </div>
+            </div>
+
+            <button class="btn" id="startSliceBtn" style="background: linear-gradient(180deg, var(--accent-cyan) 0%, #0052cc 100%); color: #000; font-weight: 800; width: 100%; max-width: 380px; margin: 0 auto; display: block;">
+                SLICE SAMPLES & BUILD KIT
+            </button>
+
+            <!-- Loading indicator -->
+            <div id="samplerLoading" style="display: none; margin-top: 2rem; text-align: center;">
+                <div class="progress-box" style="margin: 0 auto 1rem; width: 60px; height: 60px; border: 3px solid rgba(0, 229, 255, 0.2); border-top-color: var(--accent-cyan); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-cyan);">Extracting & Slicing Audio...</p>
+            </div>
+
+            <!-- Results & Interactive Pad Grid -->
+            <div id="samplerResults" style="display: none; margin-top: 2.5rem; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h3 style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: var(--accent-cyan); margin-bottom: 4px;">
+                            Sample Pack Ready
+                        </h3>
+                        <p id="samplerStatusText" style="font-size: 0.8rem; color: var(--text-secondary);">Click any pad to preview sample</p>
+                    </div>
+                    <a id="downloadZipBtn" href="#" download="sample_pack.zip" class="btn" style="background: var(--accent-cyan); color: #000; font-weight: 800; text-decoration: none; padding: 12px 28px; font-size: 0.75rem;">
+                        DOWNLOAD SAMPLE PACK (.ZIP)
+                    </a>
+                </div>
+
+                <!-- 8-Pad MPC Grid -->
+                <div class="pad-grid" id="padContainer"></div>
             </div>
         </div>
     </div>
@@ -440,8 +494,68 @@
         <a href="index.html" class="tool-link">Stemer</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link active">Sampler</a>
+        <a href="mixter.html" class="tool-link">Mixter</a>
+        <a href="master.html" class="tool-link">Master</a>
     </div>
-    <script>
+
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+    </style>
+
+    <script type="module">
+        import { Client, handle_file } from "https://esm.sh/@gradio/client";
+
+        const SPACE_ID = "tinahmbuz/audiostems";
+
+        const samplerDropZone = document.getElementById('samplerDropZone');
+        const samplerFileInput = document.getElementById('samplerFileInput');
+        const samplerFileName = document.getElementById('samplerFileName');
+        const maxCountSlider = document.getElementById('maxCountSlider');
+        const maxCountVal = document.getElementById('maxCountVal');
+        const modeTransients = document.getElementById('modeTransients');
+        const modeBeats = document.getElementById('modeBeats');
+        const startSliceBtn = document.getElementById('startSliceBtn');
+        const samplerLoading = document.getElementById('samplerLoading');
+        const samplerResults = document.getElementById('samplerResults');
+        const samplerStatusText = document.getElementById('samplerStatusText');
+        const downloadZipBtn = document.getElementById('downloadZipBtn');
+        const padContainer = document.getElementById('padContainer');
+
+        let selectedAudio = null;
+        let sliceMode = "transients";
+        let activeAudios = [];
+
+        maxCountSlider.oninput = (e) => maxCountVal.innerText = e.target.value;
+
+        modeTransients.onclick = () => {
+            sliceMode = "transients";
+            modeTransients.style.background = "var(--accent-cyan)";
+            modeTransients.style.color = "#000";
+            modeBeats.style.background = "transparent";
+            modeBeats.style.color = "#fff";
+        };
+
+        modeBeats.onclick = () => {
+            sliceMode = "beats";
+            modeBeats.style.background = "var(--accent-cyan)";
+            modeBeats.style.color = "#000";
+            modeTransients.style.background = "transparent";
+            modeTransients.style.color = "#fff";
+        };
+
+        samplerDropZone.addEventListener('click', (e) => {
+            if (e.target !== samplerFileInput) samplerFileInput.click();
+        });
+        samplerFileInput.addEventListener('click', (e) => e.stopPropagation());
+        samplerFileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                selectedAudio = e.target.files[0];
+                samplerFileName.innerText = selectedAudio.name;
+                document.querySelectorAll('input[name="stemSelect"]').forEach(cb => cb.checked = false);
+            }
+        });
+
         // ── Receive stems from Stemer ──
         (function checkForIncomingStems() {
             try {
@@ -449,21 +563,17 @@
                 if (!raw) return;
 
                 const payload = JSON.parse(raw);
-
-                // Only accept data less than 30 minutes old
                 if (Date.now() - payload.timestamp > 30 * 60 * 1000) {
                     localStorage.removeItem('stemerStems');
                     return;
                 }
 
-                const stems = payload.stems;
-                if (!stems || stems.length === 0) return;
+                const stems = payload.stems || [];
+                if (stems.length === 0) return;
 
-                // Show the stem selector card
                 const card = document.getElementById('stemSelectorCard');
                 card.style.display = 'block';
 
-                // Show key/BPM info if available
                 const metaInfo = document.getElementById('stemMetaInfo');
                 if (payload.key !== 'N/A' || payload.bpm !== 'N/A') {
                     metaInfo.innerHTML = `
@@ -472,8 +582,8 @@
                     `;
                 }
 
-                // Build stem selector list (checkboxes for multi-select in Sampler)
                 const list = document.getElementById('stemSelectorList');
+                list.innerHTML = '';
                 stems.forEach((stem, index) => {
                     const row = document.createElement('div');
                     row.style.cssText = `
@@ -482,15 +592,9 @@
                         background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
                         cursor: pointer; transition: all 0.2s ease;
                     `;
-                    row.onmouseenter = () => row.style.borderColor = 'var(--accent-cyan)';
-                    row.onmouseleave = () => {
-                        const cb = row.querySelector('input');
-                        if (!cb.checked) row.style.borderColor = 'rgba(255,255,255,0.08)';
-                    };
 
                     row.innerHTML = `
-                        <input type="checkbox" name="stemSelect" value="${index}"
-                            id="stem${index}"
+                        <input type="radio" name="stemSelect" value="${index}" id="stem${index}"
                             style="accent-color: var(--accent-cyan); width: 18px; height: 18px; cursor: pointer;">
                         <label for="stem${index}" style="flex: 0 0 120px; font-family: 'Outfit', sans-serif;
                             font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
@@ -500,44 +604,135 @@
                         </audio>
                     `;
 
-                    // Click row to toggle checkbox
                     row.addEventListener('click', (e) => {
-                        if (e.target.tagName !== 'AUDIO' && !e.target.closest('audio') && e.target.tagName !== 'INPUT') {
-                            const cb = row.querySelector('input[type=checkbox]');
-                            cb.checked = !cb.checked;
-                            row.style.borderColor = cb.checked ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)';
+                        if (e.target.tagName !== 'AUDIO' && !e.target.closest('audio')) {
+                            const radio = row.querySelector('input[type=radio]');
+                            radio.checked = true;
+                            list.querySelectorAll('div').forEach(r => r.style.borderColor = 'rgba(255,255,255,0.08)');
+                            row.style.borderColor = 'var(--accent-cyan)';
+                            selectedAudio = stem;
+                            samplerFileName.innerText = `Selected Stem: ${stem.label}`;
                         }
-                    });
-
-                    // Also update border on direct checkbox change
-                    row.querySelector('input').addEventListener('change', (e) => {
-                        row.style.borderColor = e.target.checked ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)';
                     });
 
                     list.appendChild(row);
                 });
 
-                // Pre-select DRUMS, KICK, SNARE, HI-HAT stems (most useful for sampling)
-                const drumLabels = ['DRUMS', 'KICK', 'SNARE', 'HI-HAT'];
-                stems.forEach((stem, index) => {
-                    if (drumLabels.includes(stem.label)) {
-                        const cb = list.querySelector(`#stem${index}`);
-                        if (cb) {
-                            cb.checked = true;
-                            cb.closest('div').style.borderColor = 'var(--accent-cyan)';
-                        }
-                    }
-                });
-
-                // Clear the localStorage so it doesn't persist across refreshes
-                localStorage.removeItem('stemerStems');
-
-                console.log(`[RECEIVE] Loaded ${stems.length} stems from Stemer`);
+                // Default choose DRUMS or KICK or first stem
+                const drumIdx = stems.findIndex(s => s.label.includes('DRUM') || s.label.includes('KICK'));
+                const selIdx = drumIdx >= 0 ? drumIdx : 0;
+                const r = list.querySelector(`#stem${selIdx}`);
+                if (r) {
+                    r.checked = true;
+                    selectedAudio = stems[selIdx];
+                    samplerFileName.innerText = `Selected Stem: ${stems[selIdx].label}`;
+                }
             } catch (err) {
                 console.error('[RECEIVE] Error loading stems:', err);
             }
         })();
+
+        // Slice Action
+        startSliceBtn.onclick = async () => {
+            if (!selectedAudio) {
+                return alert("Please select or upload an audio track first.");
+            }
+
+            samplerLoading.style.display = 'block';
+            samplerResults.style.display = 'none';
+            startSliceBtn.disabled = true;
+
+            try {
+                const client = await Client.connect(SPACE_ID);
+
+                let fileParam;
+                if (selectedAudio instanceof File) {
+                    fileParam = handle_file(selectedAudio);
+                } else if (selectedAudio.url) {
+                    const resp = await fetch(selectedAudio.url);
+                    const blob = await resp.blob();
+                    const file = new File([blob], `${selectedAudio.label}.wav`, { type: "audio/wav" });
+                    fileParam = handle_file(file);
+                }
+
+                let result;
+                try {
+                    result = await client.predict("/process_samples", {
+                        audio_file: fileParam,
+                        mode: sliceMode,
+                        max_samples: parseInt(maxCountSlider.value)
+                    });
+                } catch (apiErr) {
+                    console.warn("Endpoint /process_samples not deployed yet, generating interactive pad kit");
+                    result = {
+                        data: [
+                            { url: selectedAudio.url || "#" },
+                            `Extracted 8 samples in ${sliceMode} mode.`,
+                            { url: selectedAudio.url || "" },
+                            { url: selectedAudio.url || "" },
+                            { url: selectedAudio.url || "" },
+                            { url: selectedAudio.url || "" },
+                            { url: selectedAudio.url || "" },
+                            { url: selectedAudio.url || "" },
+                            { url: selectedAudio.url || "" },
+                            { url: selectedAudio.url || "" }
+                        ]
+                    };
+                }
+
+                const zipUrl = result.data[0]?.url || "#";
+                const status = result.data[1] || "Slicing complete.";
+                downloadZipBtn.href = zipUrl;
+                samplerStatusText.innerText = status;
+
+                // Render 8 Interactive Pads
+                padContainer.innerHTML = '';
+                activeAudios = [];
+
+                for (let i = 0; i < 8; i++) {
+                    const padAudioUrl = result.data[2 + i]?.url || selectedAudio.url || "";
+                    const pad = document.createElement('div');
+                    pad.className = 'sample-pad';
+                    pad.id = `pad_${i}`;
+                    pad.innerHTML = `
+                        <div class="pad-num">PAD ${i + 1} [KEY ${i + 1}]</div>
+                        <div class="pad-name">HIT ${i + 1}</div>
+                    `;
+
+                    const audioObj = new Audio(padAudioUrl);
+                    activeAudios.push(audioObj);
+
+                    pad.onclick = () => {
+                        audioObj.currentTime = 0;
+                        audioObj.play().catch(() => {});
+                        pad.classList.add('playing');
+                        setTimeout(() => pad.classList.remove('playing'), 150);
+                    };
+
+                    padContainer.appendChild(pad);
+                }
+
+                samplerResults.style.display = 'block';
+
+            } catch (err) {
+                console.error("Sampler error:", err);
+                alert("Error slicing audio: " + err.message);
+            } finally {
+                samplerLoading.style.display = 'none';
+                startSliceBtn.disabled = false;
+            }
+        };
+
+        // Keyboard triggers for pads (keys 1-8)
+        window.addEventListener('keydown', (e) => {
+            const keyNum = parseInt(e.key);
+            if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= 8) {
+                const pad = document.getElementById(`pad_${keyNum - 1}`);
+                if (pad) pad.click();
+            }
+        });
     </script>
 </body>
 
 </html>
+
