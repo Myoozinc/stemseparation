@@ -1,0 +1,196 @@
+/* Shared Styles - Used across all tool pages */
+/* Include this file in index.html, midifier.html, and sampler.html */
+/* Color variables are defined per-page in inline <style> tags */
+
+/* Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Base Body Styles */
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-black, #050505);
+    color: var(--text-white, #FFFFFF);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+/* Main Container */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+    margin-top: 80px;
+}
+
+/* Tool Header (page title section) */
+header.tool-header {
+    text-align: left;
+    margin-bottom: 3rem;
+    padding-left: 1rem;
+}
+
+/* H1 Title - Gray gradient text */
+h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(3rem, 10vw, 5.5rem);
+    line-height: 0.95;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -3px;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(180deg, #fff 30%, rgba(255, 255, 255, 0.2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Subtitle */
+.subtitle {
+    color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+/* Glass Card */
+.glass-card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+    border-radius: 30px;
+    padding: 3rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+/* Primary Button */
+.btn {
+    background: linear-gradient(180deg, var(--accent-primary, #d946ef) 0%, var(--accent-purple, #26014b) 100%);
+    color: white;
+    border: none;
+    padding: 16px 45px;
+    border-radius: 100px;
+    font-weight: 400;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'Righteous', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Tool Navigation (bottom nav) */
+.tool-nav {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 20px;
+    z-index: 1000;
+}
+
+.tool-link {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    font-weight: 700;
+    transition: all 0.3s;
+}
+
+.tool-link:hover,
+.tool-link.active {
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Placeholder/Setup Message */
+.setup-placeholder {
+    border: 2px dashed var(--glass-border, rgba(255, 255, 255, 0.2));
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+}
+
+.setup-placeholder h3 {
+    margin-bottom: 1rem;
+    color: var(--text-white, #fff);
+}
+
+/* Gradio/iframe embed */
+#gradio-app {
+    width: 100%;
+    min-height: 500px;
+    border: none;
+    border-radius: 20px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .container {
+        padding: 1rem;
+        margin-top: 90px;
+    }
+
+    header.tool-header {
+        padding-left: 0;
+        margin-bottom: 2rem;
+    }
+
+    h1 {
+        letter-spacing: -2px;
+        margin-bottom: 1rem;
+    }
+
+    .subtitle {
+        font-size: 0.7rem;
+        letter-spacing: 2px;
+    }
+
+    .glass-card {
+        padding: 1.5rem;
+        border-radius: 20px;
+    }
+
+    .btn {
+        padding: 12px 30px;
+        font-size: 0.75rem;
+    }
+
+    .tool-nav {
+        padding: 8px 15px;
+        gap: 15px;
+    }
+
+    .tool-link {
+        font-size: 0.6rem;
+        letter-spacing: 1px;
+    }
+}
