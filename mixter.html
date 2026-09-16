@@ -350,6 +350,22 @@
             }
         })();
 
+        function resolveGradioUrl(fileObj) {
+            if (!fileObj) return "";
+            let raw = "";
+            if (typeof fileObj === 'string') {
+                raw = fileObj;
+            } else if (typeof fileObj === 'object') {
+                raw = fileObj.url || fileObj.path || "";
+            }
+            if (!raw) return "";
+            if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("blob:") || raw.startsWith("data:")) {
+                return raw;
+            }
+            const origin = "https://tinahmbuz-audiostems.hf.space";
+            return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
+        }
+
         // Start Mixing
         startMixBtn.onclick = async () => {
             if (!selectedFiles || selectedFiles.length === 0) {
@@ -371,40 +387,48 @@
                     } else if (f.url) {
                         const resp = await fetch(f.url);
                         const b = await resp.blob();
-                        const file = new File([b], `${f.label}.wav`, { type: "audio/wav" });
+                        const file = new File([b], `${f.label || 'stem'}.wav`, { type: "audio/wav" });
                         fileHandles.push(handle_file(file));
                     }
                 }
 
                 let result;
                 try {
+                    result = await client.predict("/process_mix", [
+                        fileHandles,
+                        selectedStyle,
+                        parseFloat(vocalFxSlider.value)
+                    ]);
+                } catch (errPos) {
+                    console.warn("Retrying /process_mix with named parameters:", errPos);
                     result = await client.predict("/process_mix", {
                         files: fileHandles,
                         mix_style: selectedStyle,
                         vocal_fx: parseFloat(vocalFxSlider.value)
                     });
-                } catch (err) {
-                    console.warn("Endpoint /process_mix not yet deployed, simulating mix preview");
-                    const refUrl = selectedFiles[0]?.url || "";
-                    result = {
-                        data: [
-                            { url: refUrl },
-                            `Mixed ${selectedFiles.length} stems in ${selectedStyle} style.`
-                        ]
-                    };
                 }
 
-                finalMixUrl = result.data[0]?.url || "";
-                const report = result.data[1] || "Mix completed.";
+                const outAudio = result.data[0];
+                const report = result.data[1] || "";
+
+                if (!outAudio || (typeof report === 'string' && report.startsWith("ERROR"))) {
+                    throw new Error(report || "El servidor devolvió un error durante la mezcla.");
+                }
+
+                finalMixUrl = resolveGradioUrl(outAudio);
+                if (!finalMixUrl) {
+                    throw new Error("No se pudo obtener el archivo de audio mezclado del servidor.");
+                }
 
                 mixStatusText.innerText = report;
                 mixAudioPlayer.src = finalMixUrl;
                 downloadMixBtn.href = finalMixUrl;
+                downloadMixBtn.download = "mixdown_32bit_float.wav";
                 mixResultsCard.style.display = 'block';
 
             } catch (e) {
                 console.error("Mix error:", e);
-                alert("Mixing failed: " + e.message);
+                alert("Error al mezclar: " + (e.message || e));
             } finally {
                 mixLoading.style.display = 'none';
                 startMixBtn.disabled = false;
@@ -413,7 +437,7 @@
 
         // Send to Master module
         sendToMasterBtn.onclick = () => {
-            if (!finalMixUrl) return;
+            if (!finalMixUrl) return alert("Por favor genera la mezcla antes de enviarla a Master.");
             const payload = {
                 url: finalMixUrl,
                 name: "mixdown_from_mixter.wav",

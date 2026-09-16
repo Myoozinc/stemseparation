@@ -695,8 +695,33 @@
                     audioHandle = handle_file(f);
                 }
 
+        function resolveGradioUrl(fileObj) {
+            if (!fileObj) return "";
+            let raw = "";
+            if (typeof fileObj === 'string') {
+                raw = fileObj;
+            } else if (typeof fileObj === 'object') {
+                raw = fileObj.url || fileObj.path || "";
+            }
+            if (!raw) return "";
+            if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("blob:") || raw.startsWith("data:")) {
+                return raw;
+            }
+            const origin = "https://tinahmbuz-audiostems.hf.space";
+            return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
+        }
+
                 let result;
                 try {
+                    result = await client.predict("/process_master", [
+                        audioHandle,
+                        selectedTarget,
+                        parseFloat(warmthSlider.value),
+                        parseFloat(spreadSlider.value),
+                        parseFloat(airSlider.value)
+                    ]);
+                } catch (errPos) {
+                    console.warn("Retrying /process_master with named parameters:", errPos);
                     result = await client.predict("/process_master", {
                         audio_file: audioHandle,
                         target_profile: selectedTarget,
@@ -704,25 +729,24 @@
                         stereo_spread: parseFloat(spreadSlider.value),
                         air: parseFloat(airSlider.value)
                     });
-                } catch (err) {
-                    console.warn("Backend /process_master in deployment, using fallback preview", err);
-                    const fallbackUrl = selectedFile.url || originalAudioUrl;
-                    const lufsTargets = { streaming: "-14.0", club: "-9.0", dynamic: "-12.0" };
-                    result = {
-                        data: [
-                            { url: fallbackUrl },
-                            `SUCCESS: Mastered to ${lufsTargets[selectedTarget]} LUFS (Input: -18.2 LUFS) | Peak: -0.3 dBFS`
-                        ]
-                    };
                 }
 
-                masteredAudioUrl = result.data[0]?.url || "";
+                const outAudio = result.data[0];
                 const reportStr = result.data[1] || "";
+
+                if (!outAudio || (typeof reportStr === 'string' && reportStr.startsWith("ERROR"))) {
+                    throw new Error(reportStr || "El servidor de mastering devolvió un error.");
+                }
+
+                masteredAudioUrl = resolveGradioUrl(outAudio);
+                if (!masteredAudioUrl) {
+                    throw new Error("No se pudo obtener la URL del audio masterizado.");
+                }
 
                 // Parse metrics from report string if available
                 let inputLufs = "-18.2 LUFS";
                 let outputLufs = selectedTarget === 'streaming' ? "-14.0 LUFS" : (selectedTarget === 'club' ? "-9.0 LUFS" : "-12.0 LUFS");
-                let peakDbfs = "-0.30 dBFS";
+                let peakDbfs = "-0.50 dBFS";
 
                 const matchOut = reportStr.match(/to\s+([-\d.]+)\s*LUFS/i);
                 if (matchOut) outputLufs = `${matchOut[1]} LUFS`;
@@ -739,6 +763,7 @@
                 masterStatusText.innerText = reportStr || "Commercial master processed successfully.";
                 masterAudioPlayer.src = masteredAudioUrl;
                 downloadMasterBtn.href = masteredAudioUrl;
+                downloadMasterBtn.download = "mastered_track_32bit_float.wav";
 
                 // Active Mastered tab
                 btnMastered.classList.add('active');
@@ -748,7 +773,7 @@
 
             } catch (e) {
                 console.error("Mastering failed:", e);
-                alert("Mastering error: " + e.message);
+                alert("Mastering error: " + (e.message || e));
             } finally {
                 clearInterval(progressTimer);
                 masterLoading.style.display = 'none';

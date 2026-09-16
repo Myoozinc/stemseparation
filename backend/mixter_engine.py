@@ -302,7 +302,14 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="modern", voca
     loaded_stems = []
     kick_data = None
     
-    for p in stem_paths:
+    for item in stem_paths:
+        if isinstance(item, (tuple, list)):
+            p = item[0]
+            fname = item[1] if len(item) > 1 else os.path.basename(p)
+        else:
+            p = str(item)
+            fname = os.path.basename(p)
+            
         data, file_sr = sf.read(p)
         if file_sr != sr:
             # Resample to 48kHz
@@ -321,7 +328,6 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="modern", voca
         if len(data_stereo) > max_len:
             max_len = len(data_stereo)
             
-        fname = os.path.basename(p)
         conf = classify_stem(fname)
         
         stem_obj = {
@@ -420,13 +426,13 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="modern", voca
         target_peak_lin = 10 ** (-6.0 / 20.0) # 0.501
         summing_bus = summing_bus * (target_peak_lin / peak_val)
         
-    # Export 24-bit PCM WAV
-    sf.write(output_path, summing_bus.astype(np.float32), sr, subtype='PCM_24')
+    # Export 32-bit Float WAV (Studio Standard)
+    sf.write(output_path, summing_bus.astype(np.float32), sr, subtype='FLOAT')
     
     report = {
         "stems_count": len(stem_paths),
         "mix_style": mix_style,
-        "headroom": "-6.0 dBFS Peak (Studio Headroom Calibrated)",
+        "headroom": "-6.0 dBFS Peak (32-bit Float Calibrated)",
         "output_path": output_path
     }
     return output_path, report

@@ -104,20 +104,43 @@ def process_samples(audio_file, mode="transients", max_samples=16):
     except Exception as e:
         return [None, f"ERROR: {e}"] + [None] * 8
 
+def extract_file_info(f):
+    """Safely extracts (file_path, original_filename) from any Gradio file object or dictionary"""
+    if isinstance(f, dict):
+        path = f.get('path') or f.get('name') or ''
+        orig_name = f.get('orig_name') or (os.path.basename(path) if path else 'audio.wav')
+        return path, orig_name
+    if hasattr(f, 'name'):
+        path = f.name
+        orig_name = getattr(f, 'orig_name', os.path.basename(path))
+        return path, orig_name
+    path = str(f)
+    return path, os.path.basename(path)
+
 # --- Mixter Endpoint ---
 def process_mix(files, mix_style="modern", vocal_fx=0.3):
     if not files:
         return None, "No stem files provided."
     try:
-        file_paths = [f.name if hasattr(f, 'name') else str(f) for f in files]
+        stem_items = []
+        for f in files:
+            p, orig_name = extract_file_info(f)
+            if p and os.path.exists(p):
+                stem_items.append((p, orig_name))
+        
+        if not stem_items:
+            return None, "No valid stem audio files could be accessed on server."
+            
         out_wav, report = process_and_mix_stems(
-            file_paths,
+            stem_items,
             mix_style=mix_style,
             vocal_fx_level=float(vocal_fx)
         )
         report_str = f"SUCCESS: Mixed {report['stems_count']} stems in {mix_style} style. Headroom: {report['headroom']}"
         return out_wav, report_str
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return None, f"ERROR: {e}"
 
 # --- Master Endpoint ---
@@ -125,8 +148,11 @@ def process_master(audio_file, target_profile="streaming", warmth=0.5, stereo_sp
     if not audio_file:
         return None, "No mix audio provided."
     try:
+        path, _ = extract_file_info(audio_file)
+        if not path or not os.path.exists(path):
+            return None, f"Audio file not found on server: {path}"
         out_master, metrics = master_audio(
-            audio_file,
+            path,
             target_profile=target_profile,
             warmth=float(warmth),
             stereo_spread=float(stereo_spread),
@@ -135,6 +161,8 @@ def process_master(audio_file, target_profile="streaming", warmth=0.5, stereo_sp
         report_str = f"SUCCESS: Mastered to {metrics['output_lufs']} LUFS (Input: {metrics['input_lufs']} LUFS) | Peak: {metrics['true_peak_dbfs']} dBFS"
         return out_master, report_str
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return None, f"ERROR: {e}"
 
 # --- Gradio Application with defined API Names ---

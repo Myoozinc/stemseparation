@@ -222,8 +222,8 @@ def master_audio(
     final_lufs = calculate_lufs(final_master, sr)
     final_true_peak = calculate_true_peak(final_master, sr)
     
-    # 8. Export 24-bit PCM WAV
-    sf.write(output_path, final_master.astype(np.float32), sr, subtype='PCM_24')
+    # 8. Export 32-bit Float WAV (Studio Standard)
+    sf.write(output_path, final_master.astype(np.float32), sr, subtype='FLOAT')
     
     metrics = {
         "target_profile": str(target_profile).capitalize(),
@@ -231,7 +231,7 @@ def master_audio(
         "output_lufs": round(float(final_lufs), 1),
         "true_peak_dbfs": round(float(final_true_peak), 2),
         "sample_rate": f"{sr} Hz",
-        "bit_depth": "24-bit PCM WAV",
+        "bit_depth": "32-bit Float WAV",
         "output_path": output_path
     }
     
