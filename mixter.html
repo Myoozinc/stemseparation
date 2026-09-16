@@ -169,7 +169,7 @@
                     Upload individual audio tracks (Vocals, Drums, Bass, Instruments) to mix them automatically into a balanced song.
                 </p>
 
-                <div class="upload-zone" id="mixDropZone" style="border: 2px dashed var(--glass-border); border-radius: 16px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 2rem;">
+                <div class="upload-zone" id="mixDropZone" style="border: 2px dashed var(--glass-border); border-radius: 16px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 1.5rem;">
                     <img src="upload.png" alt="Upload" style="width: 60px; height: 60px; opacity: 0.6; margin-bottom: 1rem;">
                     <h3 id="mixFileName" style="font-family: 'Righteous', sans-serif; letter-spacing: 1px; margin-bottom: 0.5rem;">
                         Select or Drag Multiple Stems Here
@@ -177,6 +177,7 @@
                     <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">WAV or MP3 (Select multiple files at once)</p>
                     <input type="file" id="mixFileInput" class="hidden" accept=".mp3,.wav" multiple>
                 </div>
+                <div id="uploadTipsBox" style="display: none; margin-bottom: 2rem; padding: 1rem 1.25rem; border-radius: 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); text-align: left; font-size: 0.8rem; line-height: 1.5;"></div>
             </div>
 
             <!-- Mixing Settings -->
@@ -208,10 +209,15 @@
                 AI MIX STEMS
             </button>
 
-            <!-- Loading indicator -->
+            <!-- Loading indicator with live phase and timer -->
             <div id="mixLoading" style="display: none; margin-top: 2rem; text-align: center;">
                 <div class="progress-box" style="margin: 0 auto 1rem; width: 60px; height: 60px; border: 3px solid rgba(16, 185, 129, 0.2); border-top-color: var(--accent-emerald); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                <p style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-emerald);">Balancing Gain, EQ, Compression & Vocal Space...</p>
+                <p id="mixLoadingStep" style="font-size: 0.85rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-emerald); font-weight: 700; margin-bottom: 6px;">
+                    Subiendo stems al servidor seguro...
+                </p>
+                <p id="mixLoadingTimer" style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">
+                    Tiempo transcurrido: 0s
+                </p>
             </div>
 
             <!-- Mix Results Card -->
@@ -259,10 +265,13 @@
         const mixDropZone = document.getElementById('mixDropZone');
         const mixFileInput = document.getElementById('mixFileInput');
         const mixFileName = document.getElementById('mixFileName');
+        const uploadTipsBox = document.getElementById('uploadTipsBox');
         const vocalFxSlider = document.getElementById('vocalFxSlider');
         const vocalFxVal = document.getElementById('vocalFxVal');
         const startMixBtn = document.getElementById('startMixBtn');
         const mixLoading = document.getElementById('mixLoading');
+        const mixLoadingStep = document.getElementById('mixLoadingStep');
+        const mixLoadingTimer = document.getElementById('mixLoadingTimer');
         const mixResultsCard = document.getElementById('mixResultsCard');
         const mixStatusText = document.getElementById('mixStatusText');
         const mixAudioPlayer = document.getElementById('mixAudioPlayer');
@@ -275,6 +284,7 @@
         let selectedFiles = [];
         let selectedStyle = "modern";
         let finalMixUrl = null;
+        let timerInterval = null;
 
         vocalFxSlider.oninput = (e) => {
             vocalFxVal.innerText = `${Math.round(e.target.value * 100)}%`;
@@ -289,6 +299,37 @@
             };
         });
 
+        function updateFilesDisplay() {
+            if (!selectedFiles || selectedFiles.length === 0) {
+                mixFileName.innerText = "Select or Drag Multiple Stems Here";
+                if (uploadTipsBox) uploadTipsBox.style.display = 'none';
+                return;
+            }
+
+            let totalBytes = 0;
+            selectedFiles.forEach(f => {
+                if (f.size) totalBytes += f.size;
+            });
+            const totalMB = totalBytes > 0 ? (totalBytes / (1024 * 1024)).toFixed(1) : "0";
+
+            mixFileName.innerText = `${selectedFiles.length} Stems Cargados (${totalMB} MB)`;
+
+            if (uploadTipsBox) {
+                uploadTipsBox.style.display = 'block';
+                if (parseFloat(totalMB) > 150) {
+                    uploadTipsBox.innerHTML = `
+                        <div style="color: #fbbf24; font-weight: 700; margin-bottom: 4px;">⚠️ Archivos pesados detectados (${totalMB} MB en ${selectedFiles.length} stems)</div>
+                        <div style="color: var(--text-secondary);">Subir tantos archivos sin comprimir depende de tu velocidad de conexión a Internet (puede tardar unos minutos). Para una mezcla rápida e instantánea, te recomendamos seleccionar o exportar los <strong>4 a 12 stems esenciales</strong> (Voz Líder, Coros, Bajo/808, Batería/Percusión, Armonías).</div>
+                    `;
+                } else {
+                    uploadTipsBox.innerHTML = `
+                        <div style="color: var(--accent-emerald); font-weight: 700; margin-bottom: 4px;">✓ ${selectedFiles.length} Stems listos para mezcla inteligente</div>
+                        <div style="color: var(--text-secondary);">El motor asignará ecualización quirúrgica, compresión analógica, sidechain de bajo y calibración estéreo a 32-bit Float.</div>
+                    `;
+                }
+            }
+        }
+
         mixDropZone.addEventListener('click', (e) => {
             if (e.target !== mixFileInput) mixFileInput.click();
         });
@@ -296,14 +337,14 @@
         mixFileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 selectedFiles = Array.from(e.target.files);
-                mixFileName.innerText = `${selectedFiles.length} Stems Loaded`;
+                updateFilesDisplay();
             }
         });
 
         clearStemsBtn.onclick = () => {
             importedStemsCard.style.display = 'none';
             selectedFiles = [];
-            mixFileName.innerText = "Select or Drag Multiple Stems Here";
+            updateFilesDisplay();
         };
 
         // Check for incoming stems from Stemer
@@ -366,15 +407,38 @@
             return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
         }
 
+        function startProgressTimer() {
+            let elapsed = 0;
+            mixLoadingStep.innerText = `Paso 1/3: Subiendo ${selectedFiles.length} stems al servidor seguro...`;
+            mixLoadingTimer.innerText = "Tiempo transcurrido: 0s";
+            timerInterval = setInterval(() => {
+                elapsed++;
+                mixLoadingTimer.innerText = `Tiempo transcurrido: ${elapsed}s`;
+                if (elapsed === 8) {
+                    mixLoadingStep.innerText = "Paso 2/3: Analizando instrumentos y aplicando ecualización quirúrgica, compresión y reverb...";
+                } else if (elapsed === 18) {
+                    mixLoadingStep.innerText = "Paso 3/3: Calibrando headroom (-6.0 dBFS) y exportando WAV 32-bit Float...";
+                }
+            }, 1000);
+        }
+
+        function stopProgressTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
         // Start Mixing
         startMixBtn.onclick = async () => {
             if (!selectedFiles || selectedFiles.length === 0) {
-                return alert("Please upload or import at least 2 stem files to mix.");
+                return alert("Por favor sube o importa al menos 2 stems para mezclar.");
             }
 
             mixLoading.style.display = 'block';
             mixResultsCard.style.display = 'none';
             startMixBtn.disabled = true;
+            startProgressTimer();
 
             try {
                 const client = await Client.connect(SPACE_ID);
@@ -430,6 +494,7 @@
                 console.error("Mix error:", e);
                 alert("Error al mezclar: " + (e.message || e));
             } finally {
+                stopProgressTimer();
                 mixLoading.style.display = 'none';
                 startMixBtn.disabled = false;
             }
