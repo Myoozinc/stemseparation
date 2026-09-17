@@ -853,6 +853,134 @@
             background: rgba(217, 70, 239, 0.15);
         }
 
+        /* Incoming track banner from Master or Mixter */
+        .incoming-banner {
+            background: linear-gradient(135deg, rgba(217, 70, 239, 0.12), rgba(38, 1, 75, 0.4));
+            border: 1px solid rgba(217, 70, 239, 0.4);
+            box-shadow: 0 10px 30px rgba(217, 70, 239, 0.15);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .incoming-banner-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent-magenta);
+            background: rgba(217, 70, 239, 0.15);
+            border: 1px solid rgba(217, 70, 239, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 0.75rem;
+        }
+
+        .incoming-banner-body {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .incoming-banner-info {
+            flex: 1 1 240px;
+        }
+
+        .incoming-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .incoming-meta {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .incoming-banner-player audio {
+            height: 38px;
+            min-width: 220px;
+        }
+
+        .incoming-banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-incoming-primary {
+            background: linear-gradient(90deg, var(--accent-magenta), var(--accent-purple));
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-family: 'Righteous', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(217, 70, 239, 0.3);
+        }
+
+        .btn-incoming-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(217, 70, 239, 0.5);
+        }
+
+        .btn-incoming-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-secondary);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-incoming-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        /* Stem quick routing pill buttons */
+        .stem-actions-cell {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .stem-route-pill-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-white);
+            font-size: 0.68rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 1px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .stem-route-pill-btn:hover {
+            background: linear-gradient(135deg, rgba(217, 70, 239, 0.25), rgba(38, 1, 75, 0.5));
+            border-color: var(--accent-magenta);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
     </style>
 </head>
 
@@ -874,6 +1002,24 @@
         </header>
 
         <div class="main-layout">
+            <!-- Incoming track imported from Master or Mixter -->
+            <div id="incomingTrackBanner" class="incoming-banner hidden">
+                <div class="incoming-banner-badge" id="incomingBannerBadge">📥 AUDIO IMPORTADO</div>
+                <div class="incoming-banner-body">
+                    <div class="incoming-banner-info">
+                        <h4 id="incomingTrackTitle" class="incoming-title">Master Track</h4>
+                        <p id="incomingTrackMeta" class="incoming-meta">Desde Master Studio • Listo para separar en stems</p>
+                    </div>
+                    <div class="incoming-banner-player">
+                        <audio id="incomingAudioPreview" controls preload="metadata"></audio>
+                    </div>
+                    <div class="incoming-banner-actions">
+                        <button id="incomingSeparateBtn" class="btn-incoming-primary">⚡ SEPARAR EN STEMS</button>
+                        <button id="incomingDismissBtn" class="btn-incoming-secondary" title="Descartar y subir archivo local">✕</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="uploadView" class="glass-card upload-section">
                 <div class="upload-zone" id="dropZone">
                     <img src="upload.png" alt="Upload" class="upload-icon-img">
@@ -1079,6 +1225,80 @@
         let startTime;
         let errorShown = false;
 
+        function resolveGradioUrl(fileObj) {
+            if (!fileObj) return "";
+            let raw = "";
+            if (typeof fileObj === 'string') {
+                raw = fileObj;
+            } else if (typeof fileObj === 'object') {
+                raw = fileObj.url || fileObj.path || "";
+            }
+            if (!raw) return "";
+            if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("blob:") || raw.startsWith("data:")) {
+                return raw;
+            }
+            const origin = "https://tinahmbuz-audiostems.hf.space";
+            return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
+        }
+
+        // Check for incoming track passed from Master or Mixter
+        (function checkForIncomingTrack() {
+            try {
+                const raw = localStorage.getItem('stemerIncomingTrack');
+                if (!raw) return;
+                const payload = JSON.parse(raw);
+                if (Date.now() - payload.timestamp > 45 * 60 * 1000) {
+                    localStorage.removeItem('stemerIncomingTrack');
+                    return;
+                }
+
+                const banner = document.getElementById('incomingTrackBanner');
+                const badge = document.getElementById('incomingBannerBadge');
+                const title = document.getElementById('incomingTrackTitle');
+                const meta = document.getElementById('incomingTrackMeta');
+                const preview = document.getElementById('incomingAudioPreview');
+                const sepBtn = document.getElementById('incomingSeparateBtn');
+                const dismissBtn = document.getElementById('incomingDismissBtn');
+
+                if (!banner || !payload.url) return;
+
+                banner.classList.remove('hidden');
+                badge.innerText = payload.isMastered ? "💎 MASTER 32-BIT FLOAT" : "🎛 MEZCLA DESDE MIXTER";
+                title.innerText = payload.name || "Track Importado";
+                meta.innerText = `${payload.source || 'Master Studio'} • Listo para procesar y descomponer en stems`;
+                preview.src = payload.url;
+
+                dismissBtn.onclick = () => {
+                    localStorage.removeItem('stemerIncomingTrack');
+                    banner.classList.add('hidden');
+                    preview.pause();
+                };
+
+                sepBtn.onclick = async () => {
+                    try {
+                        sepBtn.disabled = true;
+                        sepBtn.innerText = "CARGANDO AUDIO...";
+                        const resp = await fetch(payload.url);
+                        const blob = await resp.blob();
+                        const fileName = (payload.name && payload.name.endsWith('.wav')) ? payload.name : `${(payload.name || 'imported_track').replace(/\s+/g, '_')}.wav`;
+                        selectedFile = new File([blob], fileName, { type: "audio/wav" });
+                        fileNameDisp.innerText = selectedFile.name;
+                        localStorage.removeItem('stemerIncomingTrack');
+                        banner.classList.add('hidden');
+                        preview.pause();
+                        startBtn.click();
+                    } catch (err) {
+                        console.error("Error loading incoming track:", err);
+                        alert("No se pudo descargar el audio para separación: " + err.message);
+                        sepBtn.disabled = false;
+                        sepBtn.innerText = "⚡ SEPARAR EN STEMS";
+                    }
+                };
+            } catch (err) {
+                console.error("Error checking incoming track:", err);
+            }
+        })();
+
         window.toggleAll = (el) => {
             const checks = document.querySelectorAll('input[name="process_opt"]');
             if (el.checked) {
@@ -1196,32 +1416,31 @@
         function handleBackendResponse(data) {
             if (errorShown) return;
             
-            const statusMsg = data[8] || "";
+            const statusMsg = (data && data[8]) ? String(data[8]) : "";
             console.log("[DEBUG] Backend response:", statusMsg);
 
             // Check for daily limit
             if (statusMsg.includes("LIMIT_ERROR:DAILY:")) {
                 const match = statusMsg.match(/LIMIT_ERROR:DAILY:(.+)/);
-                const resetTime = match ? match[1] : "24 hours";
                 clearInterval(tInterval);
                 loadingView.classList.add('hidden');
                 uploadView.classList.remove('hidden');
                 showError(
-                    `Daily Limit Reached`,
-                    `You've used all 3 free processes today.<br>`
+                    `Límite Diario Alcanzado`,
+                    `Has alcanzado el límite diario gratuito.<br>`
                 );
                 errorShown = true;
                 return;
             }
             
-            // Check for auth required (anonymous user hit their 1 daily limit)
+            // Check for auth required
             if (statusMsg === "AUTH_REQUIRED") {
                 clearInterval(tInterval);
                 loadingView.classList.add('hidden');
                 uploadView.classList.remove('hidden');
                 showError(
-                    `Free Use Complete`,
-                    `You've used your 1 free daily process.<br><br>Sign up to get 3 more free processes per day!`
+                    `Uso Gratuito Completado`,
+                    `Has utilizado tu proceso gratuito diario.<br><br>Inicia sesión para continuar.`
                 );
                 errorShown = true;
                 return;
@@ -1229,34 +1448,36 @@
 
             // Check for monthly limit
             if (statusMsg.includes("LIMIT_ERROR:MONTHLY:")) {
-                const match = statusMsg.match(/LIMIT_ERROR:MONTHLY:(.+)/);
-                const resetTime = match ? match[1] : "the start of next month";
                 clearInterval(tInterval);
                 loadingView.classList.add('hidden');
                 uploadView.classList.remove('hidden');
                 showError(
-                    `Monthly Limit Reached`,
-                    `You've used all 15 free processes this month.<br>`
+                    `Límite Mensual Alcanzado`,
+                    `Has utilizado los 15 procesos mensuales disponibles.<br>`
                 );
                 errorShown = true;
                 return;
             }
 
-            // Check for generic processing error
-            if (statusMsg === "PROCESSING_ERROR") {
+            // Check for processing error
+            if (statusMsg.startsWith("PROCESSING_ERROR")) {
+                const detail = statusMsg.replace("PROCESSING_ERROR:", "").trim();
                 clearInterval(tInterval);
                 loadingView.classList.add('hidden');
                 uploadView.classList.remove('hidden');
                 showError(
-                    `Processing Error`,
-                    `Something went wrong while processing your file.<br><br>Please try again with a different file or contact support.`
+                    `Error de Procesamiento en Servidor`,
+                    `El motor de separación reportó un problema:<br><code style="background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px;">${detail || 'Fallo interno en Demucs/PyTorch'}</code><br><br>Verifica el formato del archivo o prueba con otra pista.`
                 );
                 errorShown = true;
                 return;
             }
 
-            // Success case - look for "SUCCESS:" anywhere in the message
-            if (statusMsg.includes("SUCCESS:") || data[0]?.url) {
+            // Check if any valid stem was generated
+            const hasValidStem = data && data.slice(0, 8).some(item => !!resolveGradioUrl(item));
+
+            // Success case - look for "SUCCESS:" anywhere in the message or valid audio url
+            if (statusMsg.includes("SUCCESS:") || hasValidStem) {
                 renderResults(data);
             } else {
                 // Fallback if we don't recognize the response
@@ -1264,8 +1485,8 @@
                 loadingView.classList.add('hidden');
                 uploadView.classList.remove('hidden');
                 showError(
-                    `Unexpected Response`,
-                    `Received an unexpected response from the server. Please try again.`
+                    `Respuesta Inesperada del Servidor`,
+                    `No se recibieron stems de audio válidos.<br><strong>Detalle:</strong> <code style="background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px;">${statusMsg || 'Sin mensaje de estado'}</code><br><br>Asegúrate de que el backend en Hugging Face esté sincronizado.`
                 );
                 errorShown = true;
             }
@@ -1356,7 +1577,8 @@
             masterTimer.innerText = "00:00 / 00:00";
 
             for (let i = 0; i < 8; i++) {
-                if (!data[i]?.url) continue;
+                const stemUrl = resolveGradioUrl(data[i]);
+                if (!stemUrl) continue;
                 const itemIndex = stemsData.length;
 
                 const card = document.createElement('div');
@@ -1383,12 +1605,16 @@
                         <span class="stem-track-time" id="stemTime_${itemIndex}">00:00</span>
                     </div>
 
-                    <a href="${data[i].url}" download="${labels[i].toLowerCase().replace(/\s+/g, '_')}.wav" class="stem-dl-icon-btn" title="Descargar stem ${labels[i]}">
-                        ↓
-                    </a>
+                    <div class="stem-actions-cell">
+                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'midifier')" title="Convertir ${labels[i]} a MIDI en Midifier">🎹 MIDI</button>
+                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'sampler')" title="Enviar ${labels[i]} a Sampler">🥁 SAMPLER</button>
+                        <a href="${stemUrl}" download="${labels[i].toLowerCase().replace(/\s+/g, '_')}.wav" class="stem-dl-icon-btn" title="Descargar stem ${labels[i]}">
+                            ↓
+                        </a>
+                    </div>
 
                     <audio id="audioElement_${itemIndex}" preload="auto">
-                        <source src="${data[i].url}" type="audio/wav">
+                        <source src="${stemUrl}" type="audio/wav">
                     </audio>
                 `;
 
@@ -1400,7 +1626,7 @@
                     index: itemIndex,
                     originalIndex: i,
                     label: labels[i],
-                    url: data[i].url,
+                    url: stemUrl,
                     audio: audio,
                     card: card,
                     pulse: card.querySelector(`#stemPulse_${itemIndex}`),
@@ -1641,17 +1867,41 @@
             };
         }
 
-        // Navigation to Midifier / Sampler
+        // Quick Send individual stem to Midifier or Sampler
+        window.sendSingleStemToTool = (itemIndex, tool) => {
+            const stem = stemsData[itemIndex];
+            if (!stem || !stem.url) {
+                alert("Audio del stem no disponible.");
+                return;
+            }
+
+            const payload = {
+                label: stem.label,
+                url: stem.url,
+                timestamp: Date.now()
+            };
+
+            if (tool === 'midifier') {
+                localStorage.setItem('incomingToMidifier', JSON.stringify(payload));
+                window.location.href = 'midifier.html';
+            } else if (tool === 'sampler') {
+                localStorage.setItem('incomingToSampler', JSON.stringify(payload));
+                window.location.href = 'sampler.html';
+            }
+        };
+
+        // Navigation to Midifier / Sampler / Mixter / Master
         window.sendToTool = (tool) => {
             const stems = [];
             const labels = ["ORIGINAL SONG", "VOCALS", "BASS", "OTHER", "DRUMS", "KICK", "SNARE", "HI-HAT"];
 
             if (lastProcessedData) {
                 for (let i = 0; i < 8; i++) {
-                    if (lastProcessedData[i]?.url) {
+                    const resolvedUrl = resolveGradioUrl(lastProcessedData[i]);
+                    if (resolvedUrl) {
                         stems.push({
                             label: labels[i],
-                            url: lastProcessedData[i].url
+                            url: resolvedUrl
                         });
                     }
                 }
@@ -1682,6 +1932,14 @@
             } else if (tool === 'mixter') {
                 window.location.href = 'mixter.html';
             } else if (tool === 'master') {
+                const origSong = stems.find(s => s.label === "ORIGINAL SONG") || stems[0];
+                if (origSong) {
+                    localStorage.setItem('stemerMasterTrack', JSON.stringify({
+                        url: origSong.url,
+                        name: selectedFile ? selectedFile.name : 'Stemer Mix Track',
+                        source: 'Stemer'
+                    }));
+                }
                 window.location.href = 'master.html';
             }
         };

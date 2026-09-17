@@ -33,6 +33,19 @@ except ImportError:
     def detect_key_advanced(p): return "C Major"
     def detect_tempo_advanced(p): return "120"
 
+def extract_file_info(f):
+    """Safely extracts (file_path, original_filename) from any Gradio file object or dictionary"""
+    if isinstance(f, dict):
+        path = f.get('path') or f.get('name') or ''
+        orig_name = f.get('orig_name') or (os.path.basename(path) if path else 'audio.wav')
+        return path, orig_name
+    if hasattr(f, 'name'):
+        path = f.name
+        orig_name = getattr(f, 'orig_name', os.path.basename(path))
+        return path, orig_name
+    path = str(f)
+    return path, os.path.basename(path)
+
 def process_stems(song_file, options, auth_token=""):
     """Original stem separation endpoint"""
     if not song_file:
@@ -40,7 +53,11 @@ def process_stems(song_file, options, auth_token=""):
     try:
         out_dir = "/tmp/stems_out"
         os.makedirs(out_dir, exist_ok=True)
-        wav_path = mp3_to_wav(song_file, out_dir)
+        song_path, orig_name = extract_file_info(song_file)
+        if not song_path or not os.path.exists(song_path):
+            return [None] * 8 + [f"PROCESSING_ERROR: File not accessible on server: {song_file}"]
+            
+        wav_path = mp3_to_wav(song_path, out_dir)
         stems = {}
         drum_refined = {}
 
@@ -104,19 +121,6 @@ def process_samples(audio_file, mode="transients", max_samples=16):
     except Exception as e:
         return [None, f"ERROR: {e}"] + [None] * 8
 
-def extract_file_info(f):
-    """Safely extracts (file_path, original_filename) from any Gradio file object or dictionary"""
-    if isinstance(f, dict):
-        path = f.get('path') or f.get('name') or ''
-        orig_name = f.get('orig_name') or (os.path.basename(path) if path else 'audio.wav')
-        return path, orig_name
-    if hasattr(f, 'name'):
-        path = f.name
-        orig_name = getattr(f, 'orig_name', os.path.basename(path))
-        return path, orig_name
-    path = str(f)
-    return path, os.path.basename(path)
-
 # --- Mixter Endpoint ---
 def process_mix(files, mix_style="modern", vocal_fx=0.3):
     if not files:
@@ -144,21 +148,26 @@ def process_mix(files, mix_style="modern", vocal_fx=0.3):
         return None, f"ERROR: {e}"
 
 # --- Master Endpoint ---
-def process_master(audio_file, target_profile="streaming", warmth=0.5, stereo_spread=0.5, air=0.5):
+def process_master(audio_file, genre="urbano", style="club_banger", warmth=None, stereo_spread=None, air=None):
     if not audio_file:
         return None, "No mix audio provided."
     try:
         path, _ = extract_file_info(audio_file)
         if not path or not os.path.exists(path):
             return None, f"Audio file not found on server: {path}"
+            
+        # Backward compatibility with older target_profile parameters
+        if genre in ["streaming", "club", "dynamic"]:
+            style = "club_banger" if genre == "club" else ("streaming" if genre == "streaming" else "analog_warmth")
+            genre = "urbano"
+
         out_master, metrics = master_audio(
             path,
-            target_profile=target_profile,
-            warmth=float(warmth),
-            stereo_spread=float(stereo_spread),
-            air=float(air)
+            genre=genre,
+            style=style
         )
-        report_str = f"SUCCESS: Mastered to {metrics['output_lufs']} LUFS (Input: {metrics['input_lufs']} LUFS) | Peak: {metrics['true_peak_dbfs']} dBFS"
+        report_json = json.dumps(metrics)
+        report_str = f"SUCCESS:{report_json}"
         return out_master, report_str
     except Exception as e:
         import traceback
@@ -247,16 +256,18 @@ with gr.Blocks(title="Myooz Audio Intelligence Suite") as app:
     # Master
     with gr.Tab("Master"):
         master_audio_in = gr.Audio(type="filepath", label="Stereo Mixdown")
-        master_target = gr.Radio(choices=["streaming", "club", "dynamic"], value="streaming", label="Target Loudness")
-        master_warmth = gr.Slider(0.0, 1.0, value=0.5, label="Analog Warmth")
-        master_spread = gr.Slider(0.0, 1.0, value=0.5, label="Stereo Spread")
-        master_air = gr.Slider(0.0, 1.0, value=0.5, label="Air / Brilliance")
+        master_genre = gr.Dropdown(
+            choices=["urbano", "pop", "electronic", "hiphop", "rock", "acoustic"],
+            value="urbano",
+            label="Genre"
+        )
+        master_style = gr.Textbox(value="club_banger", label="Style Preset")
         master_btn = gr.Button("Master Audio")
         master_out_wav = gr.Audio(label="Mastered Audio")
-        master_status = gr.Textbox(label="Status")
+        master_status = gr.Textbox(label="Status / Metrics")
         master_btn.click(
             fn=process_master,
-            inputs=[master_audio_in, master_target, master_warmth, master_spread, master_air],
+            inputs=[master_audio_in, master_genre, master_style],
             outputs=[master_out_wav, master_status],
             api_name="process_master"
         )

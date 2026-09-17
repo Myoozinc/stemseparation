@@ -559,6 +559,34 @@
         // ── Receive stems from Stemer ──
         (function checkForIncomingStems() {
             try {
+                // Check for single direct stem from Stemer
+                const singleRaw = localStorage.getItem('incomingToSampler');
+                if (singleRaw) {
+                    const singleStem = JSON.parse(singleRaw);
+                    if (Date.now() - singleStem.timestamp < 30 * 60 * 1000) {
+                        selectedAudio = {
+                            label: singleStem.label || "Stem Seleccionado",
+                            url: singleStem.url
+                        };
+                        samplerFileName.innerText = `Selected Stem: ${singleStem.label}`;
+                        const card = document.getElementById('stemSelectorCard');
+                        if (card) card.style.display = 'block';
+                        const list = document.getElementById('stemSelectorList');
+                        if (list) {
+                            list.innerHTML = `
+                                <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 10px; background: rgba(0,229,255,0.08); border: 1px solid var(--accent-cyan);">
+                                    <span style="color: var(--accent-cyan); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">🥁 ${singleStem.label}</span>
+                                    <audio controls preload="auto" style="flex: 1; height: 36px;">
+                                        <source src="${singleStem.url}" type="audio/wav">
+                                    </audio>
+                                </div>
+                            `;
+                        }
+                        localStorage.removeItem('incomingToSampler');
+                        return;
+                    }
+                }
+
                 const raw = localStorage.getItem('stemerStems');
                 if (!raw) return;
 

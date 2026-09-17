@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <title>Master | AI Audio Mastering Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Kaushan+Script&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="header.css">
     <link rel="stylesheet" href="shared.css">
     <style>
@@ -76,13 +76,6 @@
             gap: 1rem;
         }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-left: auto;
-        }
-
         .logo-container {
             display: flex;
             align-items: center;
@@ -118,6 +111,17 @@
             border: 1px solid rgba(139, 92, 246, 0.3);
         }
 
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
         /* Drop Zone */
         .dropzone {
             border: 2px dashed rgba(139, 92, 246, 0.35);
@@ -136,107 +140,129 @@
             box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
         }
 
-        /* Target Profiles Grid */
-        .target-grid {
+        /* Genre Grid */
+        .genres-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-top: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.25rem;
         }
 
-        .target-card {
+        .genre-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1.25rem 1rem;
+            border-radius: 18px;
+            padding: 1.5rem;
             cursor: pointer;
             transition: all 0.25s ease;
             text-align: left;
             position: relative;
         }
 
-        .target-card:hover {
+        .genre-card:hover {
             background: rgba(255, 255, 255, 0.06);
             transform: translateY(-2px);
-            border-color: rgba(139, 92, 246, 0.4);
+            border-color: rgba(139, 92, 246, 0.5);
         }
 
-        .target-card.selected {
+        .genre-card.selected {
             background: rgba(139, 92, 246, 0.12);
             border-color: var(--accent-violet);
             box-shadow: 0 0 25px rgba(139, 92, 246, 0.25);
         }
 
-        .target-card .target-title {
-            font-family: 'Righteous', sans-serif;
-            font-size: 1.05rem;
-            letter-spacing: 1px;
-            color: #fff;
-            margin-bottom: 4px;
+        .genre-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-        }
-
-        .target-card .target-lufs {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 800;
-            color: var(--accent-violet);
-            letter-spacing: 1px;
-            background: rgba(139, 92, 246, 0.15);
-            padding: 2px 8px;
-            border-radius: 20px;
-        }
-
-        .target-card .target-desc {
-            font-size: 0.78rem;
-            color: var(--text-secondary);
-            line-height: 1.4;
-            margin-top: 6px;
-        }
-
-        /* Knob / Slider Control Group */
-        .knobs-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        .slider-box {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--glass-border);
-            border-radius: 14px;
-            padding: 1.25rem;
-            text-align: left;
-        }
-
-        .slider-box label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
+            gap: 12px;
             margin-bottom: 8px;
         }
 
-        .slider-box label span.val-badge {
-            color: var(--accent-violet);
+        .genre-icon {
+            font-size: 1.5rem;
+            line-height: 1;
         }
 
-        .slider-box input[type="range"] {
-            width: 100%;
-            accent-color: var(--accent-violet);
-            cursor: pointer;
+        .genre-title {
+            font-family: 'Righteous', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            color: #fff;
         }
 
-        .slider-box .slider-hint {
+        .genre-desc {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .style-pills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .style-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 5px 12px;
             font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .style-pill:hover {
+            border-color: var(--accent-violet);
+            color: #fff;
+        }
+
+        .style-pill.active {
+            background: linear-gradient(135deg, var(--accent-violet) 0%, #ec4899 100%);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(139, 92, 246, 0.35);
+        }
+
+        /* Metrics Dashboard */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 1rem 1.25rem;
+        }
+
+        .metric-card .metric-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .metric-card .metric-val {
+            font-family: 'Righteous', sans-serif;
+            font-size: 1.25rem;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+
+        .metric-card .metric-hint {
+            font-size: 0.65rem;
             color: rgba(255, 255, 255, 0.45);
-            margin-top: 6px;
+            margin-top: 4px;
         }
 
         /* A/B Switcher */
@@ -258,8 +284,8 @@
             font-weight: 700;
             font-size: 0.75rem;
             letter-spacing: 2px;
-            padding: 8px 18px;
-            border-radius: 25px;
+            padding: 8px 20px;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -267,260 +293,338 @@
         .ab-btn.active {
             background: var(--accent-violet);
             color: #fff;
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+            box-shadow: 0 0 15px var(--accent-violet-glow);
         }
 
-        @media (max-width: 768px) {
-            .target-grid {
-                grid-template-columns: 1fr;
-            }
+        /* Modal Send To Stemer */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
 
-            .knobs-grid {
-                grid-template-columns: 1fr;
-            }
+        .modal-box {
+            background: #0d0d12;
+            border: 1px solid var(--accent-violet);
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(139, 92, 246, 0.2);
+        }
+
+        .modal-option-btn {
+            width: 100%;
+            padding: 1.1rem;
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .modal-option-btn:hover {
+            border-color: var(--accent-violet);
+            background: rgba(139, 92, 246, 0.1);
+            transform: translateY(-2px);
         }
     </style>
 </head>
 
 <body>
-    <!-- Header -->
+    <!-- Top Navigation -->
     <nav class="custom-header">
         <div class="logo-container">
-            <img src="logo.png" alt="Myooz Logo" class="logo-img">
-            <span class="logo-text">MASTER</span>
+            <img src="headerlogo.png" alt="Logo" class="logo-img">
+            <div class="logo-text">MASTER</div>
         </div>
         <div class="header-right">
-            <span class="header-tag">AI MASTERING STUDIO</span>
+            <div class="header-tag">BY MYOOZ LABS</div>
         </div>
     </nav>
 
-    <!-- Main Container -->
     <div class="container">
-        <header class="tool-header">
-            <h1>MASTER</h1>
-            <p class="subtitle">LUFS TARGETING • ANALOG GLUE • BRICKWALL LIMITING</p>
-        </header>
+        <!-- Imported track from Mixter or Stemer -->
+        <div class="glass-card" id="importedTrackCard" style="display: none; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2 id="importedSourceTitle" style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: var(--accent-violet); margin-bottom: 4px;">
+                        Track Importado para Masterización
+                    </h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Audio stereo recibido con headroom óptimo listo para mastering comercial</p>
+                </div>
+                <button id="clearTrackBtn" class="style-pill" style="font-size: 0.65rem;">CAMBIAR ARCHIVO</button>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.25rem; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.3rem;">🎵</span>
+                    <div>
+                        <strong id="importedTrackName" style="font-size: 0.9rem; color: #fff;">mixdown.wav</strong>
+                        <div id="importedProvenanceBadge" style="font-size: 0.7rem; color: var(--accent-violet);">Mezcla enviada desde Mixter</div>
+                    </div>
+                </div>
+                <audio id="importedAudioPreview" controls style="height: 34px; width: 260px; filter: invert(1);"></audio>
+            </div>
+        </div>
 
-        <!-- Step 1: Input Track -->
-        <div class="glass-card" style="text-align: left; padding: 2rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
-                <h2 style="font-family: 'Righteous', sans-serif; font-size: 1.3rem; letter-spacing: 2px; color: #fff;">
-                    1. SOURCE AUDIO
+        <!-- Main Card -->
+        <div class="glass-card" id="masterMainCard">
+            <!-- Upload Box if no track imported -->
+            <div id="uploadContainer">
+                <h2 style="margin-bottom: 10px; font-family: 'Righteous', sans-serif; letter-spacing: 2px;">
+                    Carga tu Mezcla Stereo (WAV o MP3)
                 </h2>
-                <span style="font-size: 0.72rem; color: var(--text-secondary); letter-spacing: 1px;">WAV / MP3 / FLAC</span>
+                <p style="margin-bottom: 25px; color: var(--text-secondary); font-size: 0.9rem;">
+                    Masterización analógica comercial con cadena de 5 etapas: EQ de contorno, compresión multi-banda, saturación armónica, imagen estéreo mono-sub y limitador True-Peak ITU-R BS.1770-4.
+                </p>
+
+                <div class="dropzone" id="masterDropzone" style="margin-bottom: 2rem;">
+                    <img src="upload.png" alt="Upload" style="width: 60px; height: 60px; opacity: 0.6; margin-bottom: 1rem;">
+                    <h3 id="masterFileName" style="font-family: 'Righteous', sans-serif; letter-spacing: 1px; margin-bottom: 0.5rem;">
+                        Selecciona o Arrastra tu Mezcla Stereo Aquí
+                    </h3>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">Recomendado: WAV 24-bit o 32-bit Float a 44.1/48 kHz</p>
+                    <input type="file" id="masterFileInput" class="hidden" accept=".mp3,.wav">
+                </div>
             </div>
 
-            <!-- Incoming Track Card (if sent from Mixter) -->
-            <div id="importedTrackCard" style="display: none; margin-bottom: 1rem; padding: 1.25rem; border-radius: 14px; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.3);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 0.65rem; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; background: rgba(139, 92, 246, 0.2); border: 1px solid var(--accent-violet); color: #fff;">
-                            FROM MIXTER
-                        </span>
-                        <span id="importedTrackName" style="font-size: 0.85rem; font-weight: 600;">mixdown_from_mixter.wav</span>
+            <!-- Genre Selection -->
+            <div style="margin-bottom: 2rem; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                    <h3 style="font-family: 'Righteous', sans-serif; letter-spacing: 1.5px; font-size: 1.1rem; color: #fff;">
+                        Selecciona el Género Musical de tu Canción
+                    </h3>
+                    <span style="font-size: 0.75rem; color: var(--accent-violet); font-weight: 700;">Cadena de Master 100% Calibrada</span>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                    La IA aplicará curvas quirúrgicas de ecualización, dinámica multi-banda y saturación específicas para la sonoridad del género:
+                </p>
+
+                <div class="genres-grid" id="genresGrid">
+                    <!-- Urbano / Reggaeton -->
+                    <div class="genre-card selected" data-genre="urbano">
+                        <div class="genre-header">
+                            <span class="genre-icon">🌴</span>
+                            <div class="genre-title">Reggaeton / Urbano</div>
+                        </div>
+                        <div class="genre-desc">Pegada contundente en sub-graves, mono-sub calibrado y brillo vocal moderno.</div>
+                        <div class="style-pills-container">
+                            <button type="button" class="style-pill active" data-style="club_banger">Club Banger (-9 LUFS)</button>
+                            <button type="button" class="style-pill" data-style="streaming">Streaming Pro (-14 LUFS)</button>
+                            <button type="button" class="style-pill" data-style="analog_warmth">Tape Warmth (-11.5 LUFS)</button>
+                        </div>
                     </div>
-                    <button id="clearTrackBtn" style="background: none; border: none; color: rgba(255,255,255,0.5); font-size: 0.75rem; cursor: pointer;">
-                        ✕ Remove
+
+                    <!-- Pop / Comercial -->
+                    <div class="genre-card" data-genre="pop">
+                        <div class="genre-header">
+                            <span class="genre-icon">✨</span>
+                            <div class="genre-title">Pop / R&B Comercial</div>
+                        </div>
+                        <div class="genre-desc">Claridad cristalina, frecuencias de aire (>10 kHz) y voz al frente con pegada comercial.</div>
+                        <div class="style-pills-container">
+                            <button type="button" class="style-pill active" data-style="radio_hit">Radio Hit (-13 LUFS)</button>
+                            <button type="button" class="style-pill" data-style="punchy">Modern Punch (-11 LUFS)</button>
+                            <button type="button" class="style-pill" data-style="wide_air">Wide & Airy (-14 LUFS)</button>
+                        </div>
+                    </div>
+
+                    <!-- Electronic / EDM -->
+                    <div class="genre-card" data-genre="electronic">
+                        <div class="genre-header">
+                            <span class="genre-icon">⚡</span>
+                            <div class="genre-title">Electronic / EDM / House</div>
+                        </div>
+                        <div class="genre-desc">Máxima sonoridad para festival o club, densidad en sintetizadores y graves 100% controlados.</div>
+                        <div class="style-pills-container">
+                            <button type="button" class="style-pill active" data-style="festival_loud">Festival Mainstage (-8 LUFS)</button>
+                            <button type="button" class="style-pill" data-style="deep_club">Deep Club (-10.5 LUFS)</button>
+                        </div>
+                    </div>
+
+                    <!-- Hip-Hop / Trap -->
+                    <div class="genre-card" data-genre="hiphop">
+                        <div class="genre-header">
+                            <span class="genre-icon">🎤</span>
+                            <div class="genre-title">Hip-Hop / Trap 808</div>
+                        </div>
+                        <div class="genre-desc">Énfasis en saturación de 808, transitorios agresivos de caja/clap y graves profundos.</div>
+                        <div class="style-pills-container">
+                            <button type="button" class="style-pill active" data-style="heavy_808">Heavy 808 (-9 LUFS)</button>
+                            <button type="button" class="style-pill" data-style="boombap_warm">Boom Bap Warm (-13 LUFS)</button>
+                        </div>
+                    </div>
+
+                    <!-- Rock / Indie -->
+                    <div class="genre-card" data-genre="rock">
+                        <div class="genre-header">
+                            <span class="genre-icon">🎸</span>
+                            <div class="genre-title">Rock / Indie / Metal</div>
+                        </div>
+                        <div class="genre-desc">Pegada de batería preservada, cuerpo en guitarras eléctricas y pegamento de bus VCA.</div>
+                        <div class="style-pills-container">
+                            <button type="button" class="style-pill active" data-style="wall_of_sound">Wall of Sound (-10 LUFS)</button>
+                            <button type="button" class="style-pill" data-style="organic_dynamic">Organic & Open (-14 LUFS)</button>
+                        </div>
+                    </div>
+
+                    <!-- Acústico / Folk -->
+                    <div class="genre-card" data-genre="acoustic">
+                        <div class="genre-header">
+                            <span class="genre-icon">🎻</span>
+                            <div class="genre-title">Acústico / Folk / Balada</div>
+                        </div>
+                        <div class="genre-desc">Transparencia pristina, dinámica natural abierta y calidez íntima para cuerdas y voces.</div>
+                        <div class="style-pills-container">
+                            <button type="button" class="style-pill active" data-style="pristine_transparency">Pristine (-14 LUFS)</button>
+                            <button type="button" class="style-pill" data-style="warm_intimate">Warm & Intimate (-13 LUFS)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Start Button -->
+            <div style="text-align: center;">
+                <button class="btn" id="startMasterBtn" style="background: linear-gradient(180deg, var(--accent-violet) 0%, #4c1d95 100%); color: #fff; font-weight: 800; min-width: 320px; font-size: 0.95rem; letter-spacing: 2px; display: inline-block;">
+                    AI MASTER AUDIO
+                </button>
+            </div>
+
+            <!-- Loading indicator with live phase and timer -->
+            <div id="masterLoading" style="display: none; margin-top: 2.5rem; text-align: center;">
+                <div class="progress-box" style="margin: 0 auto 1rem; width: 60px; height: 60px; border: 3px solid rgba(139, 92, 246, 0.2); border-top-color: var(--accent-violet); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p id="masterLoadingStep" style="font-size: 0.85rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-violet); font-weight: 700; margin-bottom: 6px;">
+                    Paso 1/4: Analizando sonoridad integrada ITU-R BS.1770-4...
+                </p>
+                <p id="masterLoadingTimer" style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">
+                    Tiempo transcurrido: 0s
+                </p>
+            </div>
+
+            <!-- Results Card -->
+            <div id="masterResultsCard" style="display: none; margin-top: 2.5rem; padding: 2rem; border: 1px solid var(--accent-violet); border-radius: 20px; background: rgba(139, 92, 246, 0.05); text-align: center;">
+                <div style="display: inline-block; padding: 4px 14px; border-radius: 20px; background: rgba(139, 92, 246, 0.2); border: 1px solid var(--accent-violet); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #fff; margin-bottom: 1rem;">
+                    MASTERING COMMERCIAL COMPLETED • 32-BIT FLOAT
+                </div>
+
+                <h2 style="font-family: 'Righteous', sans-serif; font-size: 1.7rem; letter-spacing: 2px; color: #fff; margin-bottom: 0.5rem;">
+                    Master Comercial de Estudio Listo
+                </h2>
+                <p id="masterStatusText" style="font-size: 0.82rem; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 1.75rem;">
+                    Cadena multi-banda y True-Peak limitador aplicados con éxito.
+                </p>
+
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Perfil Musical</div>
+                        <div class="metric-val" id="metricProfileTitle" style="color: var(--accent-violet); font-size: 1rem;">URBANO</div>
+                        <div class="metric-hint" id="metricStyleSubtitle">Club Banger</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Loudness Integrado</div>
+                        <div class="metric-val" id="metricLufsComp">-9.0 LUFS</div>
+                        <div class="metric-hint" id="metricInputLufsVal">In: -16.5 LUFS</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Pico Máximo True-Peak</div>
+                        <div class="metric-val" id="metricTruePeakVal" style="color: #10b981;">-0.40 dBFS</div>
+                        <div class="metric-hint">Sobremuestreo 4x (Anti-Clipping)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Rango Dinámico (DR)</div>
+                        <div class="metric-val" id="metricDynamicRange">12.4 dB</div>
+                        <div class="metric-hint">Crest Factor (Punch y Claridad)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Correlación Estéreo</div>
+                        <div class="metric-val" id="metricCorrelation">+0.92</div>
+                        <div class="metric-hint">Mono-Sub & Imagen Amplia</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Resolución Audio</div>
+                        <div class="metric-val" style="font-size: 1rem;">32-Bit Float</div>
+                        <div class="metric-hint">48,000 Hz Studio WAV</div>
+                    </div>
+                </div>
+
+                <!-- A/B Comparison Switcher -->
+                <div style="display: flex; justify-content: center;">
+                    <div class="ab-switch">
+                        <button class="ab-btn" id="btnOriginal">MEZCLA ORIGINAL</button>
+                        <button class="ab-btn active" id="btnMastered">MASTERIZADO ✨</button>
+                    </div>
+                </div>
+
+                <!-- Audio Player -->
+                <div style="max-width: 650px; margin: 0 auto 2rem auto; padding: 1rem; border-radius: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border);">
+                    <audio id="masterAudioPlayer" controls style="width: 100%; filter: invert(1);"></audio>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px;">
+                    <a id="downloadMasterBtn" class="btn" download="mastered_track_32bit_float.wav" style="background: var(--accent-violet); color: #fff; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px;">
+                        ⬇️ DESCARGAR MASTER (.WAV 32-BIT)
+                    </a>
+
+                    <button id="openSendToStemerBtn" class="btn" style="background: linear-gradient(180deg, #10b981 0%, #065f46 100%); border: 1px solid rgba(16, 185, 129, 0.4); color: #fff; font-weight: 800; padding: 14px 28px;">
+                        🔄 ENVIAR A STEMER ➔
                     </button>
                 </div>
-                <audio id="importedAudioPreview" controls preload="none" style="width: 100%; height: 36px; margin-top: 8px; filter: invert(1);"></audio>
-            </div>
-
-            <!-- Drop Zone -->
-            <div class="dropzone" id="masterDropzone">
-                <input type="file" id="masterFileInput" accept="audio/*" style="display: none;">
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
-                    <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(139, 92, 246, 0.12); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(139, 92, 246, 0.35);">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-violet);">
-                            <path d="M9 18V5l12-2v13"></path>
-                            <circle cx="6" cy="18" r="3"></circle>
-                            <circle cx="18" cy="16" r="3"></circle>
-                        </svg>
-                    </div>
-                    <div>
-                        <p id="masterFileName" style="font-family: 'Righteous', sans-serif; font-size: 1.05rem; letter-spacing: 1.5px; color: #fff;">
-                            Select or Drag Stereo Mixdown Track Here
-                        </p>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; letter-spacing: 1px;">
-                            Supports 24-bit WAV, MP3, FLAC, AIFF up to 100MB
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Step 2: Mastering Configuration -->
-        <div class="glass-card" style="text-align: left; padding: 2rem;">
-            <h2 style="font-family: 'Righteous', sans-serif; font-size: 1.3rem; letter-spacing: 2px; color: #fff; margin-bottom: 0.5rem;">
-                2. TARGET LOUDNESS PROFILE
-            </h2>
-            <p style="font-size: 0.78rem; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 1rem;">
-                Choose your final commercial release target. The AI engine applies BS.1770-4 LUFS analysis, glue compression, and brickwall peak limiting.
-            </p>
-
-            <div class="target-grid">
-                <div class="target-card selected" data-target="streaming">
-                    <div class="target-title">
-                        Streaming
-                        <span class="target-lufs">-14 LUFS</span>
-                    </div>
-                    <div class="target-desc">
-                        Optimized for Spotify, Apple Music & YouTube. Preserves punch, maximum transient dynamics, zero penalty volume reduction.
-                    </div>
-                </div>
-
-                <div class="target-card" data-target="club">
-                    <div class="target-title">
-                        Club / DJ
-                        <span class="target-lufs">-9 LUFS</span>
-                    </div>
-                    <div class="target-desc">
-                        Engineered for DJ sets, Electronic, Trap, and Hip-Hop. High RMS density, thunderous sub-bass, and maximum acoustic impact.
-                    </div>
-                </div>
-
-                <div class="target-card" data-target="dynamic">
-                    <div class="target-title">
-                        Dynamic CD
-                        <span class="target-lufs">-12 LUFS</span>
-                    </div>
-                    <div class="target-desc">
-                        Audiophile standard for Rock, Jazz, Classical, and CD reproduction. Silky harmonic warmth with transparent limiting.
-                    </div>
-                </div>
-            </div>
-
-            <!-- Fine-Tuning Polish Dials -->
-            <div style="margin-top: 2rem;">
-                <h3 style="font-family: 'Righteous', sans-serif; font-size: 1.05rem; letter-spacing: 1.5px; color: #fff; margin-bottom: 0.25rem;">
-                    ANALOG COLOR & STEREO POLISH
-                </h3>
-                <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">
-                    Fine-tune the neural mastering DSP chain.
-                </p>
-
-                <div class="knobs-grid">
-                    <div class="slider-box">
-                        <label>
-                            <span>Analog Warmth</span>
-                            <span class="val-badge" id="warmthVal">50%</span>
-                        </label>
-                        <input type="range" id="warmthSlider" min="0" max="1" step="0.05" value="0.5">
-                        <div class="slider-hint">Low-end fullness and subtle tape saturation harmonics.</div>
-                    </div>
-
-                    <div class="slider-box">
-                        <label>
-                            <span>Stereo Spread</span>
-                            <span class="val-badge" id="spreadVal">50%</span>
-                        </label>
-                        <input type="range" id="spreadSlider" min="0" max="1" step="0.05" value="0.5">
-                        <div class="slider-hint">Mid/Side stereo width expansion for wide spatial soundstages.</div>
-                    </div>
-
-                    <div class="slider-box">
-                        <label>
-                            <span>Air / Brilliance</span>
-                            <span class="val-badge" id="airVal">50%</span>
-                        </label>
-                        <input type="range" id="airSlider" min="0" max="1" step="0.05" value="0.5">
-                        <div class="slider-hint">Silky high-frequency sheen (>12 kHz) without harsh sibilance.</div>
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top: 2.5rem; text-align: center;">
-                <button class="btn" id="startMasterBtn" style="min-width: 280px; font-size: 0.95rem;">
-                    MASTER AUDIO NOW
-                </button>
-            </div>
-        </div>
-
-        <!-- Step 3: Loading Progress -->
-        <div id="masterLoading" class="glass-card" style="display: none; padding: 3rem; text-align: center;">
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
-                <div style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid rgba(139, 92, 246, 0.2); border-top-color: var(--accent-violet); animation: spin 1s linear infinite;"></div>
-                <h3 style="font-family: 'Righteous', sans-serif; font-size: 1.3rem; letter-spacing: 2px;">
-                    AI MASTERING IN PROGRESS
-                </h3>
-                <p id="masterProgressMsg" style="font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 2px; text-transform: uppercase;">
-                    ANALYZING ITU-R BS.1770-4 INTEGRATED LOUDNESS...
-                </p>
-            </div>
-        </div>
-
-        <style>
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
-
-        <!-- Step 4: Results & Metrics -->
-        <div id="masterResultsCard" class="glass-card" style="display: none; text-align: center; padding: 2.5rem;">
-            <div style="display: inline-block; padding: 4px 14px; border-radius: 20px; background: rgba(139, 92, 246, 0.15); border: 1px solid var(--accent-violet); font-size: 0.7rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #fff; margin-bottom: 1.25rem;">
-                MASTERING COMPLETED
-            </div>
-
-            <h2 style="font-family: 'Righteous', sans-serif; font-size: 1.7rem; letter-spacing: 2px; color: #fff; margin-bottom: 0.5rem;">
-                COMMERCIAL MASTER READY
-            </h2>
-            <p id="masterStatusText" style="font-size: 0.82rem; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 1.5rem;">
-                Target Loudness achieved with brickwall ceiling at -0.3 dBFS.
-            </p>
-
-            <!-- Metrics Pills -->
-            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 2rem;">
-                <div class="metric-pill">
-                    <span>Input Loudness:</span>
-                    <strong id="metricInputLufs">-18.5 LUFS</strong>
-                </div>
-                <div class="metric-pill">
-                    <span>Target Profile:</span>
-                    <strong id="metricTargetProfile">Streaming</strong>
-                </div>
-                <div class="metric-pill">
-                    <span>Output Loudness:</span>
-                    <strong id="metricOutputLufs">-14.0 LUFS</strong>
-                </div>
-                <div class="metric-pill">
-                    <span>True-Peak Ceiling:</span>
-                    <strong id="metricTruePeak">-0.30 dBFS</strong>
-                </div>
-            </div>
-
-            <!-- A/B Comparison Switcher -->
-            <div style="display: flex; justify-content: center;">
-                <div class="ab-switch">
-                    <button class="ab-btn" id="btnOriginal">ORIGINAL MIX</button>
-                    <button class="ab-btn active" id="btnMastered">MASTERED ✨</button>
-                </div>
-            </div>
-
-            <!-- Audio Player -->
-            <div style="max-width: 600px; margin: 0 auto 2rem auto; padding: 1rem; border-radius: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border);">
-                <audio id="masterAudioPlayer" controls style="width: 100%; filter: invert(1);"></audio>
-            </div>
-
-            <!-- Action Buttons -->
-            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px;">
-                <a id="downloadMasterBtn" class="btn" download="mastered_track.wav" style="display: inline-flex; align-items: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    DOWNLOAD 24-BIT MASTER (WAV)
-                </a>
-
-                <button id="sendToStemerBtn" class="btn" style="background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); color: #fff;">
-                    RE-ANALYZE IN STEMER ➔
-                </button>
             </div>
         </div>
     </div>
 
-    <!-- Floating Bottom Navigation -->
+    <!-- Modal Send to Stemer -->
+    <div id="sendToStemerModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <div style="font-size: 2rem; margin-bottom: 8px;">🔄</div>
+            <h3 style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: #fff; margin-bottom: 8px;">
+                ¿Qué versión deseas enviar a Stemer?
+            </h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.4;">
+                Elige cuál pista cargar directamente en Stemer para separar sus componentes instrumentales y vocales:
+            </p>
+
+            <button type="button" id="sendMasteredVersionBtn" class="modal-option-btn">
+                <span style="font-size: 1.5rem;">✨</span>
+                <div>
+                    <strong style="color: var(--accent-violet); font-size: 0.9rem;">Enviar Versión Masterizada (32-bit Float)</strong>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary);">Envía el audio procesado con máxima sonoridad y ecualización de estudio.</div>
+                </div>
+            </button>
+
+            <button type="button" id="sendOriginalVersionBtn" class="modal-option-btn">
+                <span style="font-size: 1.5rem;">🎛️</span>
+                <div>
+                    <strong style="color: #fff; font-size: 0.9rem;">Enviar Mezcla Original</strong>
+                    <div style="font-size: 0.72rem; color: var(--text-secondary);">Envía la mezcla que subiste originalmente con su rango dinámico inicial.</div>
+                </div>
+            </button>
+
+            <button type="button" id="closeModalBtn" class="style-pill" style="margin-top: 10px; width: 100%;">
+                Cancelar
+            </button>
+        </div>
+    </div>
+
+    <!-- 5-Tool Bottom Nav -->
     <nav class="tool-nav">
         <a href="index.html" class="tool-link">Stemer</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
@@ -529,121 +633,119 @@
         <a href="master.html" class="tool-link active">Master</a>
     </nav>
 
-    <!-- Logic Script -->
     <script type="module">
         import { Client, handle_file } from "https://esm.sh/@gradio/client";
 
         const SPACE_ID = "tinahmbuz/audiostems";
 
-        // DOM elements
         const masterDropzone = document.getElementById('masterDropzone');
         const masterFileInput = document.getElementById('masterFileInput');
         const masterFileName = document.getElementById('masterFileName');
         const importedTrackCard = document.getElementById('importedTrackCard');
         const importedTrackName = document.getElementById('importedTrackName');
+        const importedProvenanceBadge = document.getElementById('importedProvenanceBadge');
         const importedAudioPreview = document.getElementById('importedAudioPreview');
         const clearTrackBtn = document.getElementById('clearTrackBtn');
-
-        const warmthSlider = document.getElementById('warmthSlider');
-        const warmthVal = document.getElementById('warmthVal');
-        const spreadSlider = document.getElementById('spreadSlider');
-        const spreadVal = document.getElementById('spreadVal');
-        const airSlider = document.getElementById('airSlider');
-        const airVal = document.getElementById('airVal');
-
         const startMasterBtn = document.getElementById('startMasterBtn');
         const masterLoading = document.getElementById('masterLoading');
-        const masterProgressMsg = document.getElementById('masterProgressMsg');
+        const masterLoadingStep = document.getElementById('masterLoadingStep');
+        const masterLoadingTimer = document.getElementById('masterLoadingTimer');
         const masterResultsCard = document.getElementById('masterResultsCard');
         const masterStatusText = document.getElementById('masterStatusText');
-
-        const metricInputLufs = document.getElementById('metricInputLufs');
-        const metricTargetProfile = document.getElementById('metricTargetProfile');
-        const metricOutputLufs = document.getElementById('metricOutputLufs');
-        const metricTruePeak = document.getElementById('metricTruePeak');
-
-        const btnOriginal = document.getElementById('btnOriginal');
-        const btnMastered = document.getElementById('btnMastered');
         const masterAudioPlayer = document.getElementById('masterAudioPlayer');
         const downloadMasterBtn = document.getElementById('downloadMasterBtn');
-        const sendToStemerBtn = document.getElementById('sendToStemerBtn');
+        const btnOriginal = document.getElementById('btnOriginal');
+        const btnMastered = document.getElementById('btnMastered');
 
-        // State
+        const openSendToStemerBtn = document.getElementById('openSendToStemerBtn');
+        const sendToStemerModal = document.getElementById('sendToStemerModal');
+        const sendMasteredVersionBtn = document.getElementById('sendMasteredVersionBtn');
+        const sendOriginalVersionBtn = document.getElementById('sendOriginalVersionBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        // Metrics elements
+        const metricProfileTitle = document.getElementById('metricProfileTitle');
+        const metricStyleSubtitle = document.getElementById('metricStyleSubtitle');
+        const metricLufsComp = document.getElementById('metricLufsComp');
+        const metricInputLufsVal = document.getElementById('metricInputLufsVal');
+        const metricTruePeakVal = document.getElementById('metricTruePeakVal');
+        const metricDynamicRange = document.getElementById('metricDynamicRange');
+        const metricCorrelation = document.getElementById('metricCorrelation');
+
         let selectedFile = null;
+        let selectedGenre = "urbano";
+        let selectedStyle = "club_banger";
         let originalAudioUrl = null;
         let masteredAudioUrl = null;
-        let selectedTarget = 'streaming';
+        let timerInterval = null;
 
-        // Target Loudness selection
-        const targetCards = document.querySelectorAll('.target-card');
-        targetCards.forEach(card => {
-            card.addEventListener('click', () => {
-                targetCards.forEach(c => c.classList.remove('selected'));
+        // Genre card selection
+        document.querySelectorAll('.genre-card').forEach(card => {
+            card.onclick = (e) => {
+                if (e.target.classList.contains('style-pill')) return;
+                document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
-                selectedTarget = card.getAttribute('data-target');
-            });
+                selectedGenre = card.dataset.genre;
+                const activePill = card.querySelector('.style-pill.active') || card.querySelector('.style-pill');
+                if (activePill) {
+                    selectedStyle = activePill.dataset.style;
+                }
+            };
         });
 
-        // Sliders feedback
-        warmthSlider.addEventListener('input', () => {
-            warmthVal.innerText = `${Math.round(warmthSlider.value * 100)}%`;
-        });
-        spreadSlider.addEventListener('input', () => {
-            spreadVal.innerText = `${Math.round(spreadSlider.value * 100)}%`;
-        });
-        airSlider.addEventListener('input', () => {
-            airVal.innerText = `${Math.round(airSlider.value * 100)}%`;
+        // Style pill selection
+        document.querySelectorAll('.style-pill[data-style]').forEach(pill => {
+            pill.onclick = (e) => {
+                e.stopPropagation();
+                const parentCard = pill.closest('.genre-card');
+                document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
+                parentCard.classList.add('selected');
+                selectedGenre = parentCard.dataset.genre;
+
+                parentCard.querySelectorAll('.style-pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                selectedStyle = pill.dataset.style;
+            };
         });
 
         // File dropzone
-        masterDropzone.onclick = () => masterFileInput.click();
-
-        masterDropzone.ondragover = (e) => {
-            e.preventDefault();
-            masterDropzone.classList.add('dragover');
-        };
-
-        masterDropzone.ondragleave = () => {
-            masterDropzone.classList.remove('dragover');
-        };
-
-        masterDropzone.ondrop = (e) => {
-            e.preventDefault();
-            masterDropzone.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) {
-                setTrackFile(e.dataTransfer.files[0]);
-            }
-        };
-
-        masterFileInput.onchange = (e) => {
+        masterDropzone.addEventListener('click', (e) => {
+            if (e.target !== masterFileInput) masterFileInput.click();
+        });
+        masterFileInput.addEventListener('click', (e) => e.stopPropagation());
+        masterFileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                setTrackFile(e.target.files[0]);
+                selectedFile = e.target.files[0];
+                originalAudioUrl = URL.createObjectURL(selectedFile);
+                const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(1);
+                masterFileName.innerText = `Track Cargado: ${selectedFile.name} (${sizeMB} MB)`;
             }
-        };
-
-        function setTrackFile(file) {
-            selectedFile = file;
-            masterFileName.innerText = file.name;
-            originalAudioUrl = URL.createObjectURL(file);
-            importedTrackCard.style.display = 'none';
-        }
+        });
 
         clearTrackBtn.onclick = () => {
             importedTrackCard.style.display = 'none';
             selectedFile = null;
             originalAudioUrl = null;
-            masterFileName.innerText = "Select or Drag Stereo Mixdown Track Here";
+            masterFileName.innerText = "Selecciona o Arrastra tu Mezcla Stereo Aquí";
             localStorage.removeItem('mixterMasterTrack');
+            localStorage.removeItem('stemerMasterTrack');
         };
 
-        // Check incoming track from Mixter
+        // Check incoming track from Mixter or Stemer
         (function checkIncomingTrack() {
             try {
-                const raw = localStorage.getItem('mixterMasterTrack');
+                let raw = localStorage.getItem('mixterMasterTrack');
+                let source = "Mixter";
+                if (!raw) {
+                    raw = localStorage.getItem('stemerMasterTrack');
+                    source = "Stemer";
+                }
                 if (!raw) return;
+
                 const payload = JSON.parse(raw);
-                if (Date.now() - payload.timestamp > 30 * 60 * 1000) {
+                if (Date.now() - payload.timestamp > 45 * 60 * 1000) {
                     localStorage.removeItem('mixterMasterTrack');
+                    localStorage.removeItem('stemerMasterTrack');
                     return;
                 }
 
@@ -651,49 +753,15 @@
                     selectedFile = { url: payload.url, name: payload.name || "mixdown.wav" };
                     originalAudioUrl = payload.url;
                     importedTrackName.innerText = selectedFile.name;
+                    importedProvenanceBadge.innerText = payload.label || `Track importado desde ${source}`;
                     importedAudioPreview.src = payload.url;
                     importedTrackCard.style.display = 'block';
-                    masterFileName.innerText = `Using Track from Mixter: ${selectedFile.name}`;
+                    masterFileName.innerText = `Usando Track de ${source}: ${selectedFile.name}`;
                 }
             } catch (e) {
                 console.error("Error reading incoming master track:", e);
             }
         })();
-
-        // Start Mastering Process
-        startMasterBtn.onclick = async () => {
-            if (!selectedFile) {
-                return alert("Please upload or import a stereo mix audio file to master.");
-            }
-
-            masterLoading.style.display = 'block';
-            masterResultsCard.style.display = 'none';
-            startMasterBtn.disabled = true;
-
-            const progressSteps = [
-                "ANALYZING ITU-R BS.1770-4 INTEGRATED LOUDNESS...",
-                "ENGAGING OPTO/VCA GLUE COMPRESSION...",
-                "CALIBRATING STEREO FIELD & ANALOG HARMONICS...",
-                "TRUE-PEAK BRICKWALL LIMITING AT -0.3 DBFS..."
-            ];
-            let stepIdx = 0;
-            const progressTimer = setInterval(() => {
-                stepIdx = (stepIdx + 1) % progressSteps.length;
-                masterProgressMsg.innerText = progressSteps[stepIdx];
-            }, 2500);
-
-            try {
-                const client = await Client.connect(SPACE_ID);
-
-                let audioHandle;
-                if (selectedFile instanceof File) {
-                    audioHandle = handle_file(selectedFile);
-                } else if (selectedFile.url) {
-                    const resp = await fetch(selectedFile.url);
-                    const b = await resp.blob();
-                    const f = new File([b], selectedFile.name || "mixdown.wav", { type: "audio/wav" });
-                    audioHandle = handle_file(f);
-                }
 
         function resolveGradioUrl(fileObj) {
             if (!fileObj) return "";
@@ -711,71 +779,115 @@
             return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
         }
 
+        function startProgressTimer() {
+            let elapsed = 0;
+            masterLoadingStep.innerText = "Paso 1/4: Analizando sonoridad integrada ITU-R BS.1770-4...";
+            masterLoadingTimer.innerText = "Tiempo transcurrido: 0s";
+            timerInterval = setInterval(() => {
+                elapsed++;
+                masterLoadingTimer.innerText = `Tiempo transcurrido: ${elapsed}s`;
+                if (elapsed === 4) {
+                    masterLoadingStep.innerText = "Paso 2/4: Aplicando EQ de contorno y dinámica multi-banda en 3 bandas...";
+                } else if (elapsed === 8) {
+                    masterLoadingStep.innerText = "Paso 3/4: Generando calor analógico y pulido Mid/Side mono-sub (<120 Hz)...";
+                } else if (elapsed === 12) {
+                    masterLoadingStep.innerText = "Paso 4/4: Calibrando True-Peak ceiling con sobremuestreo 4x y exportando 32-bit Float...";
+                }
+            }, 1000);
+        }
+
+        function stopProgressTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // Start Mastering Process
+        startMasterBtn.onclick = async () => {
+            if (!selectedFile) {
+                return alert("Por favor selecciona o importa un archivo de audio stereo para masterizar.");
+            }
+
+            masterLoading.style.display = 'block';
+            masterResultsCard.style.display = 'none';
+            startMasterBtn.disabled = true;
+            startProgressTimer();
+
+            try {
+                const client = await Client.connect(SPACE_ID);
+
+                let audioHandle;
+                if (selectedFile instanceof File) {
+                    audioHandle = handle_file(selectedFile);
+                } else if (selectedFile.url) {
+                    const resp = await fetch(selectedFile.url);
+                    const b = await resp.blob();
+                    const f = new File([b], selectedFile.name || "mixdown.wav", { type: "audio/wav" });
+                    audioHandle = handle_file(f);
+                }
+
                 let result;
                 try {
                     result = await client.predict("/process_master", [
                         audioHandle,
-                        selectedTarget,
-                        parseFloat(warmthSlider.value),
-                        parseFloat(spreadSlider.value),
-                        parseFloat(airSlider.value)
+                        selectedGenre,
+                        selectedStyle
                     ]);
                 } catch (errPos) {
                     console.warn("Retrying /process_master with named parameters:", errPos);
                     result = await client.predict("/process_master", {
                         audio_file: audioHandle,
-                        target_profile: selectedTarget,
-                        warmth: parseFloat(warmthSlider.value),
-                        stereo_spread: parseFloat(spreadSlider.value),
-                        air: parseFloat(airSlider.value)
+                        genre: selectedGenre,
+                        style: selectedStyle
                     });
                 }
 
                 const outAudio = result.data[0];
-                const reportStr = result.data[1] || "";
+                const reportRaw = result.data[1] || "";
 
-                if (!outAudio || (typeof reportStr === 'string' && reportStr.startsWith("ERROR"))) {
-                    throw new Error(reportStr || "El servidor de mastering devolvió un error.");
+                if (!outAudio || (typeof reportRaw === 'string' && reportRaw.startsWith("ERROR"))) {
+                    throw new Error(reportRaw || "El servidor de mastering devolvió un error.");
                 }
 
                 masteredAudioUrl = resolveGradioUrl(outAudio);
                 if (!masteredAudioUrl) {
-                    throw new Error("No se pudo obtener la URL del audio masterizado.");
+                    throw new Error("No se pudo resolver la URL del audio masterizado.");
                 }
 
-                // Parse metrics from report string if available
-                let inputLufs = "-18.2 LUFS";
-                let outputLufs = selectedTarget === 'streaming' ? "-14.0 LUFS" : (selectedTarget === 'club' ? "-9.0 LUFS" : "-12.0 LUFS");
-                let peakDbfs = "-0.50 dBFS";
+                // Parse metrics
+                let metrics = {};
+                if (typeof reportRaw === 'string' && reportRaw.includes('{')) {
+                    try {
+                        const jsonPart = reportRaw.substring(reportRaw.indexOf('{'));
+                        metrics = JSON.parse(jsonPart);
+                    } catch (e) {
+                        console.warn("Could not parse metrics JSON:", e);
+                    }
+                }
 
-                const matchOut = reportStr.match(/to\s+([-\d.]+)\s*LUFS/i);
-                if (matchOut) outputLufs = `${matchOut[1]} LUFS`;
-                const matchIn = reportStr.match(/Input:\s*([-\d.]+)\s*LUFS/i);
-                if (matchIn) inputLufs = `${matchIn[1]} LUFS`;
-                const matchPeak = reportStr.match(/Peak:\s*([-\d.]+)\s*dBFS/i);
-                if (matchPeak) peakDbfs = `${matchPeak[1]} dBFS`;
+                metricProfileTitle.innerText = (metrics.genre_name || selectedGenre).toUpperCase();
+                metricStyleSubtitle.innerText = metrics.style_name || selectedStyle;
+                metricLufsComp.innerText = `${metrics.output_lufs !== undefined ? metrics.output_lufs : -14.0} LUFS`;
+                metricInputLufsVal.innerText = `In: ${metrics.input_lufs !== undefined ? metrics.input_lufs : 'N/A'} LUFS`;
+                metricTruePeakVal.innerText = `${metrics.true_peak_dbfs !== undefined ? metrics.true_peak_dbfs : -0.4} dBFS`;
+                metricDynamicRange.innerText = `${metrics.dynamic_range_db !== undefined ? metrics.dynamic_range_db : 12.0} dB`;
+                metricCorrelation.innerText = `${metrics.stereo_correlation !== undefined ? metrics.stereo_correlation : '+0.90'}`;
 
-                metricInputLufs.innerText = inputLufs;
-                metricOutputLufs.innerText = outputLufs;
-                metricTruePeak.innerText = peakDbfs;
-                metricTargetProfile.innerText = selectedTarget.toUpperCase();
-
-                masterStatusText.innerText = reportStr || "Commercial master processed successfully.";
+                masterStatusText.innerText = `Master comercial completado para ${metrics.genre_name || selectedGenre} (${metrics.style_name || selectedStyle}) a 32-bit Float WAV.`;
                 masterAudioPlayer.src = masteredAudioUrl;
                 downloadMasterBtn.href = masteredAudioUrl;
-                downloadMasterBtn.download = "mastered_track_32bit_float.wav";
+                downloadMasterBtn.download = `master_${selectedGenre}_${selectedStyle}_32bit_float.wav`;
 
-                // Active Mastered tab
                 btnMastered.classList.add('active');
                 btnOriginal.classList.remove('active');
-
                 masterResultsCard.style.display = 'block';
 
             } catch (e) {
                 console.error("Mastering failed:", e);
-                alert("Mastering error: " + (e.message || e));
+                alert("Error en masterización: " + (e.message || e));
             } finally {
-                clearInterval(progressTimer);
+                stopProgressTimer();
                 masterLoading.style.display = 'none';
                 startMasterBtn.disabled = false;
             }
@@ -804,8 +916,38 @@
             btnOriginal.classList.remove('active');
         };
 
-        // Send back to Stemer
-        sendToStemerBtn.onclick = () => {
+        // Modal for sending to Stemer
+        openSendToStemerBtn.onclick = () => {
+            sendToStemerModal.style.display = 'flex';
+        };
+
+        closeModalBtn.onclick = () => {
+            sendToStemerModal.style.display = 'none';
+        };
+
+        sendMasteredVersionBtn.onclick = () => {
+            if (!masteredAudioUrl) return alert("Primero genera el master de tu canción.");
+            const payload = {
+                url: masteredAudioUrl,
+                name: `master_${selectedGenre}_${selectedStyle}.wav`,
+                type: 'mastered',
+                label: `Versión Masterizada (${selectedGenre.toUpperCase()} • ${selectedStyle.toUpperCase()})`,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('stemerIncomingTrack', JSON.stringify(payload));
+            window.location.href = 'index.html';
+        };
+
+        sendOriginalVersionBtn.onclick = () => {
+            if (!originalAudioUrl) return alert("No hay mezcla original cargada.");
+            const payload = {
+                url: originalAudioUrl,
+                name: (selectedFile && selectedFile.name) || "original_mixdown.wav",
+                type: 'original',
+                label: 'Mezcla Original (Pre-Master)',
+                timestamp: Date.now()
+            };
+            localStorage.setItem('stemerIncomingTrack', JSON.stringify(payload));
             window.location.href = 'index.html';
         };
     </script>
