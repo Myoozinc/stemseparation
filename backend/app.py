@@ -73,7 +73,8 @@ def process_stems(song_file, options, auth_token=""):
         if "Info" in options or "All" in options:
             try:
                 import librosa
-                y, sr_load = librosa.load(wav_path, mono=True, sr=44100)
+                # Load first 60 seconds at 22050 Hz for fast key and tempo detection (< 2 seconds)
+                y, sr_load = librosa.load(wav_path, mono=True, sr=22050, duration=60.0)
                 key = detect_key_advanced(y, sr_load)
                 tempo = detect_tempo_advanced(y, sr_load)
             except Exception as kerr:

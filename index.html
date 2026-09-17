@@ -1071,7 +1071,7 @@
                 </div>
             </div>
 
-            <div id="loadingView" class="glass-card hidden" style="text-align: center;">
+            <div id="loadingView" class="glass-card hidden" style="text-align: center; max-width: 600px; margin: 0 auto 2rem;">
                 <div class="progress-box">
                     <div class="progress-ring" id="progressRing">
                         <div class="ring-segment"></div>
@@ -1085,8 +1085,14 @@
                     </div>
                     <div class="progress-val" id="progressText">0%</div>
                 </div>
-                <h3 style="text-transform: uppercase; letter-spacing: 2px;">Separating Stems...</h3>
-                <div id="timer" style="margin-top: 10px; font-family: 'Outfit', sans-serif; opacity: 0.5;">00:00</div>
+                <h3 id="loadingStageTitle" style="text-transform: uppercase; letter-spacing: 2px; font-size: 1.25rem;">SEPARANDO STEMS...</h3>
+                <div id="loadingStageSub" style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary); min-height: 24px;">
+                    Cargando modelo de separación neuronal (Demucs)...
+                </div>
+                <div id="timer" style="margin-top: 12px; font-family: 'Outfit', sans-serif; font-size: 1.2rem; color: var(--accent-magenta); font-weight: 700;">00:00</div>
+                <div style="margin-top: 14px; padding: 10px 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; font-size: 0.72rem; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.5px;">
+                    ⚡ Procesando 8 stems en alta definición (WAV 44.1kHz). En servidores cloud toma aprox. 1 a 2 minutos. No cierres esta ventana.
+                </div>
             </div>
 
             <div id="resultsContent" class="hidden">
@@ -1494,16 +1500,41 @@
 
         function startProcessingUI() {
             startTime = Date.now();
-            let p = 0;
+            const stageTitle = document.getElementById('loadingStageTitle');
+            const stageSub = document.getElementById('loadingStageSub');
+            
+            if (tInterval) clearInterval(tInterval);
+
             tInterval = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
                 const s = (elapsed % 60).toString().padStart(2, '0');
                 timerDisp.innerText = `${m}:${s}`;
-                if (p < 95) { 
-                    p += (98 - p) / 40; 
-                    progressText.innerText = `${Math.floor(p)}%`;
+
+                let pct = 0;
+                if (elapsed < 12) {
+                    pct = Math.min(20, Math.floor((elapsed / 12) * 20));
+                    if (stageTitle) stageTitle.innerText = "INICIALIZANDO MOTOR IA...";
+                    if (stageSub) stageSub.innerText = "Cargando modelo neuronal Demucs en memoria...";
+                } else if (elapsed < 50) {
+                    pct = 20 + Math.min(48, Math.floor(((elapsed - 12) / 38) * 48));
+                    if (stageTitle) stageTitle.innerText = "SEPARANDO STEMS CON IA...";
+                    if (stageSub) stageSub.innerText = "Descomponiendo en Vocales, Bajo, Batería e Instrumentos...";
+                } else if (elapsed < 75) {
+                    pct = 68 + Math.min(18, Math.floor(((elapsed - 50) / 25) * 18));
+                    if (stageTitle) stageTitle.innerText = "REFINANDO PERCUSIONES...";
+                    if (stageSub) stageSub.innerText = "Separando batería en Kick, Snare y Hi-Hat...";
+                } else if (elapsed < 95) {
+                    pct = 86 + Math.min(8, Math.floor(((elapsed - 75) / 20) * 8));
+                    if (stageTitle) stageTitle.innerText = "ANALIZANDO AUDIO...";
+                    if (stageSub) stageSub.innerText = "Detectando escala musical armónica y tempo (BPM)...";
+                } else {
+                    pct = Math.min(98, 94 + Math.floor((elapsed - 95) / 20));
+                    if (stageTitle) stageTitle.innerText = "FINALIZANDO EXPORTACIÓN...";
+                    if (stageSub) stageSub.innerText = "Generando archivos WAV y sincronizando reproductor DAW...";
                 }
+
+                progressText.innerText = `${pct}%`;
             }, 1000);
         }
 
@@ -1526,6 +1557,10 @@
         function renderResults(data) {
             clearInterval(tInterval);
             progressText.innerText = '100%';
+            const stageTitle = document.getElementById('loadingStageTitle');
+            const stageSub = document.getElementById('loadingStageSub');
+            if (stageTitle) stageTitle.innerText = "¡PROCESO COMPLETADO!";
+            if (stageSub) stageSub.innerText = "Cargando consola de reproducción...";
 
             setTimeout(() => {
                 loadingView.classList.add('hidden');
