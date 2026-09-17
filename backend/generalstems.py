@@ -36,14 +36,18 @@ def normalize(y, peak=0.95):
     return y
 
 def save_stem(path, audio, sr):
-    """Normalize and save audio (tensor or numpy)."""
+    """Normalize and save audio in studio-grade 32-bit Float WAV."""
     if isinstance(audio, torch.Tensor):
-        audio = audio.cpu()
-        max_val = torch.max(torch.abs(audio)).clamp(min=1e-6)
-        audio = audio / max_val * 0.95
-        torchaudio.save(path, audio, sr)
+        arr = audio.detach().cpu().numpy()
+        if arr.ndim == 2:
+            arr = arr.T  # (channels, samples) -> (samples, channels)
+        max_val = np.max(np.abs(arr))
+        if max_val > 1e-6:
+            arr = (arr / max_val) * 0.95
+        sf.write(path, arr.astype(np.float32), sr, subtype='FLOAT')
     else:
-        sf.write(path, normalize(audio), sr)
+        norm_audio = normalize(audio)
+        sf.write(path, norm_audio.astype(np.float32), sr, subtype='FLOAT')
 
 # ----------------------------- 
 # Advanced Key Detection
@@ -191,9 +195,11 @@ def demucs_separate(wav_path, out_dir):
     os.makedirs(out_dir, exist_ok=True)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if device == "cpu":
-        # Ensure all available vCPUs are utilized in parallel
+        # Crucial for Hugging Face free tier: The container quota is strictly 2 vCPUs.
+        # Spawning more threads than quota causes severe context thrashing and Linux CFS throttling.
         try:
-            torch.set_num_threads(max(1, os.cpu_count() or 2))
+            torch.set_num_threads(2)
+            torch.set_num_interop_threads(1)
         except Exception:
             pass
     
@@ -207,9 +213,10 @@ def demucs_separate(wav_path, out_dir):
     
     wav = wav.unsqueeze(0).to(device)
     
-    # High-speed inference: overlap=0.10, shifts=0 (reduces compute by ~50% without quality loss)
+    # High-speed inference: overlap=0.02 (minimal overlap), shifts=0
+    # Eliminates redundant chunk overlap computation on CPU without audible loss
     with torch.no_grad():
-        sources = apply_model(model, wav, split=True, overlap=0.10, shifts=0, progress=False)
+        sources = apply_model(model, wav, split=True, overlap=0.02, shifts=0, progress=False)
     
     sources = sources[0]
     drums, bass, other, vocals = sources
@@ -229,6 +236,10 @@ def demucs_separate(wav_path, out_dir):
     save_stem(stem_paths["other"], other, sr)
     
     stems.update(stem_paths)
+    
+    del wav, sources, drums, bass, other, vocals
+    if device == "cuda":
+        torch.cuda.empty_cache()
     
     return stems, sr
 

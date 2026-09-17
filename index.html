@@ -588,6 +588,11 @@
             to { transform: scale(1.3); box-shadow: 0 0 12px var(--accent-magenta); }
         }
 
+        @keyframes eqPulse {
+            0%, 100% { height: 6px; opacity: 0.35; transform: scaleY(0.6); }
+            50% { height: 26px; opacity: 1; transform: scaleY(1.0); filter: drop-shadow(0 0 8px rgba(0, 245, 255, 0.8)); }
+        }
+
         .stem-label {
             font-size: 0.8rem;
             font-weight: 700;
@@ -1071,7 +1076,7 @@
                 </div>
             </div>
 
-            <div id="loadingView" class="glass-card hidden" style="text-align: center; max-width: 600px; margin: 0 auto 2rem;">
+            <div id="loadingView" class="glass-card hidden" style="text-align: center; max-width: 620px; margin: 0 auto 2rem;">
                 <div class="progress-box">
                     <div class="progress-ring" id="progressRing">
                         <div class="ring-segment"></div>
@@ -1085,13 +1090,31 @@
                     </div>
                     <div class="progress-val" id="progressText">0%</div>
                 </div>
-                <h3 id="loadingStageTitle" style="text-transform: uppercase; letter-spacing: 2px; font-size: 1.25rem;">SEPARANDO STEMS...</h3>
-                <div id="loadingStageSub" style="margin-top: 8px; font-size: 0.85rem; color: var(--text-secondary); min-height: 24px;">
-                    Cargando modelo de separación neuronal (Demucs)...
+
+                <!-- Real-time dynamic activity indicator -->
+                <div class="active-audio-bars" style="display: flex; justify-content: center; align-items: flex-end; gap: 4px; height: 26px; margin: 10px auto 14px;">
+                    <span class="a-bar" style="width: 4px; height: 8px; background: #00f5ff; border-radius: 2px; animation: eqPulse 1.2s infinite ease-in-out 0.1s;"></span>
+                    <span class="a-bar" style="width: 4px; height: 20px; background: #bf00ff; border-radius: 2px; animation: eqPulse 0.9s infinite ease-in-out 0.25s;"></span>
+                    <span class="a-bar" style="width: 4px; height: 14px; background: #ff007f; border-radius: 2px; animation: eqPulse 1.3s infinite ease-in-out 0.15s;"></span>
+                    <span class="a-bar" style="width: 4px; height: 24px; background: #00f5ff; border-radius: 2px; animation: eqPulse 1.1s infinite ease-in-out 0.35s;"></span>
+                    <span class="a-bar" style="width: 4px; height: 12px; background: #bf00ff; border-radius: 2px; animation: eqPulse 1.4s infinite ease-in-out 0.2s;"></span>
+                    <span class="a-bar" style="width: 4px; height: 18px; background: #ff007f; border-radius: 2px; animation: eqPulse 0.8s infinite ease-in-out 0.3s;"></span>
+                    <span class="a-bar" style="width: 4px; height: 9px; background: #00f5ff; border-radius: 2px; animation: eqPulse 1.25s infinite ease-in-out 0.05s;"></span>
                 </div>
-                <div id="timer" style="margin-top: 12px; font-family: 'Outfit', sans-serif; font-size: 1.2rem; color: var(--accent-magenta); font-weight: 700;">00:00</div>
-                <div style="margin-top: 14px; padding: 10px 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; font-size: 0.72rem; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.5px;">
-                    ⚡ Procesando 8 stems en alta definición (WAV 44.1kHz). En servidores cloud toma aprox. 1 a 2 minutos. No cierres esta ventana.
+
+                <h3 id="loadingStageTitle" style="text-transform: uppercase; letter-spacing: 2px; font-size: 1.15rem; color: #fff;">SEPARANDO STEMS CON IA...</h3>
+                <div id="loadingStageSub" style="margin-top: 8px; font-size: 0.84rem; color: var(--text-secondary); min-height: 24px;">
+                    Cargando red neuronal Demucs v4 y preparando canales estéreo...
+                </div>
+
+                <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 14px;">
+                    <div id="timer" style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; color: var(--accent-magenta); font-weight: 700;">00:00</div>
+                    <span style="color: rgba(255, 255, 255, 0.25);">|</span>
+                    <div id="timerEta" style="font-size: 0.8rem; color: #00f5ff; font-weight: 600; letter-spacing: 0.5px;">Calculando tiempo estimado...</div>
+                </div>
+
+                <div style="margin-top: 16px; padding: 12px 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; font-size: 0.72rem; color: rgba(255, 255, 255, 0.6); line-height: 1.5; letter-spacing: 0.4px; text-align: left;">
+                    💡 <strong>Procesamiento Neuronal Demucs v4:</strong> Se están aislando 8 canales de estudio en <strong>WAV 32-bit Float</strong> sin compresión destructiva. En hardware cloud sin GPU, la separación toma aproximadamente 1.2x a 1.5x la duración de tu canción. No cierres esta pestaña.
                 </div>
             </div>
 
@@ -1230,6 +1253,7 @@
         let tInterval;
         let startTime;
         let errorShown = false;
+        let trackDurationSec = 180; // default 3 min fallback
 
         function resolveGradioUrl(fileObj) {
             if (!fileObj) return "";
@@ -1244,6 +1268,9 @@
                 return raw;
             }
             const origin = "https://tinahmbuz-audiostems.hf.space";
+            if (raw.startsWith("/tmp/gradio/")) {
+                return `${origin}/gradio_api/file=${raw}`;
+            }
             return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
         }
 
@@ -1319,6 +1346,53 @@
             }
         };
 
+        function handleSelectedFile(file) {
+            if (!file) return;
+            const validExts = [".mp3", ".wav", ".flac", ".m4a", ".aac", ".ogg", ".aiff"];
+            const lowerName = file.name.toLowerCase();
+            if (!validExts.some(ext => lowerName.endsWith(ext))) {
+                alert("Por favor selecciona un archivo de audio compatible (MP3 o WAV).");
+                return;
+            }
+
+            selectedFile = file;
+            fileNameDisp.innerText = file.name;
+            const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+
+            probeAudioDuration(file, sizeMb);
+        }
+
+        function probeAudioDuration(file, sizeMb) {
+            try {
+                const audio = new Audio();
+                const objUrl = URL.createObjectURL(file);
+                audio.src = objUrl;
+                audio.onloadedmetadata = () => {
+                    if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
+                        trackDurationSec = audio.duration;
+                        const m = Math.floor(trackDurationSec / 60);
+                        const s = Math.floor(trackDurationSec % 60).toString().padStart(2, '0');
+                        const estTotalSec = Math.max(75, Math.round(trackDurationSec * 1.35));
+                        const estM = Math.floor(estTotalSec / 60);
+                        const estS = (estTotalSec % 60).toString().padStart(2, '0');
+
+                        let badge = document.getElementById('fileDurationBadge');
+                        if (!badge) {
+                            badge = document.createElement('div');
+                            badge.id = 'fileDurationBadge';
+                            badge.style.cssText = "margin-top: 10px; font-size: 0.78rem; padding: 6px 14px; background: rgba(0, 245, 255, 0.08); border: 1px solid rgba(0, 245, 255, 0.25); border-radius: 20px; color: #00f5ff; display: inline-flex; align-items: center; gap: 8px;";
+                            fileNameDisp.parentNode.appendChild(badge);
+                        }
+                        badge.innerHTML = `<span>⏱ <strong>${m}:${s}</strong> (${sizeMb} MB)</span> <span style="opacity: 0.5;">•</span> <span>Est. IA Cloud: ~<strong>${estM}:${estS} min</strong></span>`;
+                    }
+                    URL.revokeObjectURL(objUrl);
+                };
+                audio.onerror = () => URL.revokeObjectURL(objUrl);
+            } catch (e) {
+                console.warn("Probe duration failed:", e);
+            }
+        }
+
         dropZone.addEventListener('click', (e) => {
             if (e.target !== fileInput) {
                 fileInput.click();
@@ -1330,8 +1404,9 @@
         });
 
         fileInput.addEventListener('change', (e) => {
-            selectedFile = e.target.files[0];
-            if (selectedFile) fileNameDisp.innerText = selectedFile.name;
+            if (e.target.files && e.target.files[0]) {
+                handleSelectedFile(e.target.files[0]);
+            }
         });
         
         dropZone.addEventListener("dragover", (e) => {
@@ -1346,14 +1421,8 @@
         dropZone.addEventListener("drop", (e) => {
             e.preventDefault();
             dropZone.classList.remove("dragover");
-            const file = e.dataTransfer.files[0];
-            if (file) {
-                if (!file.name.endsWith(".mp3") && !file.name.endsWith(".wav")) {
-                    alert("Only MP3 or WAV files are allowed.");
-                    return;
-                }
-                selectedFile = file;
-                fileNameDisp.innerText = file.name;
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleSelectedFile(e.dataTransfer.files[0]);
             }
         });     
         
@@ -1398,11 +1467,11 @@
 
                 const client = await Client.connect(SPACE_ID);
                 
-                const result = await client.predict("/process", {
-                    song_file: handle_file(selectedFile),
-                    options: selectedOptions,
-                    auth_token: ""
-                });
+                const result = await client.predict("/process", [
+                    handle_file(selectedFile),
+                    selectedOptions,
+                    ""
+                ]);
 
                 handleBackendResponse(result.data);
                 
@@ -1502,8 +1571,12 @@
             startTime = Date.now();
             const stageTitle = document.getElementById('loadingStageTitle');
             const stageSub = document.getElementById('loadingStageSub');
+            const etaDisp = document.getElementById('timerEta');
             
             if (tInterval) clearInterval(tInterval);
+
+            // Realistic total estimate on Hugging Face 2 vCPUs: ~1.35x audio duration, minimum 75 seconds
+            const estimatedTotalSec = Math.max(75, Math.round(trackDurationSec * 1.35));
 
             tInterval = setInterval(() => {
                 const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -1511,27 +1584,50 @@
                 const s = (elapsed % 60).toString().padStart(2, '0');
                 timerDisp.innerText = `${m}:${s}`;
 
+                const remainingSec = Math.max(0, estimatedTotalSec - elapsed);
+                const remM = Math.floor(remainingSec / 60).toString().padStart(2, '0');
+                const remS = (remainingSec % 60).toString().padStart(2, '0');
+
+                if (etaDisp) {
+                    if (elapsed < estimatedTotalSec) {
+                        etaDisp.innerText = `Tiempo restante est.: ~${remM}:${remS}`;
+                    } else {
+                        etaDisp.innerText = `Finalizando ensamblaje de stems...`;
+                    }
+                }
+
+                // Smooth, dynamic percentage progression based on real track length
                 let pct = 0;
-                if (elapsed < 12) {
-                    pct = Math.min(20, Math.floor((elapsed / 12) * 20));
-                    if (stageTitle) stageTitle.innerText = "INICIALIZANDO MOTOR IA...";
-                    if (stageSub) stageSub.innerText = "Cargando modelo neuronal Demucs en memoria...";
-                } else if (elapsed < 50) {
-                    pct = 20 + Math.min(48, Math.floor(((elapsed - 12) / 38) * 48));
-                    if (stageTitle) stageTitle.innerText = "SEPARANDO STEMS CON IA...";
-                    if (stageSub) stageSub.innerText = "Descomponiendo en Vocales, Bajo, Batería e Instrumentos...";
-                } else if (elapsed < 75) {
-                    pct = 68 + Math.min(18, Math.floor(((elapsed - 50) / 25) * 18));
-                    if (stageTitle) stageTitle.innerText = "REFINANDO PERCUSIONES...";
-                    if (stageSub) stageSub.innerText = "Separando batería en Kick, Snare y Hi-Hat...";
-                } else if (elapsed < 95) {
-                    pct = 86 + Math.min(8, Math.floor(((elapsed - 75) / 20) * 8));
-                    if (stageTitle) stageTitle.innerText = "ANALIZANDO AUDIO...";
-                    if (stageSub) stageSub.innerText = "Detectando escala musical armónica y tempo (BPM)...";
+                if (elapsed < 8) {
+                    pct = Math.min(10, Math.floor((elapsed / 8) * 10));
+                    if (stageTitle) stageTitle.innerText = "SUBIENDO Y PREPARANDO AUDIO...";
+                    if (stageSub) stageSub.innerText = "Transfiriendo canales estéreo a 44.1 kHz hacia el servidor...";
+                } else if (elapsed < estimatedTotalSec * 0.45) {
+                    const frac = (elapsed - 8) / (estimatedTotalSec * 0.45 - 8);
+                    pct = 10 + Math.floor(frac * 35);
+                    if (stageTitle) stageTitle.innerText = "SEPARANDO VOCALES Y BASE...";
+                    if (stageSub) stageSub.innerText = "Red neuronal Demucs v4 descomponiendo espectrogramas y armónicos...";
+                } else if (elapsed < estimatedTotalSec * 0.75) {
+                    const frac = (elapsed - estimatedTotalSec * 0.45) / (estimatedTotalSec * 0.30);
+                    pct = 45 + Math.floor(frac * 30);
+                    if (stageTitle) stageTitle.innerText = "AISLANDO BAJO Y BATERÍA...";
+                    if (stageSub) stageSub.innerText = "Extrayendo líneas de bajo y patrones rítmicos en 32-bit Float...";
+                } else if (elapsed < estimatedTotalSec * 0.90) {
+                    const frac = (elapsed - estimatedTotalSec * 0.75) / (estimatedTotalSec * 0.15);
+                    pct = 75 + Math.floor(frac * 15);
+                    if (stageTitle) stageTitle.innerText = "REFINANDO KICK, SNARE Y HI-HAT...";
+                    if (stageSub) stageSub.innerText = "Filtros digitales Butterworth de fase cero para separación de percusión...";
+                } else if (elapsed < estimatedTotalSec) {
+                    const frac = (elapsed - estimatedTotalSec * 0.90) / (estimatedTotalSec * 0.10);
+                    pct = 90 + Math.floor(frac * 6);
+                    if (stageTitle) stageTitle.innerText = "ANÁLISIS ARMÓNICO Y TEMPO...";
+                    if (stageSub) stageSub.innerText = "Detectando escala musical tonal (Key) y BPM exacto...";
                 } else {
-                    pct = Math.min(98, 94 + Math.floor((elapsed - 95) / 20));
-                    if (stageTitle) stageTitle.innerText = "FINALIZANDO EXPORTACIÓN...";
-                    if (stageSub) stageSub.innerText = "Generando archivos WAV y sincronizando reproductor DAW...";
+                    // Soft crawl towards 99%
+                    const overSec = elapsed - estimatedTotalSec;
+                    pct = Math.min(99, 96 + Math.floor(overSec / 30));
+                    if (stageTitle) stageTitle.innerText = "FINALIZANDO EXPORTACIÓN 32-BIT...";
+                    if (stageSub) stageSub.innerText = "Generando archivos WAV y sincronizando consola DAW multi-pista...";
                 }
 
                 progressText.innerText = `${pct}%`;
