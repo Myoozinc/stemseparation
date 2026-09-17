@@ -34,17 +34,34 @@ except ImportError:
     def detect_tempo_advanced(p): return "120"
 
 def extract_file_info(f):
-    """Safely extracts (file_path, original_filename) from any Gradio file object or dictionary"""
+    """Safely extracts (file_path, original_filename) from any Gradio file object, dictionary or URL"""
     if isinstance(f, dict):
         path = f.get('path') or f.get('name') or ''
         orig_name = f.get('orig_name') or (os.path.basename(path) if path else 'audio.wav')
-        return path, orig_name
-    if hasattr(f, 'name'):
+    elif hasattr(f, 'name'):
         path = f.name
         orig_name = getattr(f, 'orig_name', os.path.basename(path))
-        return path, orig_name
-    path = str(f)
-    return path, os.path.basename(path)
+    else:
+        path = str(f)
+        orig_name = os.path.basename(path)
+
+    # If path is a URL referencing a file on this server in /tmp/, map it directly to local disk
+    if isinstance(path, str) and (path.startswith("http://") or path.startswith("https://")):
+        if "/tmp/" in path:
+            local_candidate = path[path.find("/tmp/"):]
+            if os.path.exists(local_candidate):
+                return local_candidate, orig_name
+        try:
+            import urllib.request, time
+            clean_name = os.path.basename(path.split("?")[0]) or orig_name
+            local_dl = f"/tmp/dl_{int(time.time()*1000)}_{clean_name}"
+            urllib.request.urlretrieve(path, local_dl)
+            if os.path.exists(local_dl):
+                return local_dl, clean_name
+        except Exception as dl_err:
+            print(f"[WARN] Failed downloading remote audio URL {path}: {dl_err}")
+
+    return path, orig_name
 
 def process_stems(song_file, options, auth_token=""):
     """Original stem separation endpoint"""

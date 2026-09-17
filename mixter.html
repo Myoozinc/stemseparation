@@ -673,6 +673,9 @@
             if (!raw) return "";
             if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("blob:") || raw.startsWith("data:")) return raw;
             const origin = "https://tinahmbuz-audiostems.hf.space";
+            if (raw.startsWith("/tmp/gradio/")) {
+                return `${origin}/gradio_api/file=${raw}`;
+            }
             return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
         }
 
@@ -879,18 +882,46 @@
 
         // Send Active to Master
         sendActiveToMasterBtn.onclick = () => {
-            if (activeVersionIndex === -1) return alert("Por favor genera una mezcla primero.");
+            if (activeVersionIndex === -1 || !mixVersions[activeVersionIndex]) {
+                return alert("Por favor genera una mezcla primero.");
+            }
             const ver = mixVersions[activeVersionIndex];
+            sendActiveToMasterBtn.disabled = true;
+            sendActiveToMasterBtn.innerText = "Transfiriendo a Master Studio...";
+            
             const payload = {
                 url: ver.mixUrl,
                 name: `Mezcla_V${ver.versionNum}_${ver.subgenreKey}.wav`,
                 title: `Mix V${ver.versionNum} - ${ver.subgenreName}`,
                 format: "32-bit Float WAV (-6.0 dBFS)",
+                genre: ver.genreKey,
+                subgenre: ver.subgenreKey,
                 timestamp: Date.now()
             };
             localStorage.setItem('mixterMasterTrack', JSON.stringify(payload));
-            window.location.href = 'master.html';
+            setTimeout(() => {
+                window.location.href = 'master.html';
+            }, 80);
         };
+
+        // Also ensure clicking bottom dock link "Master" syncs the active mix
+        document.querySelectorAll('a[href="master.html"]').forEach(link => {
+            link.addEventListener('click', () => {
+                if (activeVersionIndex !== -1 && mixVersions[activeVersionIndex]) {
+                    const ver = mixVersions[activeVersionIndex];
+                    const payload = {
+                        url: ver.mixUrl,
+                        name: `Mezcla_V${ver.versionNum}_${ver.subgenreKey}.wav`,
+                        title: `Mix V${ver.versionNum} - ${ver.subgenreName}`,
+                        format: "32-bit Float WAV (-6.0 dBFS)",
+                        genre: ver.genreKey,
+                        subgenre: ver.subgenreKey,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('mixterMasterTrack', JSON.stringify(payload));
+                }
+            });
+        });
 
         // Start Mixing
         startMixBtn.onclick = async () => {
@@ -982,6 +1013,21 @@
 
                 mixVersions.push(newVersion);
                 activeVersionIndex = mixVersions.length - 1;
+
+                // Auto-sync latest mixdown to Master transfer slot
+                try {
+                    localStorage.setItem('mixterMasterTrack', JSON.stringify({
+                        url: newVersion.mixUrl,
+                        name: `Mezcla_V${newVersion.versionNum}_${newVersion.subgenreKey}.wav`,
+                        title: `Mix V${newVersion.versionNum} - ${newVersion.subgenreName}`,
+                        format: "32-bit Float WAV (-6.0 dBFS)",
+                        genre: newVersion.genreKey,
+                        subgenre: newVersion.subgenreKey,
+                        timestamp: Date.now()
+                    }));
+                } catch (storeErr) {
+                    console.warn("Could not auto-cache mixterMasterTrack:", storeErr);
+                }
 
                 mixDeckSection.style.display = 'block';
                 switchActiveVersion(activeVersionIndex);

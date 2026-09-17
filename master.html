@@ -775,6 +775,7 @@
 
         clearTrackBtn.onclick = () => {
             importedTrackCard.style.display = 'none';
+            if (uploadContainer) uploadContainer.style.display = 'block';
             selectedFile = null;
             originalAudioUrl = null;
             masterFileName.innerText = "Selecciona o Arrastra tu Mezcla Stereo Aquí";
@@ -804,10 +805,23 @@
                     selectedFile = { url: payload.url, name: payload.name || "mixdown.wav" };
                     originalAudioUrl = payload.url;
                     importedTrackName.innerText = selectedFile.name;
-                    importedProvenanceBadge.innerText = payload.label || `Track importado desde ${source}`;
+                    importedProvenanceBadge.innerText = payload.title ? `${payload.title} • ${payload.format || '32-bit Float'} (${source})` : (payload.label || `Track importado desde ${source}`);
                     importedAudioPreview.src = payload.url;
                     importedTrackCard.style.display = 'block';
+                    if (uploadContainer) uploadContainer.style.display = 'none';
                     masterFileName.innerText = `Usando Track de ${source}: ${selectedFile.name}`;
+
+                    // Automatically select matching genre if provided
+                    if (payload.genre) {
+                        const targetCard = document.querySelector(`.genre-card[data-genre="${payload.genre}"]`);
+                        if (targetCard) {
+                            document.querySelectorAll('.genre-card').forEach(c => c.classList.remove('selected'));
+                            targetCard.classList.add('selected');
+                            selectedGenre = payload.genre;
+                            const activePill = targetCard.querySelector('.style-pill.active') || targetCard.querySelector('.style-pill');
+                            if (activePill) selectedStyle = activePill.dataset.style;
+                        }
+                    }
                 }
             } catch (e) {
                 console.error("Error reading incoming master track:", e);
@@ -827,6 +841,9 @@
                 return raw;
             }
             const origin = "https://tinahmbuz-audiostems.hf.space";
+            if (raw.startsWith("/tmp/gradio/")) {
+                return `${origin}/gradio_api/file=${raw}`;
+            }
             return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
         }
 
@@ -871,28 +888,25 @@
                 let audioHandle;
                 if (selectedFile instanceof File) {
                     audioHandle = handle_file(selectedFile);
-                } else if (selectedFile.url) {
-                    const resp = await fetch(selectedFile.url);
-                    const b = await resp.blob();
-                    const f = new File([b], selectedFile.name || "mixdown.wav", { type: "audio/wav" });
-                    audioHandle = handle_file(f);
+                } else if (selectedFile && selectedFile.url) {
+                    if (selectedFile.url.startsWith("blob:") || selectedFile.url.startsWith("data:")) {
+                        const resp = await fetch(selectedFile.url);
+                        const b = await resp.blob();
+                        const f = new File([b], selectedFile.name || "mixdown.wav", { type: "audio/wav" });
+                        audioHandle = handle_file(f);
+                    } else {
+                        // Direct handle_file with URL: instant zero-latency pass to Gradio
+                        audioHandle = handle_file(selectedFile.url);
+                    }
+                } else {
+                    audioHandle = handle_file(selectedFile);
                 }
 
-                let result;
-                try {
-                    result = await client.predict("/process_master", [
-                        audioHandle,
-                        selectedGenre,
-                        selectedStyle
-                    ]);
-                } catch (errPos) {
-                    console.warn("Retrying /process_master with named parameters:", errPos);
-                    result = await client.predict("/process_master", {
-                        audio_file: audioHandle,
-                        genre: selectedGenre,
-                        style: selectedStyle
-                    });
-                }
+                const result = await client.predict("/process_master", [
+                    audioHandle,
+                    selectedGenre,
+                    selectedStyle
+                ]);
 
                 const outAudio = result.data[0];
                 const reportRaw = result.data[1] || "";
