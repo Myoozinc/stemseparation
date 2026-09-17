@@ -57,7 +57,8 @@ def process_stems(song_file, options, auth_token=""):
         if not song_path or not os.path.exists(song_path):
             return [None] * 8 + [f"PROCESSING_ERROR: File not accessible on server: {song_file}"]
             
-        wav_path = mp3_to_wav(song_path, out_dir)
+        wav_path = os.path.join(out_dir, "input_song.wav")
+        wav_path = mp3_to_wav(song_path, wav_path)
         stems = {}
         drum_refined = {}
 
@@ -67,8 +68,18 @@ def process_stems(song_file, options, auth_token=""):
         if ("Refine Drums" in options or "All" in options) and "drums" in stems:
             drum_refined = refine_drums(stems["drums"], out_dir)
 
-        key = detect_key_advanced(wav_path) if ("Info" in options or "All" in options) else "N/A"
-        tempo = detect_tempo_advanced(wav_path) if ("Info" in options or "All" in options) else "N/A"
+        key = "N/A"
+        tempo = "N/A"
+        if "Info" in options or "All" in options:
+            try:
+                import librosa
+                y, sr_load = librosa.load(wav_path, mono=True, sr=44100)
+                key = detect_key_advanced(y, sr_load)
+                tempo = detect_tempo_advanced(y, sr_load)
+            except Exception as kerr:
+                print(f"[WARN] Key/tempo detection: {kerr}")
+                key = "N/A"
+                tempo = "N/A"
 
         info_msg = f"Key: {key} | Tempo: {tempo} BPM | SUCCESS:99:99"
 
