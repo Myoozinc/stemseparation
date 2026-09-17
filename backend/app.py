@@ -134,7 +134,7 @@ def process_samples(audio_file, mode="transients", max_samples=16):
         return [None, f"ERROR: {e}"] + [None] * 8
 
 # --- Mixter Endpoint ---
-def process_mix(files, mix_style="modern", vocal_fx=0.3):
+def process_mix(files, mix_style="urbano", vocal_fx=0.3, subgenre="neo_perreo", *args, **kwargs):
     if not files:
         return None, "No stem files provided."
     try:
@@ -147,12 +147,20 @@ def process_mix(files, mix_style="modern", vocal_fx=0.3):
         if not stem_items:
             return None, "No valid stem audio files could be accessed on server."
             
+        # Support colon syntax "genre:subgenre"
+        if ":" in str(mix_style):
+            parts = str(mix_style).split(":", 1)
+            mix_style = parts[0]
+            subgenre = parts[1]
+
         out_wav, report = process_and_mix_stems(
             stem_items,
             mix_style=mix_style,
+            subgenre=subgenre,
             vocal_fx_level=float(vocal_fx)
         )
-        report_str = f"SUCCESS: Mixed {report['stems_count']} stems in {mix_style} style. Headroom: {report['headroom']}"
+        report_json = json.dumps(report)
+        report_str = f"SUCCESS:{report_json}"
         return out_wav, report_str
     except Exception as e:
         import traceback
@@ -253,14 +261,19 @@ with gr.Blocks(title="Myooz Audio Intelligence Suite") as app:
     # Mixter
     with gr.Tab("Mixter"):
         mix_files = gr.File(file_count="multiple", label="Upload Stems")
-        mix_style = gr.Radio(choices=["modern", "punchy", "acoustic", "club"], value="modern", label="Mix Style")
+        mix_genre = gr.Dropdown(
+            choices=["urbano", "electronic", "pop", "hiphop", "rock", "acoustic"],
+            value="urbano",
+            label="Genre"
+        )
         mix_vocal_fx = gr.Slider(0.0, 1.0, value=0.3, label="Vocal Space / Reverb")
+        mix_subgenre = gr.Textbox(value="neo_perreo", label="Subgenre Preset")
         mix_btn = gr.Button("AI Mix Stems")
         mix_out_wav = gr.Audio(label="Final Mixdown WAV")
-        mix_status = gr.Textbox(label="Status")
+        mix_status = gr.Textbox(label="Status / Metrics")
         mix_btn.click(
             fn=process_mix,
-            inputs=[mix_files, mix_style, mix_vocal_fx],
+            inputs=[mix_files, mix_genre, mix_vocal_fx, mix_subgenre],
             outputs=[mix_out_wav, mix_status],
             api_name="process_mix"
         )

@@ -564,8 +564,11 @@
                     </div>
                 </div>
 
+                <!-- Master Multi-Version History Tabs -->
+                <div id="masterVersionsTabsList" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 1.25rem;"></div>
+
                 <!-- A/B Comparison Switcher -->
-                <div style="display: flex; justify-content: center;">
+                <div style="display: flex; justify-content: center; margin-bottom: 1.25rem;">
                     <div class="ab-switch">
                         <button class="ab-btn" id="btnOriginal">MEZCLA ORIGINAL</button>
                         <button class="ab-btn active" id="btnMastered">MASTERIZADO ✨</button>
@@ -678,6 +681,54 @@
         let originalAudioUrl = null;
         let masteredAudioUrl = null;
         let timerInterval = null;
+        let masterVersions = [];
+        let activeMasterIndex = -1;
+        const masterVersionsTabsList = document.getElementById('masterVersionsTabsList');
+
+        function renderMasterVersions() {
+            if (!masterVersionsTabsList) return;
+            masterVersionsTabsList.innerHTML = '';
+            masterVersions.forEach((ver, idx) => {
+                const pill = document.createElement('button');
+                pill.type = 'button';
+                pill.className = `style-pill ${idx === activeMasterIndex ? 'active' : ''}`;
+                pill.style.cssText = 'padding: 6px 14px; font-size: 0.72rem; font-weight: 700; cursor: pointer;';
+                pill.innerText = `Master V${ver.versionNum}: ${ver.styleName}`;
+                pill.onclick = () => switchActiveMaster(idx);
+                masterVersionsTabsList.appendChild(pill);
+            });
+        }
+
+        function switchActiveMaster(idx) {
+            if (idx < 0 || idx >= masterVersions.length) return;
+            activeMasterIndex = idx;
+            const ver = masterVersions[idx];
+            masteredAudioUrl = ver.masterUrl;
+
+            renderMasterVersions();
+
+            const m = ver.metrics || {};
+            metricProfileTitle.innerText = (m.genre_name || ver.genre).toUpperCase();
+            metricStyleSubtitle.innerText = m.style_name || ver.style;
+            metricLufsComp.innerText = `${m.output_lufs !== undefined ? m.output_lufs : -14.0} LUFS`;
+            metricInputLufsVal.innerText = `In: ${m.input_lufs !== undefined ? m.input_lufs : 'N/A'} LUFS`;
+            metricTruePeakVal.innerText = `${m.true_peak_dbfs !== undefined ? m.true_peak_dbfs : -0.4} dBFS`;
+            metricDynamicRange.innerText = `${m.dynamic_range_db !== undefined ? m.dynamic_range_db : 12.0} dB`;
+            metricCorrelation.innerText = `${m.stereo_correlation !== undefined ? m.stereo_correlation : '+0.90'}`;
+
+            masterStatusText.innerText = `Master V${ver.versionNum} activo para ${m.genre_name || ver.genre} (${m.style_name || ver.style}) a 32-bit Float WAV.`;
+            downloadMasterBtn.href = ver.masterUrl;
+            downloadMasterBtn.download = `master_V${ver.versionNum}_${ver.genre}_${ver.style}_32bit_float.wav`;
+
+            const curTime = masterAudioPlayer.currentTime || 0;
+            const isPlaying = !masterAudioPlayer.paused;
+            masterAudioPlayer.src = ver.masterUrl;
+            masterAudioPlayer.currentTime = curTime;
+            if (isPlaying) masterAudioPlayer.play().catch(() => {});
+
+            btnMastered.classList.add('active');
+            btnOriginal.classList.remove('active');
+        }
 
         // Genre card selection
         document.querySelectorAll('.genre-card').forEach(card => {
@@ -861,10 +912,20 @@
                     try {
                         const jsonPart = reportRaw.substring(reportRaw.indexOf('{'));
                         metrics = JSON.parse(jsonPart);
-                    } catch (e) {
-                        console.warn("Could not parse metrics JSON:", e);
-                    }
-                }
+                // Add to master versions history
+                const newMasterVer = {
+                    versionNum: masterVersions.length + 1,
+                    genre: selectedGenre,
+                    style: selectedStyle,
+                    genreName: metrics.genre_name || selectedGenre,
+                    styleName: metrics.style_name || selectedStyle,
+                    masterUrl: masteredAudioUrl,
+                    metrics: metrics,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+                masterVersions.push(newMasterVer);
+                activeMasterIndex = masterVersions.length - 1;
+                renderMasterVersions();
 
                 metricProfileTitle.innerText = (metrics.genre_name || selectedGenre).toUpperCase();
                 metricStyleSubtitle.innerText = metrics.style_name || selectedStyle;
@@ -874,10 +935,10 @@
                 metricDynamicRange.innerText = `${metrics.dynamic_range_db !== undefined ? metrics.dynamic_range_db : 12.0} dB`;
                 metricCorrelation.innerText = `${metrics.stereo_correlation !== undefined ? metrics.stereo_correlation : '+0.90'}`;
 
-                masterStatusText.innerText = `Master comercial completado para ${metrics.genre_name || selectedGenre} (${metrics.style_name || selectedStyle}) a 32-bit Float WAV.`;
+                masterStatusText.innerText = `Master V${newMasterVer.versionNum} completado para ${metrics.genre_name || selectedGenre} (${metrics.style_name || selectedStyle}) a 32-bit Float WAV.`;
                 masterAudioPlayer.src = masteredAudioUrl;
                 downloadMasterBtn.href = masteredAudioUrl;
-                downloadMasterBtn.download = `master_${selectedGenre}_${selectedStyle}_32bit_float.wav`;
+                downloadMasterBtn.download = `master_V${newMasterVer.versionNum}_${selectedGenre}_${selectedStyle}_32bit_float.wav`;
 
                 btnMastered.classList.add('active');
                 btnOriginal.classList.remove('active');

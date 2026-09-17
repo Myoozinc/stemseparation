@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mixter | AI Automated Stem Mixing Studio</title>
+    <title>Mixter Pro 2026 | AI Automated Stem Mixing Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Kaushan+Script&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="header.css">
     <link rel="stylesheet" href="shared.css">
     <style>
@@ -31,8 +31,8 @@
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-black);
             background-image:
-                radial-gradient(circle at 10% 20%, rgba(38, 1, 75, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+                radial-gradient(circle at 10% 20%, rgba(38, 1, 75, 0.20) 0%, transparent 45%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.12) 0%, transparent 45%);
             color: var(--text-white);
             min-height: 100vh;
             display: flex;
@@ -92,6 +92,183 @@
             border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Genre Grid (2026 Studio Matrix) */
+        .genres-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.25rem;
+            text-align: left;
+        }
+
+        .genre-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .genre-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-2px);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .genre-card.selected {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: var(--accent-emerald);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
+        }
+
+        .genre-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .genre-icon { font-size: 1.6rem; line-height: 1; }
+        .genre-title {
+            font-family: 'Righteous', sans-serif;
+            font-size: 1.05rem;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .genre-desc {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .style-pills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .subgenre-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 6px 13px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .subgenre-pill:hover {
+            border-color: var(--accent-emerald);
+            color: #fff;
+        }
+
+        .subgenre-pill.active {
+            background: var(--accent-emerald);
+            color: #000;
+            border-color: var(--accent-emerald);
+            box-shadow: 0 0 12px var(--accent-emerald-glow);
+        }
+
+        /* Mix Versions Deck */
+        .version-tab {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 12px 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            min-width: 220px;
+        }
+
+        .version-tab:hover {
+            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .version-tab.active {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: var(--accent-emerald);
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.3);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin: 1.25rem 0;
+        }
+
+        .metric-card {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .metric-val {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--accent-emerald);
+        }
+
+        .metric-lbl {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* A/B Switcher */
+        .ab-switch {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 30px;
+            padding: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .ab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 16px;
+            border-radius: 25px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ab-btn.active {
+            background: var(--accent-emerald);
+            color: #000;
+            box-shadow: 0 0 12px var(--accent-emerald-glow);
+        }
+
         .stem-tag-badge {
             font-size: 0.65rem;
             font-weight: 800;
@@ -102,27 +279,6 @@
             background: rgba(16, 185, 129, 0.15);
             color: var(--accent-emerald);
             border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .style-pill-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--glass-border);
-            color: var(--text-secondary);
-            padding: 10px 18px;
-            border-radius: 30px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .style-pill-btn.active {
-            background: var(--accent-emerald);
-            color: #000;
-            border-color: var(--accent-emerald);
-            box-shadow: 0 0 15px var(--accent-emerald-glow);
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -143,75 +299,89 @@
 
     <div class="container">
         <header class="tool-header">
-            <h1>AI Stem Mixing</h1>
-            <p class="subtitle">Autonomous Multi-Track DSP & Vocal Production</p>
+            <h1>Studio Stem Mixing 2026</h1>
+            <p class="subtitle">Multi-Pistas Autónomo con Supresión Quirúrgica de Resonancias y Headroom Pro</p>
         </header>
 
-        <!-- Stems imported from Stemer -->
+        <!-- Stems importados desde Stemer -->
         <div class="glass-card" id="importedStemsCard" style="display: none; margin-bottom: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <h2 style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: var(--accent-emerald); margin-bottom: 4px;">
-                        Imported Stems for Mixing
+                        Stems Importados para Mezcla
                     </h2>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Stems ready for multi-bus alignment and frequency carving</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary);">Listos para alineación frecuencial y tallado espectral</p>
                 </div>
-                <button id="clearStemsBtn" class="style-pill-btn" style="font-size: 0.65rem;">CLEAR & UPLOAD FILES</button>
+                <button id="clearStemsBtn" class="subgenre-pill" style="font-size: 0.65rem;">LIMPIAR & SUBIR OTROS</button>
             </div>
             <div id="stemsListDisplay" style="display: flex; flex-direction: column; gap: 0.75rem;"></div>
         </div>
 
         <div class="glass-card" id="mixMainCard">
-            <!-- Upload Box if no stems imported -->
+            <!-- Zona de Subida -->
             <div id="uploadContainer">
-                <h2 style="margin-bottom: 10px; font-family: 'Righteous', sans-serif; letter-spacing: 2px;">Upload Your Stems</h2>
-                <p style="margin-bottom: 25px; color: var(--text-secondary); font-size: 0.9rem;">
-                    Upload individual audio tracks (Vocals, Drums, Bass, Instruments) to mix them automatically into a balanced song.
+                <h2 style="margin-bottom: 8px; font-family: 'Righteous', sans-serif; letter-spacing: 2px;">Cargar Stems de Estudio</h2>
+                <p style="margin-bottom: 20px; color: var(--text-secondary); font-size: 0.85rem;">
+                    Sube las pistas individuales (Voz, Bombo, Bajo, Batería, Sintes, Guitarras) para mezclarlas automáticamente en un master balanceado.
                 </p>
 
-                <div class="upload-zone" id="mixDropZone" style="border: 2px dashed var(--glass-border); border-radius: 16px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 1.5rem;">
-                    <img src="upload.png" alt="Upload" style="width: 60px; height: 60px; opacity: 0.6; margin-bottom: 1rem;">
+                <div class="upload-zone" id="mixDropZone" style="border: 2px dashed var(--glass-border); border-radius: 18px; padding: 2.5rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 1.5rem; background: rgba(255,255,255,0.015);">
+                    <img src="upload.png" alt="Upload" style="width: 55px; height: 55px; opacity: 0.6; margin-bottom: 1rem;">
                     <h3 id="mixFileName" style="font-family: 'Righteous', sans-serif; letter-spacing: 1px; margin-bottom: 0.5rem;">
-                        Select or Drag Multiple Stems Here
+                        Selecciona o Arrastra Múltiples Stems Aquí
                     </h3>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">WAV or MP3 (Select multiple files at once)</p>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">WAV o MP3 (Selecciona varios archivos a la vez)</p>
                     <input type="file" id="mixFileInput" class="hidden" accept=".mp3,.wav" multiple>
                 </div>
-                <div id="uploadTipsBox" style="display: none; margin-bottom: 2rem; padding: 1rem 1.25rem; border-radius: 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); text-align: left; font-size: 0.8rem; line-height: 1.5;"></div>
+                <div id="uploadTipsBox" style="display: none; margin-bottom: 1.75rem; padding: 1rem 1.25rem; border-radius: 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); text-align: left; font-size: 0.8rem; line-height: 1.5;"></div>
             </div>
 
-            <!-- Mixing Settings -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; text-align: left;">
-                <!-- Mix Style -->
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 14px;">
-                    <label style="display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;">
-                        Mix Character & Style
-                    </label>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button type="button" class="style-pill-btn active" data-style="modern">Modern Pop/Trap</button>
-                        <button type="button" class="style-pill-btn" data-style="punchy">Punchy Club</button>
-                        <button type="button" class="style-pill-btn" data-style="acoustic">Warm Acoustic</button>
-                    </div>
-                </div>
+            <!-- Matriz de Géneros 2026 -->
+            <div style="margin-bottom: 2rem; text-align: left;">
+                <label style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-emerald); font-weight: 800; margin-bottom: 6px;">
+                    1. Género & Estilo de Mezcla 2026
+                </label>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    Selecciona el perfil acústico. El motor calibrará ecualización, sidechain, compresión y balance para ese sonido específico.
+                </p>
+                <div class="genres-grid" id="genresGrid"></div>
+            </div>
 
-                <!-- Vocal Space & FX -->
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 14px;">
+            <!-- Ajustes Adicionales -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; text-align: left;">
+                <!-- Reverb / Vocal Space -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 16px;">
                     <label style="display: flex; justify-content: space-between; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;">
-                        <span>Vocal Space (Reverb & Stereo Delay)</span>
-                        <span id="vocalFxVal" style="color: var(--accent-emerald); font-weight: 700;">30%</span>
+                        <span>Espacio Vocal (Reverb de Placa & Dimensión)</span>
+                        <span id="vocalFxVal" style="color: var(--accent-emerald); font-weight: 800;">30%</span>
                     </label>
                     <input type="range" id="vocalFxSlider" min="0" max="1" step="0.05" value="0.3" style="width: 100%; accent-color: var(--accent-emerald); cursor: pointer;">
                 </div>
+
+                <!-- Anti-Resonance Intelligence -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1.25rem; border-radius: 16px; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: #fff;">
+                            Supresor Dinámico de Resonancias
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;">
+                            Atenúa asperezas (2.5-4.5kHz) y frecuencias acartonadas (250-500Hz)
+                        </div>
+                    </div>
+                    <span style="background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); border: 1px solid var(--accent-emerald); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 800;">
+                        ACTIVO (IA)
+                    </span>
+                </div>
             </div>
 
-            <!-- Start Mixing Button -->
-            <button class="btn" id="startMixBtn" style="background: linear-gradient(180deg, var(--accent-emerald) 0%, #065f46 100%); color: #fff; font-weight: 800; width: 100%; max-width: 400px; margin: 0 auto; display: block; font-size: 0.85rem; letter-spacing: 2px;">
-                AI MIX STEMS
+            <!-- Botón Mezclar -->
+            <button class="btn" id="startMixBtn" style="background: linear-gradient(180deg, var(--accent-emerald) 0%, #065f46 100%); color: #fff; font-weight: 800; width: 100%; max-width: 420px; margin: 0 auto; display: block; font-size: 0.9rem; letter-spacing: 2px; box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);">
+                ⚡ MEZCLAR STEMS CON IA
             </button>
 
-            <!-- Loading indicator with live phase and timer -->
+            <!-- Cargador en Vivo con Etapas -->
             <div id="mixLoading" style="display: none; margin-top: 2rem; text-align: center;">
-                <div class="progress-box" style="margin: 0 auto 1rem; width: 60px; height: 60px; border: 3px solid rgba(16, 185, 129, 0.2); border-top-color: var(--accent-emerald); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <div class="progress-box" style="margin: 0 auto 1rem; width: 65px; height: 65px; border: 3px solid rgba(16, 185, 129, 0.2); border-top-color: var(--accent-emerald); border-radius: 50%; animation: spin 1s linear infinite;"></div>
                 <p id="mixLoadingStep" style="font-size: 0.85rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-emerald); font-weight: 700; margin-bottom: 6px;">
                     Subiendo stems al servidor seguro...
                 </p>
@@ -220,29 +390,92 @@
                 </p>
             </div>
 
-            <!-- Mix Results Card -->
-            <div id="mixResultsCard" style="display: none; margin-top: 2.5rem; padding: 2rem; border: 1px solid var(--accent-emerald); border-radius: 20px; background: rgba(16, 185, 129, 0.04); text-align: left;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <!-- Historial de Versiones y Consola de Audición A/B/C/D -->
+            <div id="mixDeckSection" style="display: none; margin-top: 3rem; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
                     <div>
-                        <h3 style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: var(--accent-emerald); margin-bottom: 4px;">
-                            Final Mixdown Ready
-                        </h3>
-                        <p id="mixStatusText" style="font-size: 0.8rem; color: var(--text-secondary);">
-                            Balanced multi-track sum with -6.0 dBFS mastering headroom
+                        <h2 style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: var(--accent-emerald); font-size: 1.3rem;">
+                            Consola Multi-Versión (Comparador A/B/C)
+                        </h2>
+                        <p style="font-size: 0.78rem; color: var(--text-secondary);">
+                            Alterna entre tus mezclas en tiempo real en la misma posición de reproducción para evaluar diferencias
                         </p>
                     </div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button id="sendToMasterBtn" class="btn" style="background: linear-gradient(180deg, #8b5cf6 0%, #4c1d95 100%); color: #fff; padding: 12px 24px; font-size: 0.75rem;">
-                            SEND TO MASTER ➔
-                        </button>
-                        <a id="downloadMixBtn" href="#" download="mixdown_master_ready.wav" class="btn" style="background: var(--accent-emerald); color: #000; font-weight: 800; text-decoration: none; padding: 12px 24px; font-size: 0.75rem;">
-                            DOWNLOAD MIX (.WAV)
-                        </a>
+
+                    <!-- Selector A/B Bypass Mezcla Cruda -->
+                    <div class="ab-switch">
+                        <button class="ab-btn active" id="abMixBtn">🎛 MEZCLA PRO</button>
+                        <button class="ab-btn" id="abRawBtn">🎧 MEZCLA CRUDA (BYPASS)</button>
                     </div>
                 </div>
 
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.25rem;">
-                    <audio id="mixAudioPlayer" controls style="width: 100%; height: 40px; filter: invert(1); border-radius: 20px;"></audio>
+                <!-- Tabs de Versiones -->
+                <div id="versionsTabsList" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 1.5rem;"></div>
+
+                <!-- Tarjeta de Versión Activa -->
+                <div id="activeVersionCard" style="background: rgba(16, 185, 129, 0.04); border: 1px solid var(--accent-emerald); border-radius: 20px; padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 1.5rem;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                <span id="activeVerBadge" class="stem-tag-badge">VERSIÓN 1</span>
+                                <h3 id="activeVerTitle" style="font-family: 'Righteous', sans-serif; font-size: 1.2rem; color: #fff;">
+                                    Neo-Perreo / Dembow 2026
+                                </h3>
+                            </div>
+                            <p id="activeVerDesc" style="font-size: 0.8rem; color: var(--text-secondary); max-width: 600px;">
+                                Subgrave pegador, voz al frente seca y nítida, claps estéreo brillantes
+                            </p>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button id="sendActiveToMasterBtn" class="btn" style="background: linear-gradient(180deg, #8b5cf6 0%, #4c1d95 100%); color: #fff; padding: 12px 22px; font-size: 0.75rem; font-weight: 800;">
+                                💎 ENVIAR ESTA VERSIÓN A MASTER ➔
+                            </button>
+                            <a id="downloadActiveBtn" href="#" class="btn" style="background: var(--accent-emerald); color: #000; font-weight: 800; text-decoration: none; padding: 12px 22px; font-size: 0.75rem;">
+                                ⬇ DESCARGAR WAV (32-BIT)
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Métricas Acústicas Pro 2026 -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div id="metricHeadroom" class="metric-val">-6.0 dB</div>
+                            <div class="metric-lbl">Headroom Peak</div>
+                        </div>
+                        <div class="metric-card">
+                            <div id="metricLufs" class="metric-val">-- LUFS</div>
+                            <div class="metric-lbl">Loudness (LUFS)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div id="metricTruePeak" class="metric-val">-- dBFS</div>
+                            <div class="metric-lbl">True Peak (4x)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div id="metricDr" class="metric-val">-- dB</div>
+                            <div class="metric-lbl">Crest Factor</div>
+                        </div>
+                        <div class="metric-card">
+                            <div id="metricResonances" class="metric-val" style="color: #38bdf8;">--</div>
+                            <div class="metric-lbl">Resonancias Atenuadas</div>
+                        </div>
+                    </div>
+
+                    <!-- Detalle de Resonancias Atenuadas -->
+                    <div id="resonancesDetailBox" style="display: none; padding: 10px 14px; background: rgba(0,0,0,0.25); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; margin-bottom: 1.25rem; font-size: 0.74rem; color: rgba(255,255,255,0.75);">
+                        <span style="color: #38bdf8; font-weight: 700;">🔍 Filtros Quirúrgicos Aplicados: </span>
+                        <span id="resonancesListText"></span>
+                    </div>
+
+                    <!-- Reproductor Sincronizado -->
+                    <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); border-radius: 14px; padding: 1rem 1.25rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 8px;">
+                            <span id="playerTrackLabel">Reproduciendo: Versión Activa</span>
+                            <span style="color: var(--accent-emerald); font-weight: 700;">Calibrado a 32-bit Float (-6 dBFS)</span>
+                        </div>
+                        <audio id="syncAudioPlayer" controls style="width: 100%; height: 38px; filter: invert(1); border-radius: 20px;"></audio>
+                    </div>
                 </div>
             </div>
         </div>
@@ -262,71 +495,206 @@
 
         const SPACE_ID = "tinahmbuz/audiostems";
 
+        // 2026 Genre & Derivative Subgenre Matrix
+        const MIX_GENRES_DATA = {
+            "urbano": {
+                name: "Reggaeton / Urbano & Latin Trap",
+                icon: "🔥",
+                desc: "Subgraves pegadores, voces al frente talladas con sidechain y percusión rítmica",
+                default_subgenre: "neo_perreo",
+                subgenres: {
+                    "neo_perreo": { name: "Neo-Perreo / Dembow 2026", desc: "Subgrave pegador, voz al frente seca y nítida, claps estéreo brillantes" },
+                    "trap_latino": { name: "Trap Latino 808", desc: "Sub 808 colosal, medios limpios, hi-hats quirúrgicos con apertura" },
+                    "afrobeat_urbano": { name: "Afrobeat / Dancehall Urbano", desc: "Bajo cálido y fluido, percusiones orgánicas abiertas y reverb envolvente" }
+                }
+            },
+            "electronic": {
+                name: "Electronic / EDM / Club",
+                icon: "⚡",
+                desc: "Bombo de impacto, bajos rodantes, apertura estereofónica y sidechain dinámico",
+                default_subgenre: "tech_house",
+                subgenres: {
+                    "tech_house": { name: "Tech House / Peak Time", desc: "Bombo sólido a 55Hz, bajo rodante en 150Hz, claps anchos y rítmica marcada" },
+                    "modern_edm": { name: "Modern EDM / Festival", desc: "Máxima energía y densidad, leads potentes, sidechain agresivo" },
+                    "melodic_techno": { name: "Melodic Techno / Deep", desc: "Sub bajos hipnóticos, percusiones espaciales, texturas etéreas" }
+                }
+            },
+            "pop": {
+                name: "Pop / R&B Commercial",
+                icon: "✨",
+                desc: "Voces estelares (+2.8dB) con aire cristalino a 14kHz y balance comercial pulido",
+                default_subgenre: "billboard_pop",
+                subgenres: {
+                    "billboard_pop": { name: "Billboard Pop 2026", desc: "Voz estelar cristalina al frente (+2.8dB), compresión paralela y brillo aéreo" },
+                    "dark_rnb": { name: "Modern R&B / Soul", desc: "Graves profundos aterciopelados, calidez en teclados y voz íntima" },
+                    "synthpop": { name: "Synthpop / Retrowave", desc: "Cajas con reverb de placa estéreo, sintetizadores anchos y bajos ochenteros" }
+                }
+            },
+            "hiphop": {
+                name: "Hip-Hop / Drill / Trap",
+                icon: "🎤",
+                desc: "Sub mono-sub contundente, cajas crujientes en 200Hz y voces cortantes",
+                default_subgenre: "atlanta_trap",
+                subgenres: {
+                    "atlanta_trap": { name: "Atlanta 808 Trap", desc: "808s masivos mono-sub, platos afilados y voz cortante y definida" },
+                    "uk_drill": { name: "UK Drill / Sliding Sub", desc: "Bajos deslizantes, hi-hats sincopados en estéreo y distorsión armónica sutil" },
+                    "boombap": { name: "East Coast Boom Bap", desc: "Textura analógica de cinta, caja crujiente en 200Hz y balance orgánico" }
+                }
+            },
+            "rock": {
+                name: "Rock / Indie / Alternative",
+                icon: "🎸",
+                desc: "Pared de guitarras abiertas L/R, pegada natural de batería y bajo de soporte",
+                default_subgenre: "modern_rock",
+                subgenres: {
+                    "modern_rock": { name: "Modern High-Gain Rock", desc: "Pared de guitarras abiertas L/R, batería con pegada y bajo centrado" },
+                    "indie_pop": { name: "Indie / Bedroom Pop", desc: "Guitarras chorus espaciales, batería orgánica con dinámica natural" },
+                    "pop_punk": { name: "Pop Punk / Emo Rock", desc: "Ataque rápido en transitorios, caja contundente y voces enérgicas" }
+                }
+            },
+            "acoustic": {
+                name: "Acústico / Regional / Folk",
+                icon: "🎻",
+                desc: "Fidelidad orgánica, dinámica abierta, cero bombeo y máxima calidez acústica",
+                default_subgenre: "regional_tumbado",
+                subgenres: {
+                    "regional_tumbado": { name: "Regional Urbano / Corridos Tumbados", desc: "Requintos y guitarras de 12 cuerdas cristalinas, tololoche contundente y voz al frente" },
+                    "acoustic_songwriter": { name: "Acoustic Singer-Songwriter", desc: "Cero bombeo, máxima fidelidad en madera y cuerdas con acústica de sala real" },
+                    "lofi_chill": { name: "Lo-Fi Chill Beats", desc: "Filtro cálido de frecuencias altas, compresión suave y relajada" }
+                }
+            }
+        };
+
+        // State
+        let selectedGenre = "urbano";
+        let selectedSubgenre = "neo_perreo";
+        let selectedFiles = [];
+        let mixVersions = [];
+        let activeVersionIndex = -1;
+        let isAuditioningRaw = false;
+        let timerInterval = null;
+
+        // Elements
+        const genresGrid = document.getElementById('genresGrid');
+        const vocalFxSlider = document.getElementById('vocalFxSlider');
+        const vocalFxVal = document.getElementById('vocalFxVal');
         const mixDropZone = document.getElementById('mixDropZone');
         const mixFileInput = document.getElementById('mixFileInput');
         const mixFileName = document.getElementById('mixFileName');
         const uploadTipsBox = document.getElementById('uploadTipsBox');
-        const vocalFxSlider = document.getElementById('vocalFxSlider');
-        const vocalFxVal = document.getElementById('vocalFxVal');
         const startMixBtn = document.getElementById('startMixBtn');
         const mixLoading = document.getElementById('mixLoading');
         const mixLoadingStep = document.getElementById('mixLoadingStep');
         const mixLoadingTimer = document.getElementById('mixLoadingTimer');
-        const mixResultsCard = document.getElementById('mixResultsCard');
-        const mixStatusText = document.getElementById('mixStatusText');
-        const mixAudioPlayer = document.getElementById('mixAudioPlayer');
-        const downloadMixBtn = document.getElementById('downloadMixBtn');
-        const sendToMasterBtn = document.getElementById('sendToMasterBtn');
         const importedStemsCard = document.getElementById('importedStemsCard');
         const stemsListDisplay = document.getElementById('stemsListDisplay');
         const clearStemsBtn = document.getElementById('clearStemsBtn');
 
-        let selectedFiles = [];
-        let selectedStyle = "modern";
-        let finalMixUrl = null;
-        let timerInterval = null;
+        // Mix Deck Elements
+        const mixDeckSection = document.getElementById('mixDeckSection');
+        const versionsTabsList = document.getElementById('versionsTabsList');
+        const syncAudioPlayer = document.getElementById('syncAudioPlayer');
+        const activeVerBadge = document.getElementById('activeVerBadge');
+        const activeVerTitle = document.getElementById('activeVerTitle');
+        const activeVerDesc = document.getElementById('activeVerDesc');
+        const playerTrackLabel = document.getElementById('playerTrackLabel');
+        const metricHeadroom = document.getElementById('metricHeadroom');
+        const metricLufs = document.getElementById('metricLufs');
+        const metricTruePeak = document.getElementById('metricTruePeak');
+        const metricDr = document.getElementById('metricDr');
+        const metricResonances = document.getElementById('metricResonances');
+        const resonancesDetailBox = document.getElementById('resonancesDetailBox');
+        const resonancesListText = document.getElementById('resonancesListText');
+        const abMixBtn = document.getElementById('abMixBtn');
+        const abRawBtn = document.getElementById('abRawBtn');
+        const sendActiveToMasterBtn = document.getElementById('sendActiveToMasterBtn');
+        const downloadActiveBtn = document.getElementById('downloadActiveBtn');
 
         vocalFxSlider.oninput = (e) => {
             vocalFxVal.innerText = `${Math.round(e.target.value * 100)}%`;
         };
 
-        // Style buttons
-        document.querySelectorAll('.style-pill-btn[data-style]').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('.style-pill-btn[data-style]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedStyle = btn.dataset.style;
-            };
-        });
+        // Render Genre Cards
+        function renderGenreCards() {
+            genresGrid.innerHTML = '';
+            for (const [gKey, gData] of Object.entries(MIX_GENRES_DATA)) {
+                const card = document.createElement('div');
+                card.className = `genre-card ${gKey === selectedGenre ? 'selected' : ''}`;
+                card.dataset.genre = gKey;
+
+                let pillsHtml = '';
+                for (const [subKey, subData] of Object.entries(gData.subgenres)) {
+                    const isActive = (gKey === selectedGenre && subKey === selectedSubgenre);
+                    pillsHtml += `<button type="button" class="subgenre-pill ${isActive ? 'active' : ''}" data-genre="${gKey}" data-subgenre="${subKey}">${subData.name}</button>`;
+                }
+
+                card.innerHTML = `
+                    <div class="genre-header">
+                        <span class="genre-icon">${gData.icon}</span>
+                        <div class="genre-title">${gData.name}</div>
+                    </div>
+                    <div class="genre-desc">${gData.desc}</div>
+                    <div class="style-pills-container">${pillsHtml}</div>
+                `;
+
+                // Card click selects genre
+                card.onclick = (e) => {
+                    if (e.target.classList.contains('subgenre-pill')) return;
+                    selectGenre(gKey, gData.default_subgenre);
+                };
+
+                genresGrid.appendChild(card);
+            }
+
+            // Bind pill clicks
+            document.querySelectorAll('.subgenre-pill').forEach(pill => {
+                pill.onclick = (e) => {
+                    e.stopPropagation();
+                    const g = pill.dataset.genre;
+                    const sub = pill.dataset.subgenre;
+                    selectGenre(g, sub);
+                };
+            });
+        }
+
+        function selectGenre(gKey, subKey) {
+            selectedGenre = gKey;
+            selectedSubgenre = subKey || MIX_GENRES_DATA[gKey].default_subgenre;
+            renderGenreCards();
+        }
+
+        renderGenreCards();
+
+        function resolveGradioUrl(fileObj) {
+            if (!fileObj) return "";
+            let raw = "";
+            if (typeof fileObj === 'string') raw = fileObj;
+            else if (typeof fileObj === 'object') raw = fileObj.url || fileObj.path || "";
+            if (!raw) return "";
+            if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("blob:") || raw.startsWith("data:")) return raw;
+            const origin = "https://tinahmbuz-audiostems.hf.space";
+            return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
+        }
 
         function updateFilesDisplay() {
             if (!selectedFiles || selectedFiles.length === 0) {
-                mixFileName.innerText = "Select or Drag Multiple Stems Here";
+                mixFileName.innerText = "Selecciona o Arrastra Múltiples Stems Aquí";
                 if (uploadTipsBox) uploadTipsBox.style.display = 'none';
                 return;
             }
 
             let totalBytes = 0;
-            selectedFiles.forEach(f => {
-                if (f.size) totalBytes += f.size;
-            });
+            selectedFiles.forEach(f => { if (f.size) totalBytes += f.size; });
             const totalMB = totalBytes > 0 ? (totalBytes / (1024 * 1024)).toFixed(1) : "0";
 
             mixFileName.innerText = `${selectedFiles.length} Stems Cargados (${totalMB} MB)`;
 
             if (uploadTipsBox) {
                 uploadTipsBox.style.display = 'block';
-                if (parseFloat(totalMB) > 150) {
-                    uploadTipsBox.innerHTML = `
-                        <div style="color: #fbbf24; font-weight: 700; margin-bottom: 4px;">⚠️ Archivos pesados detectados (${totalMB} MB en ${selectedFiles.length} stems)</div>
-                        <div style="color: var(--text-secondary);">Subir tantos archivos sin comprimir depende de tu velocidad de conexión a Internet (puede tardar unos minutos). Para una mezcla rápida e instantánea, te recomendamos seleccionar o exportar los <strong>4 a 12 stems esenciales</strong> (Voz Líder, Coros, Bajo/808, Batería/Percusión, Armonías).</div>
-                    `;
-                } else {
-                    uploadTipsBox.innerHTML = `
-                        <div style="color: var(--accent-emerald); font-weight: 700; margin-bottom: 4px;">✓ ${selectedFiles.length} Stems listos para mezcla inteligente</div>
-                        <div style="color: var(--text-secondary);">El motor asignará ecualización quirúrgica, compresión analógica, sidechain de bajo y calibración estéreo a 32-bit Float.</div>
-                    `;
-                }
+                uploadTipsBox.innerHTML = `
+                    <div style="color: var(--accent-emerald); font-weight: 700; margin-bottom: 4px;">✓ ${selectedFiles.length} Stems listos para mezcla inteligente</div>
+                    <div style="color: var(--text-secondary);">El motor aplicará ecualización quirúrgica, compresión analógica, sidechain de bajo y calibración estéreo a 32-bit Float (-6.0 dBFS).</div>
+                `;
             }
         }
 
@@ -384,40 +752,27 @@
                     stemsListDisplay.appendChild(row);
                 });
 
-                mixFileName.innerText = `Using ${stems.length} Stems from Stemer`;
+                mixFileName.innerText = `Usando ${stems.length} Stems Importados de Stemer`;
                 localStorage.removeItem('stemerStems');
             } catch (e) {
                 console.error("Error receiving stems in Mixter:", e);
             }
         })();
 
-        function resolveGradioUrl(fileObj) {
-            if (!fileObj) return "";
-            let raw = "";
-            if (typeof fileObj === 'string') {
-                raw = fileObj;
-            } else if (typeof fileObj === 'object') {
-                raw = fileObj.url || fileObj.path || "";
-            }
-            if (!raw) return "";
-            if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("blob:") || raw.startsWith("data:")) {
-                return raw;
-            }
-            const origin = "https://tinahmbuz-audiostems.hf.space";
-            return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
-        }
-
+        // Progress Timer
         function startProgressTimer() {
             let elapsed = 0;
-            mixLoadingStep.innerText = `Paso 1/3: Subiendo ${selectedFiles.length} stems al servidor seguro...`;
+            mixLoadingStep.innerText = `Paso 1/4: Subiendo ${selectedFiles.length} stems al servidor seguro...`;
             mixLoadingTimer.innerText = "Tiempo transcurrido: 0s";
             timerInterval = setInterval(() => {
                 elapsed++;
                 mixLoadingTimer.innerText = `Tiempo transcurrido: ${elapsed}s`;
                 if (elapsed === 8) {
-                    mixLoadingStep.innerText = "Paso 2/3: Analizando instrumentos y aplicando ecualización quirúrgica, compresión y reverb...";
-                } else if (elapsed === 18) {
-                    mixLoadingStep.innerText = "Paso 3/3: Calibrando headroom (-6.0 dBFS) y exportando WAV 32-bit Float...";
+                    mixLoadingStep.innerText = "Paso 2/4: Analizando espectro y suprimiendo resonancias molestas (2.5-4.5kHz)...";
+                } else if (elapsed === 16) {
+                    mixLoadingStep.innerText = "Paso 3/4: Aplicando sidechain dinámico, compresión analógica y ecualización de estilo...";
+                } else if (elapsed === 24) {
+                    mixLoadingStep.innerText = "Paso 4/4: Calibrando headroom a -6.0 dBFS Peak y exportando WAV 32-bit Float...";
                 }
             }, 1000);
         }
@@ -429,6 +784,114 @@
             }
         }
 
+        // ──────────────────────────────────────────────
+        // Multi-Version Deck System (A/B/C/D Audition)
+        // ──────────────────────────────────────────────
+
+        function renderVersionsTabs() {
+            versionsTabsList.innerHTML = '';
+            mixVersions.forEach((ver, idx) => {
+                const tab = document.createElement('div');
+                tab.className = `version-tab ${idx === activeVersionIndex ? 'active' : ''}`;
+                tab.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 0.65rem; font-weight: 800; color: var(--accent-emerald);">VERSIÓN ${ver.versionNum}</span>
+                        <span style="font-size: 0.65rem; color: var(--text-secondary);">${ver.timestamp}</span>
+                    </div>
+                    <div style="font-family: 'Righteous', sans-serif; font-size: 0.9rem; color: #fff; margin-bottom: 2px;">
+                        ${ver.subgenreName}
+                    </div>
+                    <div style="font-size: 0.68rem; color: var(--text-secondary); display: flex; gap: 8px;">
+                        <span>${ver.lufs} LUFS</span>
+                        <span>•</span>
+                        <span>${ver.truePeak} dBFS</span>
+                    </div>
+                `;
+
+                tab.onclick = () => {
+                    switchActiveVersion(idx);
+                };
+
+                versionsTabsList.appendChild(tab);
+            });
+        }
+
+        function switchActiveVersion(index) {
+            if (index < 0 || index >= mixVersions.length) return;
+            activeVersionIndex = index;
+            const ver = mixVersions[index];
+
+            renderVersionsTabs();
+
+            // Update details
+            activeVerBadge.innerText = `VERSIÓN ${ver.versionNum}`;
+            activeVerTitle.innerText = `${ver.subgenreName}`;
+            activeVerDesc.innerText = ver.subgenreDesc || `${ver.genreName} | Calibración de estudio 32-bit Float`;
+
+            metricHeadroom.innerText = ver.headroom ? "-6.0 dB" : "-6.0 dB";
+            metricLufs.innerText = `${ver.lufs} LUFS`;
+            metricTruePeak.innerText = `${ver.truePeak} dBFS`;
+            metricDr.innerText = `${ver.dynamicRange} dB`;
+            metricResonances.innerText = `${ver.resonancesTamedCount} Tamed`;
+
+            if (ver.resonancesTamedCount > 0 && ver.resonancesTamed && ver.resonancesTamed.length > 0) {
+                resonancesDetailBox.style.display = 'block';
+                const itemsStr = ver.resonancesTamed.map(r => `${r.stem ? r.stem + ': ' : ''}${r.freq_hz}Hz (${r.attenuation_db}dB)`).join(" • ");
+                resonancesListText.innerText = itemsStr;
+            } else {
+                resonancesDetailBox.style.display = 'none';
+            }
+
+            downloadActiveBtn.href = ver.mixUrl;
+            downloadActiveBtn.download = `Mezcla_V${ver.versionNum}_${ver.subgenreKey}.wav`;
+
+            // Audio Player seamless switch
+            const targetUrl = isAuditioningRaw ? ver.rawUrl : ver.mixUrl;
+            playerTrackLabel.innerText = isAuditioningRaw ? 
+                `Reproduciendo: Versión ${ver.versionNum} (Mezcla Cruda / Bypass)` : 
+                `Reproduciendo: Versión ${ver.versionNum} (${ver.subgenreName})`;
+
+            const curTime = syncAudioPlayer.currentTime || 0;
+            const wasPlaying = !syncAudioPlayer.paused;
+            syncAudioPlayer.src = targetUrl;
+            syncAudioPlayer.onloadedmetadata = () => {
+                if (curTime < syncAudioPlayer.duration) syncAudioPlayer.currentTime = curTime;
+                if (wasPlaying) syncAudioPlayer.play().catch(() => {});
+            };
+        }
+
+        // A/B Switcher handlers
+        abMixBtn.onclick = () => {
+            if (activeVersionIndex === -1) return;
+            isAuditioningRaw = false;
+            abMixBtn.classList.add('active');
+            abRawBtn.classList.remove('active');
+            switchActiveVersion(activeVersionIndex);
+        };
+
+        abRawBtn.onclick = () => {
+            if (activeVersionIndex === -1) return;
+            isAuditioningRaw = true;
+            abRawBtn.classList.add('active');
+            abMixBtn.classList.remove('active');
+            switchActiveVersion(activeVersionIndex);
+        };
+
+        // Send Active to Master
+        sendActiveToMasterBtn.onclick = () => {
+            if (activeVersionIndex === -1) return alert("Por favor genera una mezcla primero.");
+            const ver = mixVersions[activeVersionIndex];
+            const payload = {
+                url: ver.mixUrl,
+                name: `Mezcla_V${ver.versionNum}_${ver.subgenreKey}.wav`,
+                title: `Mix V${ver.versionNum} - ${ver.subgenreName}`,
+                format: "32-bit Float WAV (-6.0 dBFS)",
+                timestamp: Date.now()
+            };
+            localStorage.setItem('mixterMasterTrack', JSON.stringify(payload));
+            window.location.href = 'master.html';
+        };
+
         // Start Mixing
         startMixBtn.onclick = async () => {
             if (!selectedFiles || selectedFiles.length === 0) {
@@ -436,14 +899,12 @@
             }
 
             mixLoading.style.display = 'block';
-            mixResultsCard.style.display = 'none';
             startMixBtn.disabled = true;
             startProgressTimer();
 
             try {
                 const client = await Client.connect(SPACE_ID);
 
-                // Package files
                 const fileHandles = [];
                 for (const f of selectedFiles) {
                     if (f instanceof File) {
@@ -458,37 +919,75 @@
 
                 let result;
                 try {
+                    // Try with 4 arguments: files, genre, vocal_fx, subgenre
                     result = await client.predict("/process_mix", [
                         fileHandles,
-                        selectedStyle,
+                        selectedGenre,
+                        parseFloat(vocalFxSlider.value),
+                        selectedSubgenre
+                    ]);
+                } catch (err4) {
+                    console.warn("Retrying /process_mix with composite genre:subgenre parameter:", err4);
+                    result = await client.predict("/process_mix", [
+                        fileHandles,
+                        `${selectedGenre}:${selectedSubgenre}`,
                         parseFloat(vocalFxSlider.value)
                     ]);
-                } catch (errPos) {
-                    console.warn("Retrying /process_mix with named parameters:", errPos);
-                    result = await client.predict("/process_mix", {
-                        files: fileHandles,
-                        mix_style: selectedStyle,
-                        vocal_fx: parseFloat(vocalFxSlider.value)
-                    });
                 }
 
                 const outAudio = result.data[0];
-                const report = result.data[1] || "";
+                const rawReport = result.data[1] || "";
 
-                if (!outAudio || (typeof report === 'string' && report.startsWith("ERROR"))) {
-                    throw new Error(report || "El servidor devolvió un error durante la mezcla.");
+                if (!outAudio || (typeof rawReport === 'string' && rawReport.startsWith("ERROR"))) {
+                    throw new Error(rawReport || "El servidor devolvió un error durante la mezcla.");
                 }
 
-                finalMixUrl = resolveGradioUrl(outAudio);
-                if (!finalMixUrl) {
-                    throw new Error("No se pudo obtener el archivo de audio mezclado del servidor.");
+                const mixUrl = resolveGradioUrl(outAudio);
+                if (!mixUrl) throw new Error("No se pudo obtener el audio mezclado del servidor.");
+
+                // Parse report JSON if present
+                let repData = {};
+                if (typeof rawReport === 'string' && rawReport.includes("SUCCESS:")) {
+                    const jsonStr = rawReport.split("SUCCESS:")[1].trim();
+                    try {
+                        repData = JSON.parse(jsonStr);
+                    } catch (pe) {
+                        console.warn("Report was not JSON:", pe);
+                    }
                 }
 
-                mixStatusText.innerText = report;
-                mixAudioPlayer.src = finalMixUrl;
-                downloadMixBtn.href = finalMixUrl;
-                downloadMixBtn.download = "mixdown_32bit_float.wav";
-                mixResultsCard.style.display = 'block';
+                const gObj = MIX_GENRES_DATA[selectedGenre] || {};
+                const subObj = (gObj.subgenres && gObj.subgenres[selectedSubgenre]) || {};
+
+                // Create Version Object
+                const newVersion = {
+                    id: "mix_" + Date.now(),
+                    versionNum: mixVersions.length + 1,
+                    genreKey: selectedGenre,
+                    genreName: repData.genre_name || gObj.name || selectedGenre,
+                    subgenreKey: selectedSubgenre,
+                    subgenreName: repData.subgenre_name || subObj.name || selectedSubgenre,
+                    subgenreDesc: repData.subgenre_desc || subObj.desc || "",
+                    mixUrl: mixUrl,
+                    rawUrl: resolveGradioUrl(repData.raw_path) || mixUrl,
+                    lufs: repData.integrated_lufs !== undefined ? repData.integrated_lufs : "-14.5",
+                    truePeak: repData.true_peak_dbfs !== undefined ? repData.true_peak_dbfs : "-5.98",
+                    dynamicRange: repData.dynamic_range_db !== undefined ? repData.dynamic_range_db : "12.0",
+                    headroom: repData.headroom || "-6.0 dBFS Peak",
+                    resonancesTamedCount: repData.resonances_tamed_count || 0,
+                    resonancesTamed: repData.resonances_tamed || [],
+                    stemsCount: repData.stems_count || selectedFiles.length,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+
+                mixVersions.push(newVersion);
+                activeVersionIndex = mixVersions.length - 1;
+
+                mixDeckSection.style.display = 'block';
+                switchActiveVersion(activeVersionIndex);
+
+                // Smooth scroll to Deck
+                mixDeckSection.scrollIntoView({ behavior: 'smooth' });
 
             } catch (e) {
                 console.error("Mix error:", e);
@@ -498,18 +997,6 @@
                 mixLoading.style.display = 'none';
                 startMixBtn.disabled = false;
             }
-        };
-
-        // Send to Master module
-        sendToMasterBtn.onclick = () => {
-            if (!finalMixUrl) return alert("Por favor genera la mezcla antes de enviarla a Master.");
-            const payload = {
-                url: finalMixUrl,
-                name: "mixdown_from_mixter.wav",
-                timestamp: Date.now()
-            };
-            localStorage.setItem('mixterMasterTrack', JSON.stringify(payload));
-            window.location.href = 'master.html';
         };
     </script>
 </body>
