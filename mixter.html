@@ -19,10 +19,24 @@
             --accent-emerald: #10b981;
             --accent-emerald-glow: rgba(16, 185, 129, 0.45);
             --text-white: #FFFFFF;
-            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-secondary: rgba(255, 255, 255, 0.72);
+            --text-muted: rgba(255, 255, 255, 0.68);
             --glass-border: rgba(255, 255, 255, 0.1);
             --accent-primary: var(--accent-emerald);
             --accent-glow: var(--accent-emerald-glow);
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        a:focus-visible,
+        .btn:focus-visible,
+        .genre-card:focus-visible,
+        .subgenre-pill:focus-visible,
+        .upload-card:focus-visible,
+        .ab-btn:focus-visible {
+            outline: 2px solid var(--accent-emerald);
+            outline-offset: 2px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -376,7 +390,7 @@
 
             <!-- Botón Mezclar -->
             <button class="btn" id="startMixBtn" style="background: linear-gradient(180deg, var(--accent-emerald) 0%, #065f46 100%); color: #fff; font-weight: 800; width: 100%; max-width: 420px; margin: 0 auto; display: block; font-size: 0.9rem; letter-spacing: 2px; box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);">
-                ⚡ MEZCLAR STEMS CON IA
+                <span aria-hidden="true">⚡</span> MEZCLAR STEMS CON IA
             </button>
 
             <!-- Cargador en Vivo con Etapas -->
@@ -404,8 +418,8 @@
 
                     <!-- Selector A/B Bypass Mezcla Cruda -->
                     <div class="ab-switch">
-                        <button class="ab-btn active" id="abMixBtn">🎛 MEZCLA PRO</button>
-                        <button class="ab-btn" id="abRawBtn">🎧 MEZCLA CRUDA (BYPASS)</button>
+                        <button class="ab-btn active" id="abMixBtn"><span aria-hidden="true">🎛</span> MEZCLA PRO</button>
+                        <button class="ab-btn" id="abRawBtn"><span aria-hidden="true">🎧</span> MEZCLA CRUDA (BYPASS)</button>
                     </div>
                 </div>
 
@@ -419,7 +433,7 @@
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
                                 <span id="activeVerBadge" class="stem-tag-badge">VERSIÓN 1</span>
                                 <h3 id="activeVerTitle" style="font-family: 'Righteous', sans-serif; font-size: 1.2rem; color: #fff;">
-                                    Neo-Perreo / Dembow 2026
+                                     Neo-Perreo / Dembow 2026
                                 </h3>
                             </div>
                             <p id="activeVerDesc" style="font-size: 0.8rem; color: var(--text-secondary); max-width: 600px;">
@@ -430,10 +444,10 @@
                         <!-- Botones de Acción -->
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button id="sendActiveToMasterBtn" class="btn" style="background: linear-gradient(180deg, #8b5cf6 0%, #4c1d95 100%); color: #fff; padding: 12px 22px; font-size: 0.75rem; font-weight: 800;">
-                                💎 ENVIAR ESTA VERSIÓN A MASTER ➔
+                                <span aria-hidden="true">💎</span> ENVIAR ESTA VERSIÓN A MASTER ➔
                             </button>
                             <a id="downloadActiveBtn" href="#" class="btn" style="background: var(--accent-emerald); color: #000; font-weight: 800; text-decoration: none; padding: 12px 22px; font-size: 0.75rem;">
-                                ⬇ DESCARGAR WAV (32-BIT)
+                                <span aria-hidden="true">⬇</span> DESCARGAR WAV (32-BIT)
                             </a>
                         </div>
                     </div>
@@ -464,7 +478,7 @@
 
                     <!-- Detalle de Resonancias Atenuadas -->
                     <div id="resonancesDetailBox" style="display: none; padding: 10px 14px; background: rgba(0,0,0,0.25); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; margin-bottom: 1.25rem; font-size: 0.74rem; color: rgba(255,255,255,0.75);">
-                        <span style="color: #38bdf8; font-weight: 700;">🔍 Filtros Quirúrgicos Aplicados: </span>
+                        <span style="color: #38bdf8; font-weight: 700;"><span aria-hidden="true">🔍</span> Filtros Quirúrgicos Aplicados: </span>
                         <span id="resonancesListText"></span>
                     </div>
 
@@ -631,7 +645,7 @@
 
                 card.innerHTML = `
                     <div class="genre-header">
-                        <span class="genre-icon">${gData.icon}</span>
+                        <span class="genre-icon" aria-hidden="true">${gData.icon}</span>
                         <div class="genre-title">${gData.name}</div>
                     </div>
                     <div class="genre-desc">${gData.desc}</div>

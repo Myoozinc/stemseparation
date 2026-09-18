@@ -19,10 +19,24 @@
             --accent-violet: #8b5cf6;
             --accent-violet-glow: rgba(139, 92, 246, 0.45);
             --text-white: #FFFFFF;
-            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-secondary: rgba(255, 255, 255, 0.72);
+            --text-muted: rgba(255, 255, 255, 0.68);
             --glass-border: rgba(255, 255, 255, 0.1);
             --accent-primary: var(--accent-violet);
             --accent-glow: var(--accent-violet-glow);
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        a:focus-visible,
+        .btn:focus-visible,
+        .genre-card:focus-visible,
+        .style-pill:focus-visible,
+        .upload-card:focus-visible,
+        .ab-btn:focus-visible {
+            outline: 2px solid var(--accent-violet);
+            outline-offset: 2px;
         }
 
         * {
@@ -379,7 +393,7 @@
             </div>
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.25rem; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); flex-wrap: wrap; gap: 1rem;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 1.3rem;">🎵</span>
+                    <span style="font-size: 1.3rem;" aria-hidden="true">🎵</span>
                     <div>
                         <strong id="importedTrackName" style="font-size: 0.9rem; color: #fff;">mixdown.wav</strong>
                         <div id="importedProvenanceBadge" style="font-size: 0.7rem; color: var(--accent-violet);">Mezcla enviada desde Mixter</div>
@@ -426,7 +440,7 @@
                     <!-- Urbano / Reggaeton -->
                     <div class="genre-card selected" data-genre="urbano">
                         <div class="genre-header">
-                            <span class="genre-icon">🌴</span>
+                            <span class="genre-icon" aria-hidden="true">🌴</span>
                             <div class="genre-title">Reggaeton / Urbano</div>
                         </div>
                         <div class="genre-desc">Pegada contundente en sub-graves, mono-sub calibrado y brillo vocal moderno.</div>
@@ -440,7 +454,7 @@
                     <!-- Pop / Comercial -->
                     <div class="genre-card" data-genre="pop">
                         <div class="genre-header">
-                            <span class="genre-icon">✨</span>
+                            <span class="genre-icon" aria-hidden="true">✨</span>
                             <div class="genre-title">Pop / R&B Comercial</div>
                         </div>
                         <div class="genre-desc">Claridad cristalina, frecuencias de aire (>10 kHz) y voz al frente con pegada comercial.</div>
@@ -454,7 +468,7 @@
                     <!-- Electronic / EDM -->
                     <div class="genre-card" data-genre="electronic">
                         <div class="genre-header">
-                            <span class="genre-icon">⚡</span>
+                            <span class="genre-icon" aria-hidden="true">⚡</span>
                             <div class="genre-title">Electronic / EDM / House</div>
                         </div>
                         <div class="genre-desc">Máxima sonoridad para festival o club, densidad en sintetizadores y graves 100% controlados.</div>
@@ -467,7 +481,7 @@
                     <!-- Hip-Hop / Trap -->
                     <div class="genre-card" data-genre="hiphop">
                         <div class="genre-header">
-                            <span class="genre-icon">🎤</span>
+                            <span class="genre-icon" aria-hidden="true">🎤</span>
                             <div class="genre-title">Hip-Hop / Trap 808</div>
                         </div>
                         <div class="genre-desc">Énfasis en saturación de 808, transitorios agresivos de caja/clap y graves profundos.</div>
@@ -480,7 +494,7 @@
                     <!-- Rock / Indie -->
                     <div class="genre-card" data-genre="rock">
                         <div class="genre-header">
-                            <span class="genre-icon">🎸</span>
+                            <span class="genre-icon" aria-hidden="true">🎸</span>
                             <div class="genre-title">Rock / Indie / Metal</div>
                         </div>
                         <div class="genre-desc">Pegada de batería preservada, cuerpo en guitarras eléctricas y pegamento de bus VCA.</div>
@@ -493,7 +507,7 @@
                     <!-- Acústico / Folk -->
                     <div class="genre-card" data-genre="acoustic">
                         <div class="genre-header">
-                            <span class="genre-icon">🎻</span>
+                            <span class="genre-icon" aria-hidden="true">🎻</span>
                             <div class="genre-title">Acústico / Folk / Balada</div>
                         </div>
                         <div class="genre-desc">Transparencia pristina, dinámica natural abierta y calidez íntima para cuerdas y voces.</div>
@@ -577,7 +591,7 @@
                 <div style="display: flex; justify-content: center; margin-bottom: 1.25rem;">
                     <div class="ab-switch">
                         <button class="ab-btn" id="btnOriginal">MEZCLA ORIGINAL</button>
-                        <button class="ab-btn active" id="btnMastered">MASTERIZADO ✨</button>
+                        <button class="ab-btn active" id="btnMastered">MASTERIZADO <span aria-hidden="true">✨</span></button>
                     </div>
                 </div>
 
@@ -589,11 +603,11 @@
                 <!-- Action Buttons -->
                 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px;">
                     <a id="downloadMasterBtn" class="btn" download="mastered_track_32bit_float.wav" style="background: var(--accent-violet); color: #fff; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px;">
-                        ⬇️ DESCARGAR MASTER (.WAV 32-BIT)
+                        <span aria-hidden="true">⬇️</span> DESCARGAR MASTER (.WAV 32-BIT)
                     </a>
 
                     <button id="openSendToStemerBtn" class="btn" style="background: linear-gradient(180deg, #10b981 0%, #065f46 100%); border: 1px solid rgba(16, 185, 129, 0.4); color: #fff; font-weight: 800; padding: 14px 28px;">
-                        🔄 ENVIAR A STEMER ➔
+                        <span aria-hidden="true">🔄</span> ENVIAR A STEMER ➔
                     </button>
                 </div>
             </div>
@@ -603,7 +617,7 @@
     <!-- Modal Send to Stemer -->
     <div id="sendToStemerModal" class="modal-overlay" style="display: none;">
         <div class="modal-box">
-            <div style="font-size: 2rem; margin-bottom: 8px;">🔄</div>
+            <div style="font-size: 2rem; margin-bottom: 8px;" aria-hidden="true">🔄</div>
             <h3 style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: #fff; margin-bottom: 8px;">
                 ¿Qué versión deseas enviar a Stemer?
             </h3>
@@ -612,7 +626,7 @@
             </p>
 
             <button type="button" id="sendMasteredVersionBtn" class="modal-option-btn">
-                <span style="font-size: 1.5rem;">✨</span>
+                <span style="font-size: 1.5rem;" aria-hidden="true">✨</span>
                 <div>
                     <strong style="color: var(--accent-violet); font-size: 0.9rem;">Enviar Versión Masterizada (32-bit Float)</strong>
                     <div style="font-size: 0.72rem; color: var(--text-secondary);">Envía el audio procesado con máxima sonoridad y ecualización de estudio.</div>
@@ -620,7 +634,7 @@
             </button>
 
             <button type="button" id="sendOriginalVersionBtn" class="modal-option-btn">
-                <span style="font-size: 1.5rem;">🎛️</span>
+                <span style="font-size: 1.5rem;" aria-hidden="true">🎛️</span>
                 <div>
                     <strong style="color: #fff; font-size: 0.9rem;">Enviar Mezcla Original</strong>
                     <div style="font-size: 0.72rem; color: var(--text-secondary);">Envía la mezcla que subiste originalmente con su rango dinámico inicial.</div>

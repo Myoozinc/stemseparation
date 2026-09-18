@@ -17,8 +17,8 @@
             --bg-card: rgba(255, 255, 255, 0.03);
             --card-border: rgba(255, 255, 255, 0.08);
             --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.65);
-            --text-muted: rgba(255, 255, 255, 0.4);
+            --text-secondary: rgba(255, 255, 255, 0.72);
+            --text-muted: rgba(255, 255, 255, 0.68);
 
             /* Tool Accents */
             --accent-stemer: #00f5ff;
@@ -632,6 +632,25 @@
             opacity: 0.88;
             transform: translateY(-1px);
         }
+        .quick-upload-card:focus-visible {
+            outline: 2px solid var(--accent-midifier);
+            outline-offset: 3px;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
+        }
+        .tool-chooser-select:focus-visible {
+            outline: 2px solid var(--accent-midifier);
+            outline-offset: 2px;
+            border-color: rgba(139, 92, 246, 0.9);
+        }
+        .launch-tool-btn:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+            box-shadow: 0 0 16px rgba(139, 92, 246, 0.6);
+        }
+        .tool-card:focus-visible {
+            outline: 2px solid var(--accent-midifier);
+            outline-offset: 4px;
+        }
         @media (max-width: 600px) {
             .upload-zone-section { padding: 1.25rem 1rem 0; }
             .tool-chooser { flex-direction: column; }
@@ -672,7 +691,7 @@
                     <span>32-bit Float WAV</span>
                 </div>
                 <div class="spec-pill">
-                    <span>0s Latencia de Paso</span>
+                    <span>Sin Re-subir Archivos</span>
                 </div>
                 <div class="spec-pill">
                     <span>$0 Free Cloud</span>
@@ -682,19 +701,20 @@
 
         <!-- Quick Upload Zone -->
         <div class="upload-zone-section">
-            <div class="quick-upload-card" id="homeDropZone">
+            <div class="quick-upload-card" id="homeDropZone" tabindex="0" role="button" aria-label="Zona para arrastrar audio o hacer clic para buscar archivo">
                 <input type="file" id="homeFileInput" accept="audio/*,.wav,.mp3,.flac,.aiff,.ogg,.m4a" style="display:none">
-                <div class="quick-upload-icon">🎵</div>
+                <div class="quick-upload-icon" aria-hidden="true">🎵</div>
                 <div class="quick-upload-title">Arrastra tu audio aquí</div>
-                <div class="quick-upload-sub">o haz clic para buscar en tu dispositivo · WAV · MP3 · FLAC · M4A</div>
+                <div class="quick-upload-sub">o haz clic para buscar en tu dispositivo · WAV · MP3 · FLAC · M4A (máx. 150 MB)</div>
+                <div id="homeUploadError" style="display:none; margin-top: 1rem; padding: 0.6rem 1rem; border-radius: 10px; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); color: #fda4af; font-size: 0.8rem; font-weight: 600;"></div>
                 <div class="quick-upload-actions" id="homeFileSelected" style="display:none">
                     <div class="selected-file-info">
-                        <span class="selected-file-icon">🎵</span>
+                        <span class="selected-file-icon" aria-hidden="true">🎵</span>
                         <span class="selected-file-name" id="homeFileName"></span>
                     </div>
                     <div class="tool-chooser">
                         <span class="tool-chooser-label">Enviar a:</span>
-                        <select id="toolChooser" class="tool-chooser-select">
+                        <select id="toolChooser" class="tool-chooser-select" aria-label="Seleccionar herramienta de destino">
                             <option value="stemer">Stemer — Separar Pistas</option>
                             <option value="mixter">Mixter — Mezcla IA</option>
                             <option value="master">Master — Masterizar</option>
@@ -722,7 +742,7 @@
             <!-- 1. Stemer -->
             <a href="stemer.html" class="tool-card card-stemer">
                 <div class="card-top">
-                    <div class="tool-icon-box">🎛️</div>
+                    <div class="tool-icon-box" aria-label="Icono Stemer"><span aria-hidden="true">🎛️</span></div>
                     <span class="tool-badge">Demucs v4</span>
                 </div>
                 <h3 class="tool-card-title">Stemer</h3>
@@ -737,14 +757,14 @@
                 </div>
                 <div class="card-action-btn">
                     <span>Abrir Stemer</span>
-                    <span class="card-action-arrow">→</span>
+                    <span class="card-action-arrow" aria-hidden="true">→</span>
                 </div>
             </a>
 
             <!-- 2. Midifier -->
             <a href="midifier.html" class="tool-card card-midifier">
                 <div class="card-top">
-                    <div class="tool-icon-box">🎹</div>
+                    <div class="tool-icon-box" aria-label="Icono Midifier"><span aria-hidden="true">🎹</span></div>
                     <span class="tool-badge">Neural Pitch</span>
                 </div>
                 <h3 class="tool-card-title">Midifier</h3>
@@ -759,14 +779,14 @@
                 </div>
                 <div class="card-action-btn">
                     <span>Abrir Midifier</span>
-                    <span class="card-action-arrow">→</span>
+                    <span class="card-action-arrow" aria-hidden="true">→</span>
                 </div>
             </a>
 
             <!-- 3. Sampler -->
             <a href="sampler.html" class="tool-card card-sampler">
                 <div class="card-top">
-                    <div class="tool-icon-box">🥁</div>
+                    <div class="tool-icon-box" aria-label="Icono Sampler"><span aria-hidden="true">🥁</span></div>
                     <span class="tool-badge">MPC Slicer</span>
                 </div>
                 <h3 class="tool-card-title">Sampler</h3>
@@ -781,14 +801,14 @@
                 </div>
                 <div class="card-action-btn">
                     <span>Abrir Sampler</span>
-                    <span class="card-action-arrow">→</span>
+                    <span class="card-action-arrow" aria-hidden="true">→</span>
                 </div>
             </a>
 
             <!-- 4. Mixter -->
             <a href="mixter.html" class="tool-card card-mixter">
                 <div class="card-top">
-                    <div class="tool-icon-box">🎚️</div>
+                    <div class="tool-icon-box" aria-label="Icono Mixter"><span aria-hidden="true">🎚️</span></div>
                     <span class="tool-badge">AI Mixing Studio</span>
                 </div>
                 <h3 class="tool-card-title">Mixter</h3>
@@ -803,14 +823,14 @@
                 </div>
                 <div class="card-action-btn">
                     <span>Abrir Mixter</span>
-                    <span class="card-action-arrow">→</span>
+                    <span class="card-action-arrow" aria-hidden="true">→</span>
                 </div>
             </a>
 
             <!-- 5. Master -->
             <a href="master.html" class="tool-card card-master">
                 <div class="card-top">
-                    <div class="tool-icon-box">⚡</div>
+                    <div class="tool-icon-box" aria-label="Icono Master"><span aria-hidden="true">⚡</span></div>
                     <span class="tool-badge">ITU-R BS.1770-4</span>
                 </div>
                 <h3 class="tool-card-title">Master</h3>
@@ -825,7 +845,7 @@
                 </div>
                 <div class="card-action-btn">
                     <span>Abrir Master</span>
-                    <span class="card-action-arrow">→</span>
+                    <span class="card-action-arrow" aria-hidden="true">→</span>
                 </div>
             </a>
         </div>
@@ -840,35 +860,35 @@
             <div class="flow-steps-grid">
                 <div class="flow-step-box">
                     <div class="step-num">1</div>
-                    <div class="step-icon">🎵</div>
+                    <div class="step-icon"><span aria-hidden="true">🎵</span></div>
                     <div class="step-name">Audio Original</div>
                     <div class="step-desc">Carga tu canción completa en WAV o MP3.</div>
                 </div>
 
                 <div class="flow-step-box">
                     <div class="step-num">2</div>
-                    <div class="step-icon">🎛️</div>
+                    <div class="step-icon"><span aria-hidden="true">🎛️</span></div>
                     <div class="step-name">Stemer</div>
                     <div class="step-desc">Separa en 8 pistas puras a 32-bit Float.</div>
                 </div>
 
                 <div class="flow-step-box">
                     <div class="step-num">3</div>
-                    <div class="step-icon">🎹 🥁</div>
+                    <div class="step-icon"><span aria-hidden="true">🎹 🥁</span></div>
                     <div class="step-name">Midi & Slices</div>
                     <div class="step-desc">Transcribe melodías o crea kits de batería.</div>
                 </div>
 
                 <div class="flow-step-box">
                     <div class="step-num">4</div>
-                    <div class="step-icon">🎚️</div>
+                    <div class="step-icon"><span aria-hidden="true">🎚️</span></div>
                     <div class="step-name">Mixter</div>
                     <div class="step-desc">Balancea con curvas de ecualización pro.</div>
                 </div>
 
                 <div class="flow-step-box">
                     <div class="step-num">5</div>
-                    <div class="step-icon">⚡</div>
+                    <div class="step-icon"><span aria-hidden="true">⚡</span></div>
                     <div class="step-name">Master</div>
                     <div class="step-desc">Loudness comercial y True-Peak ceiling.</div>
                 </div>
@@ -922,16 +942,49 @@
         fileSelected.style.display = 'block';
     }
 
-    // Click to browse
+    const MAX_FILE_SIZE_BYTES = 150 * 1024 * 1024; // 150 MB
+
+    function showUploadError(msg) {
+        const errBox = document.getElementById('homeUploadError');
+        if (errBox) {
+            errBox.textContent = msg;
+            errBox.style.display = 'block';
+            setTimeout(() => { if (errBox) errBox.style.display = 'none'; }, 8000);
+        }
+    }
+
+    function clearUploadError() {
+        const errBox = document.getElementById('homeUploadError');
+        if (errBox) errBox.style.display = 'none';
+    }
+
+    // Click or Keyboard to browse
     dropZone.addEventListener('click', function(e) {
-        if (e.target.closest('.quick-upload-actions')) return; // don't re-open if clicking controls
+        if (e.target.closest('.quick-upload-actions')) return;
         fileInput.click();
+    });
+    dropZone.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            if (e.target.closest('.quick-upload-actions')) return;
+            e.preventDefault();
+            fileInput.click();
+        }
     });
 
     function isValidAudio(file) {
         if (!file) return false;
-        if (file.type && file.type.startsWith('audio')) return true;
-        return /\.(mp3|wav|flac|m4a|aac|ogg|aiff)$/i.test(file.name || '');
+        const isAudio = (file.type && file.type.startsWith('audio')) || /\.(mp3|wav|flac|m4a|aac|ogg|aiff)$/i.test(file.name || '');
+        if (!isAudio) {
+            showUploadError("Formato no compatible. Por favor sube un archivo WAV, MP3, FLAC, M4A o AIFF.");
+            return false;
+        }
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+            showUploadError(`El archivo pesa ${sizeMB} MB y excede el límite permitido de 150 MB. Por favor comprime o recorta el audio.`);
+            return false;
+        }
+        clearUploadError();
+        return true;
     }
 
     fileInput.addEventListener('change', function() {

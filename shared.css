@@ -2,11 +2,37 @@
 /* Include this file in index.html, midifier.html, and sampler.html */
 /* Color variables are defined per-page in inline <style> tags */
 
+/* CSS Variables - Radii Scale, Typography Contrast, and Theming */
+:root {
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 24px;
+    --radius-pill: 9999px;
+    --text-muted: rgba(255, 255, 255, 0.68);
+}
+
 /* Reset */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+}
+
+/* Accessible Focus Ring */
+:focus-visible {
+    outline: 2px solid var(--accent-primary, var(--header-accent, #00f5ff));
+    outline-offset: 3px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+.btn:focus-visible,
+.tool-link:focus-visible,
+.sample-pad:focus-visible {
+    outline: 2px solid var(--accent-primary, var(--header-accent, #00f5ff));
+    outline-offset: 2px;
 }
 
 /* Base Body Styles */
@@ -65,7 +91,7 @@ h1 {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-    border-radius: 30px;
+    border-radius: var(--radius-lg, 24px);
     padding: 3rem;
     margin-bottom: 2rem;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
@@ -78,7 +104,7 @@ h1 {
     color: white;
     border: none;
     padding: 16px 45px;
-    border-radius: 100px;
+    border-radius: var(--radius-pill, 9999px);
     font-weight: 400;
     cursor: pointer;
     font-size: 0.85rem;
@@ -107,7 +133,7 @@ h1 {
     backdrop-filter: blur(25px);
     -webkit-backdrop-filter: blur(25px);
     padding: 8px 16px;
-    border-radius: 50px;
+    border-radius: var(--radius-pill, 9999px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
     align-items: center;
@@ -131,7 +157,7 @@ h1 {
     letter-spacing: 2px;
     font-weight: 700;
     padding: 8px 16px;
-    border-radius: 30px;
+    border-radius: var(--radius-pill, 9999px);
     transition: all 0.25s ease;
     white-space: nowrap;
 }
@@ -159,7 +185,7 @@ h1 {
 .sample-pad {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--glass-border);
-    border-radius: 14px;
+    border-radius: var(--radius-md, 14px);
     padding: 1.25rem 0.75rem;
     text-align: center;
     cursor: pointer;
@@ -208,7 +234,7 @@ h1 {
     padding: 8px 16px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--glass-border);
-    border-radius: 30px;
+    border-radius: var(--radius-pill, 9999px);
     font-size: 0.75rem;
     letter-spacing: 1px;
 }
@@ -220,7 +246,7 @@ h1 {
 /* Placeholder/Setup Message */
 .setup-placeholder {
     border: 2px dashed var(--glass-border, rgba(255, 255, 255, 0.2));
-    border-radius: 20px;
+    border-radius: var(--radius-lg, 24px);
     padding: 3rem;
     text-align: center;
     color: var(--text-secondary, rgba(255, 255, 255, 0.6));
@@ -237,7 +263,7 @@ h1 {
     width: 100%;
     min-height: 500px;
     border: none;
-    border-radius: 20px;
+    border-radius: var(--radius-lg, 24px);
 }
 
 /* Mobile Responsive */
@@ -264,7 +290,7 @@ h1 {
 
     .glass-card {
         padding: 1.5rem;
-        border-radius: 20px;
+        border-radius: var(--radius-md, 14px);
     }
 
     .btn {

@@ -13,14 +13,26 @@
         :root {
             --bg-black: #050505;
             --header-white: #FFFFFF;
+            --header-accent: #00f5ff;
             --accent-purple: #26014b;
             --accent-purple-glow: rgba(38, 1, 75, 0.5);
             --accent-magenta: #D946EF;
             --accent-magenta-glow: rgba(217, 70, 239, 0.5);
             --text-white: #FFFFFF;
-            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-secondary: rgba(255, 255, 255, 0.72);
+            --text-muted: rgba(255, 255, 255, 0.68);
             --glass-border: rgba(255, 255, 255, 0.1);
             --radius: 20px;
+        }
+
+        :focus-visible {
+            outline: 2px solid #00f5ff;
+            outline-offset: 3px;
+        }
+
+        button:focus-visible, a:focus-visible, input:focus-visible {
+            outline: 2px solid #00f5ff;
+            outline-offset: 2px;
         }
 
         * {
@@ -1099,7 +1111,7 @@
         <div class="main-layout">
             <!-- Incoming track imported from Master or Mixter -->
             <div id="incomingTrackBanner" class="incoming-banner hidden">
-                <div class="incoming-banner-badge" id="incomingBannerBadge">📥 AUDIO IMPORTADO</div>
+                <div class="incoming-banner-badge" id="incomingBannerBadge"><span aria-hidden="true">📥</span> AUDIO IMPORTADO</div>
                 <div class="incoming-banner-body">
                     <div class="incoming-banner-info">
                         <h4 id="incomingTrackTitle" class="incoming-title">Master Track</h4>
@@ -1109,7 +1121,7 @@
                         <audio id="incomingAudioPreview" controls preload="metadata"></audio>
                     </div>
                     <div class="incoming-banner-actions">
-                        <button id="incomingSeparateBtn" class="btn-incoming-primary">⚡ SEPARAR EN STEMS</button>
+                        <button id="incomingSeparateBtn" class="btn-incoming-primary"><span aria-hidden="true">⚡</span> SEPARAR EN STEMS</button>
                         <button id="incomingDismissBtn" class="btn-incoming-secondary" title="Descartar y subir archivo local">✕</button>
                     </div>
                 </div>
@@ -1204,7 +1216,7 @@
                 </div>
 
                 <div style="margin-top: 16px; padding: 12px 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; font-size: 0.72rem; color: rgba(255, 255, 255, 0.6); line-height: 1.5; letter-spacing: 0.4px; text-align: left;">
-                    💡 <strong>Procesamiento Neuronal Demucs v4:</strong> Se están aislando 8 canales de estudio en <strong>WAV 32-bit Float</strong> sin compresión destructiva. En hardware cloud sin GPU, la separación toma aproximadamente 1.2x a 1.5x la duración de tu canción. No cierres esta pestaña.
+                    <span aria-hidden="true">💡</span> <strong>Procesamiento Neuronal Demucs v4:</strong> Se están aislando 8 canales de estudio en <strong>WAV 32-bit Float</strong> sin compresión destructiva. En hardware cloud sin GPU, la separación toma aproximadamente 1.2x a 1.5x la duración de tu canción. No cierres esta pestaña.
                 </div>
             </div>
 
@@ -1249,8 +1261,8 @@
 
                 <div class="stems-section-header" id="stemsSectionHeader" style="display: none;">
                     <div class="stems-section-title">
-                        <span>🎛 MEZCLA DE STEMS MULTIPISTA</span>
-                        <span style="font-size: 0.65rem; color: rgba(255,255,255,0.4); font-weight: 400;">(PISTAS SEPARADAS)</span>
+                        <span><span aria-hidden="true">🎛️</span> MEZCLA DE STEMS MULTIPISTA</span>
+                        <span style="font-size: 0.65rem; color: rgba(255,255,255,0.7); font-weight: 400;">(PISTAS SEPARADAS)</span>
                     </div>
                     <span style="font-size: 0.68rem; color: var(--accent-magenta); font-weight: 600; letter-spacing: 1px;">SINCRONIZADO</span>
                 </div>
@@ -1309,7 +1321,7 @@
                     <div style="margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.75rem;">
                         <h3 style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 3px; text-align: center;">
                             Process Further</h3>
-                        <p style="margin-bottom: 1.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-align: center;">
+                        <p style="margin-bottom: 1.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.72); letter-spacing: 1px; text-align: center;">
                             Send your separated stems to other Myooz Labs audio tools
                         </p>
                         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
@@ -1474,11 +1486,11 @@
                     sessionBanner.style.cssText = "margin-bottom: 1.5rem; padding: 12px 20px; background: rgba(0, 245, 255, 0.08); border: 1px solid rgba(0, 245, 255, 0.3); border-radius: 12px; color: #00f5ff; font-size: 0.84rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;";
                     sessionBanner.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <span>⚡</span>
+                            <span aria-hidden="true">⚡</span>
                             <span><strong>Sesión activa restaurada:</strong> ${sess.fileName || 'Pista de Audio'}</span>
                         </div>
                         <button id="clearRestoredSessionBtn" style="background: transparent; border: 1px solid rgba(0, 245, 255, 0.4); color: #00f5ff; border-radius: 20px; padding: 5px 14px; cursor: pointer; font-size: 0.76rem; font-weight: 700; transition: all 0.2s ease;">
-                            🔄 EMPEZAR NUEVO TRACK
+                            <span aria-hidden="true">🔄</span> EMPEZAR NUEVO TRACK
                         </button>
                     `;
                     resultsContent.insertBefore(sessionBanner, resultsContent.firstChild);
@@ -1962,7 +1974,7 @@
                             <div class="stem-label" style="color: #00f5ff; display: flex; align-items: center; gap: 6px;">
                                 CANCIÓN ORIGINAL <span class="ref-badge">OFICIAL / MASTER</span>
                             </div>
-                            <div style="font-size: 0.65rem; color: rgba(255,255,255,0.45); font-weight: 500; letter-spacing: 0.5px;">
+                            <div style="font-size: 0.65rem; color: rgba(255,255,255,0.7); font-weight: 500; letter-spacing: 0.5px;">
                                 Pista de Referencia Sincronizada
                             </div>
                         </div>
@@ -1970,11 +1982,11 @@
 
                     <div class="stem-controls">
                         <button class="ab-compare-btn" id="abCompareBtn" title="Alternar entre escuchar los Stems y la Versión Original">
-                            <span id="abIcon">🎛</span> <span id="abText">AUDICIÓN: MEZCLA STEMS</span>
+                            <span id="abIcon" aria-hidden="true">🎛</span> <span id="abText">AUDICIÓN: MEZCLA STEMS</span>
                         </button>
                         <button class="stem-ctrl-btn mute-btn" id="refMuteBtn" title="Mute/Unmute versión original">M</button>
                         <div class="stem-vol-wrap">
-                            <span class="stem-vol-icon" id="refVolIcon" title="Silenciar">🔊</span>
+                            <span class="stem-vol-icon" id="refVolIcon" title="Silenciar" aria-hidden="true">🔊</span>
                             <input type="range" class="stem-vol-slider" id="refVolSlider" min="0" max="1" step="0.01" value="1" title="Volumen Referencia">
                         </div>
                     </div>
@@ -1985,7 +1997,7 @@
                     </div>
 
                     <div class="stem-actions-cell">
-                        <button class="stem-route-pill-btn" onclick="sendOriginalToMaster()" title="Enviar canción original a Master Studio" style="border-color: #00f5ff; color: #00f5ff;">💎 MASTER</button>
+                        <button class="stem-route-pill-btn" onclick="sendOriginalToMaster()" title="Enviar canción original a Master Studio" style="border-color: #00f5ff; color: #00f5ff;"><span aria-hidden="true">💎</span> MASTER</button>
                         <a href="${originalUrl}" download="cancion_original.wav" class="stem-dl-icon-btn" title="Descargar Canción Original">
                             ↓
                         </a>
@@ -2110,7 +2122,7 @@
                         <button class="stem-ctrl-btn solo-btn" id="soloBtn_${itemIndex}" title="Solo: Escuchar solo este stem">S</button>
                         <button class="stem-ctrl-btn mute-btn" id="muteBtn_${itemIndex}" title="Mute/Unmute stem">M</button>
                         <div class="stem-vol-wrap">
-                            <span class="stem-vol-icon" id="volIcon_${itemIndex}" title="Silenciar">🔊</span>
+                            <span class="stem-vol-icon" id="volIcon_${itemIndex}" title="Silenciar" aria-hidden="true">🔊</span>
                             <input type="range" class="stem-vol-slider" id="volSlider_${itemIndex}" min="0" max="1" step="0.01" value="1" title="Volumen">
                         </div>
                     </div>
@@ -2121,8 +2133,8 @@
                     </div>
 
                     <div class="stem-actions-cell">
-                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'midifier')" title="Convertir ${currentLabel} a MIDI en Midifier">🎹 MIDI</button>
-                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'sampler')" title="Enviar ${currentLabel} a Sampler">🥁 SAMPLER</button>
+                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'midifier')" title="Convertir ${currentLabel} a MIDI en Midifier"><span aria-hidden="true">🎹</span> MIDI</button>
+                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'sampler')" title="Enviar ${currentLabel} a Sampler"><span aria-hidden="true">🥁</span> SAMPLER</button>
                         <a href="${stemUrl}" download="${currentLabel.toLowerCase().replace(/[\s()]+/g, '_')}.wav" class="stem-dl-icon-btn" title="Descargar stem ${currentLabel}">
                             ↓
                         </a>

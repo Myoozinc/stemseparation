@@ -14,20 +14,29 @@
     <link rel="stylesheet" href="shared.css">
     <style>
         :root {
-            --header-accent: #cc7a00;
-            /* Ocher for Midifier */
+            --header-accent: #8b5cf6;
+            /* Violet for Midifier */
             --bg-black: #050505;
             --header-white: #FFFFFF;
             --accent-purple: #26014b;
             --accent-ocher: #cc7a00;
-            /* Ocher */
             --accent-ocher-glow: rgba(204, 122, 0, 0.5);
             --text-white: #FFFFFF;
-            --text-secondary: rgba(255, 255, 255, 0.6);
+            --text-secondary: rgba(255, 255, 255, 0.72);
+            --text-muted: rgba(255, 255, 255, 0.68);
             --glass-border: rgba(255, 255, 255, 0.1);
             --accent-primary: var(--accent-ocher);
-            /* Map primary accent for header */
             --accent-glow: var(--accent-ocher-glow);
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--header-accent);
+            outline-offset: 3px;
+        }
+
+        button:focus-visible, a:focus-visible, input:focus-visible, .upload-zone:focus-visible {
+            outline: 2px solid var(--header-accent);
+            outline-offset: 2px;
         }
 
         /* Use existing styles structure but swap colors */
@@ -183,26 +192,6 @@
                 gap: 0.5rem;
             }
 
-            .header-tag {
-                font-size: 0.4rem !important;
-                padding: 8px !important;
-                letter-spacing: 0.2px !important;
-                line-height: 1.3 !important;
-                word-spacing: 100vw !important;
-                text-align: center;
-                border-radius: 50% !important;
-                width: 50px !important;
-                height: 50px !important;
-                display: inline-flex !important;
-                align-items: center;
-                justify-content: center;
-                flex-shrink: 0;
-                white-space: normal !important;
-            }
-
-            .header-tag::before {
-                border-radius: 50% !important;
-            }
 
             .sign-in-btn {
                 padding: 6px 14px !important;
@@ -430,7 +419,7 @@
                         if (list) {
                             list.innerHTML = `
                                 <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 10px; background: rgba(204,122,0,0.1); border: 1px solid var(--accent-ocher);">
-                                    <span style="color: var(--accent-ocher); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">🎹 ${singleStem.label}</span>
+                                    <span style="color: var(--accent-ocher); font-weight: 700; font-size: 0.8rem; text-transform: uppercase;"><span aria-hidden="true">🎹</span> ${singleStem.label}</span>
                                     <audio controls preload="auto" style="flex: 1; height: 36px;">
                                         <source src="${singleStem.url}" type="audio/wav">
                                     </audio>
