@@ -1802,6 +1802,8 @@
         // ──────────────────────────────────────────────
         let lastProcessedData = null;
         let stemsData = [];
+        let refTrackData = null;
+        let isAbOriginalActive = false;
         let isGlobalPlaying = false;
         let maxTrackDuration = 0;
         let syncTicker = null;
@@ -1878,13 +1880,18 @@
         function initSyncPlayer(data) {
             lastProcessedData = data;
             stemsData = [];
+            refTrackData = null;
+            isAbOriginalActive = false;
             isGlobalPlaying = false;
             maxTrackDuration = 0;
             if (syncTicker) clearInterval(syncTicker);
 
-            const labels = ["ORIGINAL SONG", "VOCALS", "BASS", "OTHER", "DRUMS", "KICK", "SNARE", "HI-HAT"];
             const stemsList = document.getElementById('stemsList');
             stemsList.innerHTML = '';
+
+            const referenceSongCard = document.getElementById('referenceSongCard');
+            const stemsSectionHeader = document.getElementById('stemsSectionHeader');
+            if (referenceSongCard) referenceSongCard.innerHTML = '';
 
             const masterPlayBtn = document.getElementById('masterPlayBtn');
             const masterPlayIcon = document.getElementById('masterPlayIcon');
@@ -1902,15 +1909,151 @@
             masterScrubber.value = 0;
             masterTimer.innerText = "00:00 / 00:00";
 
-            for (let i = 0; i < 8; i++) {
+            // 1. =========================================================================
+            // PISTA DE REFERENCIA: VERSIÓN ORIGINAL (FUERA DE LA LÍNEA DE STEMS)
+            // =========================================================================
+            const originalUrl = resolveGradioUrl(data[0]);
+            if (originalUrl && referenceSongCard) {
+                referenceSongCard.style.display = 'flex';
+                referenceSongCard.className = 'ref-track-card';
+                referenceSongCard.innerHTML = `
+                    <div class="stem-left-col">
+                        <div class="stem-pulse-dot" id="refPulse" style="background: #00f5ff; box-shadow: 0 0 8px rgba(0, 245, 255, 0.6);"></div>
+                        <div>
+                            <div class="stem-label" style="color: #00f5ff; display: flex; align-items: center; gap: 6px;">
+                                CANCIÓN ORIGINAL <span class="ref-badge">OFICIAL / MASTER</span>
+                            </div>
+                            <div style="font-size: 0.65rem; color: rgba(255,255,255,0.45); font-weight: 500; letter-spacing: 0.5px;">
+                                Pista de Referencia Sincronizada
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stem-controls">
+                        <button class="ab-compare-btn" id="abCompareBtn" title="Alternar entre escuchar los Stems y la Versión Original">
+                            <span id="abIcon">🎛</span> <span id="abText">AUDICIÓN: MEZCLA STEMS</span>
+                        </button>
+                        <button class="stem-ctrl-btn mute-btn" id="refMuteBtn" title="Mute/Unmute versión original">M</button>
+                        <div class="stem-vol-wrap">
+                            <span class="stem-vol-icon" id="refVolIcon" title="Silenciar">🔊</span>
+                            <input type="range" class="stem-vol-slider" id="refVolSlider" min="0" max="1" step="0.01" value="1" title="Volumen Referencia">
+                        </div>
+                    </div>
+
+                    <div class="stem-track-timeline" id="refTimeline" title="Clic para sincronizar aquí">
+                        <div class="stem-track-fill" id="refFill" style="background: linear-gradient(90deg, rgba(0, 245, 255, 0.25), rgba(0, 245, 255, 0.55)); border-right: 2px solid #00f5ff;"></div>
+                        <span class="stem-track-time" id="refTimeSpan">00:00</span>
+                    </div>
+
+                    <div class="stem-actions-cell">
+                        <button class="stem-route-pill-btn" onclick="sendOriginalToMaster()" title="Enviar canción original a Master Studio" style="border-color: #00f5ff; color: #00f5ff;">💎 MASTER</button>
+                        <a href="${originalUrl}" download="cancion_original.wav" class="stem-dl-icon-btn" title="Descargar Canción Original">
+                            ↓
+                        </a>
+                    </div>
+
+                    <audio id="refAudioElement" preload="auto">
+                        <source src="${originalUrl}" type="audio/wav">
+                    </audio>
+                `;
+
+                const refAudio = referenceSongCard.querySelector('#refAudioElement');
+                refAudio.addEventListener('loadedmetadata', () => {
+                    if (refAudio.duration && refAudio.duration > maxTrackDuration) {
+                        maxTrackDuration = refAudio.duration;
+                        masterScrubber.max = maxTrackDuration;
+                        masterTimer.innerText = `00:00 / ${formatTime(maxTrackDuration)}`;
+                    }
+                });
+
+                refTrackData = {
+                    label: "ORIGINAL SONG",
+                    url: originalUrl,
+                    audio: refAudio,
+                    card: referenceSongCard,
+                    pulse: referenceSongCard.querySelector('#refPulse'),
+                    abBtn: referenceSongCard.querySelector('#abCompareBtn'),
+                    abIcon: referenceSongCard.querySelector('#abIcon'),
+                    abText: referenceSongCard.querySelector('#abText'),
+                    muteBtn: referenceSongCard.querySelector('#refMuteBtn'),
+                    volIcon: referenceSongCard.querySelector('#refVolIcon'),
+                    volSlider: referenceSongCard.querySelector('#refVolSlider'),
+                    timeline: referenceSongCard.querySelector('#refTimeline'),
+                    fill: referenceSongCard.querySelector('#refFill'),
+                    timeSpan: referenceSongCard.querySelector('#refTimeSpan'),
+                    isMuted: false,
+                    volume: 1.0
+                };
+
+                // A/B Audition Toggle
+                refTrackData.abBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    isAbOriginalActive = !isAbOriginalActive;
+                    refTrackData.abBtn.classList.toggle('active', isAbOriginalActive);
+                    refTrackData.card.classList.toggle('is-ab-active', isAbOriginalActive);
+                    if (isAbOriginalActive) {
+                        refTrackData.abIcon.innerText = "💿";
+                        refTrackData.abText.innerText = "AUDICIÓN: VERSIÓN ORIGINAL";
+                    } else {
+                        refTrackData.abIcon.innerText = "🎛";
+                        refTrackData.abText.innerText = "AUDICIÓN: MEZCLA STEMS";
+                    }
+                    applySoloMuteStates();
+                };
+
+                // Reference Mute
+                refTrackData.muteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    refTrackData.isMuted = !refTrackData.isMuted;
+                    applySoloMuteStates();
+                };
+
+                refTrackData.volIcon.onclick = (e) => {
+                    e.stopPropagation();
+                    refTrackData.isMuted = !refTrackData.isMuted;
+                    applySoloMuteStates();
+                };
+
+                refTrackData.volSlider.oninput = (e) => {
+                    e.stopPropagation();
+                    refTrackData.volume = parseFloat(e.target.value);
+                    if (refTrackData.volume === 0) {
+                        refTrackData.isMuted = true;
+                    } else if (refTrackData.isMuted) {
+                        refTrackData.isMuted = false;
+                    }
+                    applySoloMuteStates();
+                };
+
+                refTrackData.timeline.onclick = (e) => {
+                    const rect = refTrackData.timeline.getBoundingClientRect();
+                    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                    const targetTime = ratio * (maxTrackDuration || refTrackData.audio.duration || 0);
+                    seekAllTo(targetTime);
+                };
+            } else if (referenceSongCard) {
+                referenceSongCard.style.display = 'none';
+            }
+
+            if (stemsSectionHeader) {
+                stemsSectionHeader.style.display = 'flex';
+            }
+
+            // 2. =========================================================================
+            // PISTAS DE STEMS (ÍNDICES 1 A 7: VOCALS, BASS, OTHER, DRUMS, KICK, SNARE, HI-HAT)
+            // =========================================================================
+            const stemLabels = ["VOCALS", "BASS", "OTHER", "DRUMS (RAW)", "KICK", "SNARE", "HI-HAT"];
+
+            for (let i = 1; i < 8; i++) {
                 const stemUrl = resolveGradioUrl(data[i]);
                 if (!stemUrl) continue;
                 const itemIndex = stemsData.length;
+                const currentLabel = stemLabels[i - 1] || `STEM ${i}`;
 
                 let tagBadge = '';
-                if (i === 0) {
-                    tagBadge = '<span style="font-size: 0.65rem; padding: 2px 6px; background: rgba(0, 245, 255, 0.15); border: 1px solid rgba(0, 245, 255, 0.4); border-radius: 4px; color: #00f5ff; margin-left: 6px; font-weight: 700;">REF</span>';
-                } else if (i >= 5) {
+                if (i <= 4) {
+                    tagBadge = '<span style="font-size: 0.65rem; padding: 2px 6px; background: rgba(0, 245, 255, 0.12); border: 1px solid rgba(0, 245, 255, 0.35); border-radius: 4px; color: #00f5ff; margin-left: 6px; font-weight: 700;">STEM</span>';
+                } else {
                     tagBadge = '<span style="font-size: 0.65rem; padding: 2px 6px; background: rgba(255, 0, 127, 0.15); border: 1px solid rgba(255, 0, 127, 0.4); border-radius: 4px; color: #ff007f; margin-left: 6px; font-weight: 700;">KIT</span>';
                 }
 
@@ -1921,7 +2064,7 @@
                 card.innerHTML = `
                     <div class="stem-left-col">
                         <div class="stem-pulse-dot" id="stemPulse_${itemIndex}"></div>
-                        <div class="stem-label">${labels[i]} ${tagBadge}</div>
+                        <div class="stem-label">${currentLabel} ${tagBadge}</div>
                     </div>
 
                     <div class="stem-controls">
@@ -1939,9 +2082,9 @@
                     </div>
 
                     <div class="stem-actions-cell">
-                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'midifier')" title="Convertir ${labels[i]} a MIDI en Midifier">🎹 MIDI</button>
-                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'sampler')" title="Enviar ${labels[i]} a Sampler">🥁 SAMPLER</button>
-                        <a href="${stemUrl}" download="${labels[i].toLowerCase().replace(/\s+/g, '_')}.wav" class="stem-dl-icon-btn" title="Descargar stem ${labels[i]}">
+                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'midifier')" title="Convertir ${currentLabel} a MIDI en Midifier">🎹 MIDI</button>
+                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'sampler')" title="Enviar ${currentLabel} a Sampler">🥁 SAMPLER</button>
+                        <a href="${stemUrl}" download="${currentLabel.toLowerCase().replace(/[\s()]+/g, '_')}.wav" class="stem-dl-icon-btn" title="Descargar stem ${currentLabel}">
                             ↓
                         </a>
                     </div>
@@ -1955,16 +2098,14 @@
 
                 const audio = card.querySelector(`#audioElement_${itemIndex}`);
 
-                // Default mute configuration:
-                // Primary mix is 4 stems (Vocals, Bass, Other, Drums).
-                // Original Song (i === 0) is muted by default as Reference.
-                // Refined drums (Kick, Snare, Hi-hat; i >= 5) are muted by default to avoid doubling with Drums.
-                const shouldBeMutedByDefault = (i === 0 || i >= 5);
+                // Stems 1 to 4 (Vocals, Bass, Other, Drums) active by default
+                // Detailed drum kit (Kick, Snare, Hi-hat; i >= 5) muted by default to prevent doubling with Drums
+                const shouldBeMutedByDefault = (i >= 5);
 
                 const stemObj = {
                     index: itemIndex,
-                    originalIndex: i,
-                    label: labels[i],
+                    originalDataIndex: i,
+                    label: currentLabel,
                     url: stemUrl,
                     audio: audio,
                     card: card,
@@ -1978,7 +2119,7 @@
                     timeSpan: card.querySelector(`#stemTime_${itemIndex}`),
                     isMuted: shouldBeMutedByDefault,
                     isSolo: false,
-                    volume: 1
+                    volume: 1.0
                 };
 
                 audio.addEventListener('loadedmetadata', () => {
@@ -1989,15 +2130,11 @@
                     }
                 });
 
-                audio.addEventListener('ended', () => {
-                    checkAllEnded();
-                });
-
                 stemsData.push(stemObj);
             }
 
             stemsData.forEach(stem => {
-                // Solo button
+                // Solo button (Solo overrides Mute)
                 stem.soloBtn.onclick = (e) => {
                     e.stopPropagation();
                     stem.isSolo = !stem.isSolo;
@@ -2039,14 +2176,59 @@
             });
 
             function applySoloMuteStates() {
+                const masterTime = getMasterCurrentTime();
+
+                // 1. Reference Track State
+                if (refTrackData && refTrackData.audio) {
+                    refTrackData.audio.muted = false;
+                    // Reference track is only audible when A/B is toggled to Original AND ref is not muted
+                    const refAudible = isAbOriginalActive && !refTrackData.isMuted;
+                    const refBaseVol = (typeof refTrackData.volume === 'number') ? refTrackData.volume : 1.0;
+                    refTrackData.audio.volume = refAudible ? Math.max(0, Math.min(1, refBaseVol)) : 0.0;
+
+                    refTrackData.muteBtn.classList.toggle('active', refTrackData.isMuted);
+                    refTrackData.volIcon.innerText = (refTrackData.isMuted || !refAudible) ? "🔇" : (refBaseVol < 0.5 ? "🔉" : "🔊");
+                    refTrackData.card.classList.toggle('is-muted', !refAudible && !isAbOriginalActive);
+
+                    if (refAudible && isGlobalPlaying) {
+                        if (Math.abs(refTrackData.audio.currentTime - masterTime) > 0.03) {
+                            refTrackData.audio.currentTime = masterTime;
+                        }
+                        if (refTrackData.audio.paused && !refTrackData.audio.seeking) {
+                            refTrackData.audio.play().catch(() => {});
+                        }
+                    }
+                }
+
+                // 2. Stems State (Solo overrides Mute!)
                 const anySolo = stemsData.some(s => s.isSolo);
 
                 stemsData.forEach(s => {
-                    let isAudible = anySolo ? (s.isSolo && !s.isMuted) : !s.isMuted;
+                    let isAudible = false;
+                    if (isAbOriginalActive) {
+                        // In A/B Original Audition mode, stems are temporarily silenced to compare with the Master
+                        isAudible = false;
+                    } else if (anySolo) {
+                        // Solo overrides Mute: soloed track plays!
+                        isAudible = s.isSolo;
+                    } else {
+                        isAudible = !s.isMuted;
+                    }
 
+                    const wasSilent = (s.audio.volume === 0.0);
                     s.audio.muted = false;
                     const baseVol = (typeof s.volume === 'number') ? s.volume : 1.0;
                     s.audio.volume = isAudible ? Math.max(0, Math.min(1, baseVol)) : 0.0;
+
+                    // If stem just became audible after being silent, align its clock immediately!
+                    if (isAudible && wasSilent && isGlobalPlaying) {
+                        if (Math.abs(s.audio.currentTime - masterTime) > 0.03) {
+                            s.audio.currentTime = masterTime;
+                        }
+                        if (s.audio.paused && !s.audio.seeking) {
+                            s.audio.play().catch(() => {});
+                        }
+                    }
 
                     s.card.classList.toggle('is-muted', !isAudible);
                     s.card.classList.toggle('is-solo', s.isSolo);
@@ -2057,6 +2239,9 @@
             }
 
             function getMasterStem() {
+                if (refTrackData && refTrackData.audio && !isNaN(refTrackData.audio.duration) && refTrackData.audio.duration > 0) {
+                    return refTrackData;
+                }
                 return stemsData.find(s => s && s.audio && !isNaN(s.audio.duration) && s.audio.duration > 0) || stemsData[0] || null;
             }
 
@@ -2075,6 +2260,10 @@
             }
 
             function seekAllTo(time) {
+                if (refTrackData && refTrackData.audio) {
+                    refTrackData.audio.currentTime = time;
+                    refTrackData.audio.playbackRate = 1.0;
+                }
                 stemsData.forEach(s => {
                     s.audio.currentTime = time;
                     s.audio.playbackRate = 1.0;
@@ -2089,6 +2278,11 @@
                 masterScrubber.value = currentTime;
                 masterTimer.innerText = `${formatTime(currentTime)} / ${formatTime(total)}`;
 
+                if (refTrackData && refTrackData.fill && refTrackData.timeSpan) {
+                    refTrackData.fill.style.width = `${pct}%`;
+                    refTrackData.timeSpan.innerText = formatTime(refTrackData.audio.currentTime);
+                }
+
                 stemsData.forEach(s => {
                     s.fill.style.width = `${pct}%`;
                     s.timeSpan.innerText = formatTime(s.audio.currentTime);
@@ -2102,12 +2296,23 @@
                 const refTime = getMasterCurrentTime();
                 applySoloMuteStates();
 
+                // Play Reference Track
+                if (refTrackData && refTrackData.audio) {
+                    if (Math.abs(refTrackData.audio.currentTime - refTime) > 0.04) {
+                        refTrackData.audio.currentTime = refTime;
+                    }
+                    refTrackData.audio.playbackRate = 1.0;
+                    refTrackData.audio.play().catch(e => console.warn("Ref audio play error", e));
+                    refTrackData.card.classList.add('is-playing');
+                }
+
+                // Play All Stems
                 stemsData.forEach(s => {
                     if (Math.abs(s.audio.currentTime - refTime) > 0.04) {
                         s.audio.currentTime = refTime;
                     }
                     s.audio.playbackRate = 1.0;
-                    s.audio.play().catch(e => console.warn("Audio play error", e));
+                    s.audio.play().catch(e => console.warn("Stem audio play error", e));
                     s.card.classList.add('is-playing');
                 });
 
@@ -2130,6 +2335,24 @@
                         return;
                     }
 
+                    // Sync Reference Track if not the master clock
+                    if (refTrackData && refTrackData !== m && !refTrackData.audio.ended) {
+                        if (refTrackData.audio.paused && isGlobalPlaying && !refTrackData.audio.seeking) {
+                            refTrackData.audio.play().catch(() => {});
+                        }
+                        const drift = curr - refTrackData.audio.currentTime;
+                        const absDrift = Math.abs(drift);
+                        if (absDrift > 0.03 && absDrift < 0.5) {
+                            refTrackData.audio.playbackRate = drift > 0 ? 1.025 : 0.975;
+                        } else if (absDrift >= 0.5 && !refTrackData.audio.seeking) {
+                            refTrackData.audio.currentTime = curr;
+                            refTrackData.audio.playbackRate = 1.0;
+                        } else {
+                            if (refTrackData.audio.playbackRate !== 1.0) refTrackData.audio.playbackRate = 1.0;
+                        }
+                    }
+
+                    // Sync Stems
                     stemsData.forEach(s => {
                         if (s === m || s.audio.ended) return;
 
@@ -2140,18 +2363,26 @@
                         const drift = curr - s.audio.currentTime;
                         const absDrift = Math.abs(drift);
 
-                        // Smooth micro-speed adjustment (no hard seeks during active playback!)
-                        // Completely removes stutter loops and phrase repeating
-                        if (absDrift > 0.03 && absDrift < 0.6) {
+                        // Micro-speed adjustment: smooth alignment with zero buffer flush!
+                        if (absDrift > 0.03 && absDrift < 0.5) {
                             s.audio.playbackRate = drift > 0 ? 1.025 : 0.975;
+                        } else if (absDrift >= 0.5 && !s.audio.seeking) {
+                            // Only realign if drifted by more than half a second
+                            s.audio.currentTime = curr;
+                            s.audio.playbackRate = 1.0;
                         } else {
                             if (s.audio.playbackRate !== 1.0) s.audio.playbackRate = 1.0;
                         }
                     });
-                }, 200);
+                }, 150);
             }
 
             function pauseAll() {
+                if (refTrackData && refTrackData.audio) {
+                    refTrackData.audio.pause();
+                    refTrackData.audio.playbackRate = 1.0;
+                    refTrackData.card.classList.remove('is-playing');
+                }
                 stemsData.forEach(s => {
                     s.audio.pause();
                     s.audio.playbackRate = 1.0;
@@ -2208,6 +2439,21 @@
             // Set initial muted states on player startup
             applySoloMuteStates();
         }
+
+        // Quick Send original reference track to Master Studio
+        window.sendOriginalToMaster = () => {
+            if (!refTrackData || !refTrackData.url) {
+                alert("Audio original de referencia no disponible.");
+                return;
+            }
+            localStorage.setItem('stemerMasterTrack', JSON.stringify({
+                url: refTrackData.url,
+                name: selectedFile ? selectedFile.name : 'Cancion_Original_Master',
+                source: 'Stemer',
+                timestamp: Date.now()
+            }));
+            window.location.href = 'master.html';
+        };
 
         // Quick Send individual stem to Midifier or Sampler
         window.sendSingleStemToTool = (itemIndex, tool) => {
