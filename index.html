@@ -1806,6 +1806,13 @@
                 if (!stemUrl) continue;
                 const itemIndex = stemsData.length;
 
+                let tagBadge = '';
+                if (i === 0) {
+                    tagBadge = '<span style="font-size: 0.65rem; padding: 2px 6px; background: rgba(0, 245, 255, 0.15); border: 1px solid rgba(0, 245, 255, 0.4); border-radius: 4px; color: #00f5ff; margin-left: 6px; font-weight: 700;">REF</span>';
+                } else if (i >= 5) {
+                    tagBadge = '<span style="font-size: 0.65rem; padding: 2px 6px; background: rgba(255, 0, 127, 0.15); border: 1px solid rgba(255, 0, 127, 0.4); border-radius: 4px; color: #ff007f; margin-left: 6px; font-weight: 700;">KIT</span>';
+                }
+
                 const card = document.createElement('div');
                 card.className = 'stem-player';
                 card.id = `stemPlayer_${itemIndex}`;
@@ -1813,7 +1820,7 @@
                 card.innerHTML = `
                     <div class="stem-left-col">
                         <div class="stem-pulse-dot" id="stemPulse_${itemIndex}"></div>
-                        <div class="stem-label">${labels[i]}</div>
+                        <div class="stem-label">${labels[i]} ${tagBadge}</div>
                     </div>
 
                     <div class="stem-controls">
@@ -1847,6 +1854,12 @@
 
                 const audio = card.querySelector(`#audioElement_${itemIndex}`);
 
+                // Default mute configuration:
+                // Primary mix is 4 stems (Vocals, Bass, Other, Drums).
+                // Original Song (i === 0) is muted by default as Reference.
+                // Refined drums (Kick, Snare, Hi-hat; i >= 5) are muted by default to avoid doubling with Drums.
+                const shouldBeMutedByDefault = (i === 0 || i >= 5);
+
                 const stemObj = {
                     index: itemIndex,
                     originalIndex: i,
@@ -1862,7 +1875,7 @@
                     timeline: card.querySelector(`#stemTimeline_${itemIndex}`),
                     fill: card.querySelector(`#stemFill_${itemIndex}`),
                     timeSpan: card.querySelector(`#stemTime_${itemIndex}`),
-                    isMuted: false,
+                    isMuted: shouldBeMutedByDefault,
                     isSolo: false,
                     volume: 1
                 };
@@ -1887,31 +1900,30 @@
                 stem.soloBtn.onclick = (e) => {
                     e.stopPropagation();
                     stem.isSolo = !stem.isSolo;
-                    stem.soloBtn.classList.toggle('active', stem.isSolo);
                     applySoloMuteStates();
                 };
 
                 // Mute button
                 stem.muteBtn.onclick = (e) => {
                     e.stopPropagation();
-                    toggleMuteStem(stem);
+                    stem.isMuted = !stem.isMuted;
+                    applySoloMuteStates();
                 };
 
                 // Volume icon toggle
                 stem.volIcon.onclick = (e) => {
                     e.stopPropagation();
-                    toggleMuteStem(stem);
+                    stem.isMuted = !stem.isMuted;
+                    applySoloMuteStates();
                 };
 
                 stem.volSlider.oninput = (e) => {
                     e.stopPropagation();
                     stem.volume = parseFloat(e.target.value);
                     if (stem.volume === 0) {
-                        stem.volIcon.innerText = "🔇";
-                    } else if (stem.volume < 0.5) {
-                        stem.volIcon.innerText = "🔉";
-                    } else {
-                        stem.volIcon.innerText = "🔊";
+                        stem.isMuted = true;
+                    } else if (stem.isMuted) {
+                        stem.isMuted = false;
                     }
                     applySoloMuteStates();
                 };
@@ -1925,39 +1937,26 @@
                 };
             });
 
-            function toggleMuteStem(stem) {
-                stem.isMuted = !stem.isMuted;
-                stem.muteBtn.classList.toggle('active', stem.isMuted);
-                stem.volIcon.innerText = stem.isMuted ? "🔇" : (stem.volume < 0.5 ? "🔉" : "🔊");
-                applySoloMuteStates();
-            }
-
             function applySoloMuteStates() {
                 const anySolo = stemsData.some(s => s.isSolo);
 
                 stemsData.forEach(s => {
-                    let isAudible = true;
-                    if (anySolo) {
-                        isAudible = s.isSolo;
-                    } else {
-                        isAudible = !s.isMuted;
-                    }
+                    let isAudible = anySolo ? (s.isSolo && !s.isMuted) : !s.isMuted;
 
-                    // Keep audio.muted = false ALWAYS so the browser's hardware decoding pipeline never sleeps!
-                    // Volume 0 silences the track completely while keeping its timeline 100% in sync.
                     s.audio.muted = false;
                     const baseVol = (typeof s.volume === 'number') ? s.volume : 1.0;
-                    s.audio.volume = isAudible ? baseVol : 0.0;
+                    s.audio.volume = isAudible ? Math.max(0, Math.min(1, baseVol)) : 0.0;
 
                     s.card.classList.toggle('is-muted', !isAudible);
                     s.card.classList.toggle('is-solo', s.isSolo);
+                    s.muteBtn.classList.toggle('active', s.isMuted);
+                    s.soloBtn.classList.toggle('active', s.isSolo);
+                    s.volIcon.innerText = !isAudible ? "🔇" : (baseVol < 0.5 ? "🔉" : "🔊");
                 });
             }
 
             function getMasterStem() {
-                // The master timeline clock is ALWAYS track 0 (Original Song).
-                // It never hops or shifts, guaranteeing monotonic, non-interrupted time.
-                return stemsData[0] || null;
+                return stemsData.find(s => s && s.audio && !isNaN(s.audio.duration) && s.audio.duration > 0) || stemsData[0] || null;
             }
 
             function getMasterCurrentTime() {
@@ -1965,12 +1964,19 @@
                 return (master && master.audio) ? master.audio.currentTime : 0;
             }
 
+            function checkAllEnded() {
+                const master = getMasterStem();
+                if (!master || !master.audio) return;
+                if (master.audio.ended || (maxTrackDuration > 0 && master.audio.currentTime >= maxTrackDuration)) {
+                    pauseAll();
+                    seekAllTo(0);
+                }
+            }
+
             function seekAllTo(time) {
-                const now = Date.now();
                 stemsData.forEach(s => {
                     s.audio.currentTime = time;
                     s.audio.playbackRate = 1.0;
-                    s.lastHardSeek = now;
                 });
                 masterScrubber.value = time;
                 updateVisualProgress(time);
@@ -1989,15 +1995,17 @@
             }
 
             function playAll() {
-                const refTime = getMasterCurrentTime();
-                const now = Date.now();
+                const master = getMasterStem();
+                if (!master || !master.audio) return;
 
+                const refTime = getMasterCurrentTime();
                 applySoloMuteStates();
 
                 stemsData.forEach(s => {
-                    s.audio.currentTime = refTime;
+                    if (Math.abs(s.audio.currentTime - refTime) > 0.04) {
+                        s.audio.currentTime = refTime;
+                    }
                     s.audio.playbackRate = 1.0;
-                    s.lastHardSeek = now;
                     s.audio.play().catch(e => console.warn("Audio play error", e));
                     s.card.classList.add('is-playing');
                 });
@@ -2009,46 +2017,37 @@
 
                 if (syncTicker) clearInterval(syncTicker);
                 syncTicker = setInterval(() => {
-                    const master = getMasterStem();
-                    if (!master || !master.audio) return;
-                    const curr = master.audio.currentTime;
+                    const m = getMasterStem();
+                    if (!m || !m.audio) return;
+                    const curr = m.audio.currentTime;
                     updateVisualProgress(curr);
 
                     // End playback only when master track reaches finish
-                    if (master.audio.ended || (maxTrackDuration > 0 && curr >= maxTrackDuration)) {
+                    if (m.audio.ended || (maxTrackDuration > 0 && curr >= maxTrackDuration)) {
                         pauseAll();
                         seekAllTo(0);
                         return;
                     }
 
-                    const nowTick = Date.now();
                     stemsData.forEach(s => {
-                        if (s === master || s.audio.ended) return;
+                        if (s === m || s.audio.ended) return;
 
-                        // If a secondary track paused, resume it
-                        if (s.audio.paused && isGlobalPlaying) {
+                        if (s.audio.paused && isGlobalPlaying && !s.audio.seeking) {
                             s.audio.play().catch(() => {});
                         }
 
-                        const drift = curr - s.audio.currentTime; // positive if s is behind
+                        const drift = curr - s.audio.currentTime;
                         const absDrift = Math.abs(drift);
 
-                        // 1. Subtle smooth speed adjustment (no clicks, no buffer drops, no phrase repeating)
-                        if (absDrift > 0.04 && absDrift < 0.45) {
-                            s.audio.playbackRate = drift > 0 ? 1.035 : 0.965;
-                        } else if (absDrift <= 0.04) {
+                        // Smooth micro-speed adjustment (no hard seeks during active playback!)
+                        // Completely removes stutter loops and phrase repeating
+                        if (absDrift > 0.03 && absDrift < 0.6) {
+                            s.audio.playbackRate = drift > 0 ? 1.025 : 0.975;
+                        } else {
                             if (s.audio.playbackRate !== 1.0) s.audio.playbackRate = 1.0;
-                        } 
-                        // 2. Large outlier drift (> 0.7s) handled with safe seek & 2.5s cooldown
-                        else if (absDrift >= 0.7) {
-                            if (!s.lastHardSeek || (nowTick - s.lastHardSeek > 2500)) {
-                                s.audio.currentTime = curr;
-                                s.audio.playbackRate = 1.0;
-                                s.lastHardSeek = nowTick;
-                            }
                         }
                     });
-                }, 150);
+                }, 200);
             }
 
             function pauseAll() {
@@ -2086,9 +2085,6 @@
                 stemsData.forEach(s => {
                     s.isMuted = false;
                     s.isSolo = false;
-                    s.muteBtn.classList.remove('active');
-                    s.soloBtn.classList.remove('active');
-                    s.volIcon.innerText = s.volume < 0.5 ? "🔉" : "🔊";
                 });
                 applySoloMuteStates();
             };
@@ -2097,9 +2093,6 @@
                 stemsData.forEach(s => {
                     s.isMuted = true;
                     s.isSolo = false;
-                    s.muteBtn.classList.add('active');
-                    s.soloBtn.classList.remove('active');
-                    s.volIcon.innerText = "🔇";
                 });
                 applySoloMuteStates();
             };
@@ -2107,10 +2100,12 @@
             quickClearSolo.onclick = () => {
                 stemsData.forEach(s => {
                     s.isSolo = false;
-                    s.soloBtn.classList.remove('active');
                 });
                 applySoloMuteStates();
             };
+
+            // Set initial muted states on player startup
+            applySoloMuteStates();
         }
 
         // Quick Send individual stem to Midifier or Sampler
@@ -2183,7 +2178,8 @@
                     localStorage.setItem('stemerMasterTrack', JSON.stringify({
                         url: origSong.url,
                         name: selectedFile ? selectedFile.name : 'Stemer Mix Track',
-                        source: 'Stemer'
+                        source: 'Stemer',
+                        timestamp: Date.now()
                     }));
                 }
                 window.location.href = 'master.html';

@@ -351,7 +351,7 @@
     <!-- Top Navigation -->
     <nav class="custom-header">
         <div class="logo-container">
-            <img src="headerlogo.png" alt="Logo" class="logo-img">
+            <img src="logo.png" alt="Logo" class="logo-img">
             <div class="logo-text">MASTER</div>
         </div>
         <div class="header-right">
@@ -641,6 +641,7 @@
 
         const SPACE_ID = "tinahmbuz/audiostems";
 
+        const uploadContainer = document.getElementById('uploadContainer');
         const masterDropzone = document.getElementById('masterDropzone');
         const masterFileInput = document.getElementById('masterFileInput');
         const masterFileName = document.getElementById('masterFileName');
@@ -926,6 +927,10 @@
                     try {
                         const jsonPart = reportRaw.substring(reportRaw.indexOf('{'));
                         metrics = JSON.parse(jsonPart);
+                    } catch (err) {
+                        console.warn("Could not parse metrics JSON:", err);
+                    }
+                }
                 // Add to master versions history
                 const newMasterVer = {
                     versionNum: masterVersions.length + 1,
