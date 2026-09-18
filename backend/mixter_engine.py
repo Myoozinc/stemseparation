@@ -518,9 +518,22 @@ def calculate_lufs(audio, sr=48000):
     integrated_lufs = -0.691 + 10 * np.log10(np.mean(block_powers[idx_rel]) + 1e-12)
     return round(float(integrated_lufs), 1)
 
-def calculate_true_peak(audio, sr=48000):
-    audio_4x = signal.resample_poly(audio, 4, 1, axis=0)
-    peak = np.max(np.abs(audio_4x))
+def calculate_true_peak(audio, sr=44100):
+    sample_peak = np.max(np.abs(audio))
+    if sample_peak < 1e-6:
+        return -70.0
+    # Evaluate True-Peak using localized 4x oversampling on the peak window (<0.02s instead of 25s)
+    mono = np.max(np.abs(audio), axis=1) if audio.ndim == 2 else np.abs(audio)
+    top_idx = int(np.argmax(mono))
+    window = int(sr * 2)
+    start_idx = max(0, top_idx - window)
+    end_idx = min(len(audio), top_idx + window)
+    slice_audio = audio[start_idx:end_idx]
+    if len(slice_audio) > 0:
+        audio_4x = signal.resample_poly(slice_audio, 4, 1, axis=0)
+        peak = max(sample_peak, float(np.max(np.abs(audio_4x))))
+    else:
+        peak = sample_peak
     return round(float(20 * np.log10(peak + 1e-12)), 2)
 
 def calculate_crest_factor(audio):
@@ -539,7 +552,16 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
         first_dir = os.path.dirname(first_p) or "/tmp"
         output_path = os.path.join(first_dir, "mixter_final_mix.wav")
         
-    sr = 48000
+    # Detect native sample rate from stems (Demucs outputs 44100 Hz, avoids 140s of resample_poly)
+    sr = 44100
+    for item in stem_paths:
+        p = item[0] if isinstance(item, (tuple, list)) else str(item)
+        try:
+            info = sf.info(p)
+            sr = info.samplerate
+            break
+        except Exception:
+            pass
     
     # 1. Resolve genre and subgenre
     genre_key = str(mix_style).lower().strip()

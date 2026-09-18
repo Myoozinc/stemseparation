@@ -317,10 +317,22 @@ def calculate_short_term_max_lufs(audio, sr=48000):
             max_lufs = l
     return float(max_lufs)
 
-def calculate_true_peak(audio, sr=48000):
-    """Calculates True-Peak in dBFS using 4x polyphase oversampling"""
-    audio_4x = signal.resample_poly(audio, 4, 1, axis=0)
-    peak = np.max(np.abs(audio_4x))
+def calculate_true_peak(audio, sr=44100):
+    """Calculates True-Peak in dBFS using fast localized 4x polyphase oversampling"""
+    sample_peak = np.max(np.abs(audio))
+    if sample_peak < 1e-6:
+        return -70.0
+    mono = np.max(np.abs(audio), axis=1) if audio.ndim == 2 else np.abs(audio)
+    top_idx = int(np.argmax(mono))
+    window = int(sr * 2)
+    start_idx = max(0, top_idx - window)
+    end_idx = min(len(audio), top_idx + window)
+    slice_audio = audio[start_idx:end_idx]
+    if len(slice_audio) > 0:
+        audio_4x = signal.resample_poly(slice_audio, 4, 1, axis=0)
+        peak = max(sample_peak, float(np.max(np.abs(audio_4x))))
+    else:
+        peak = sample_peak
     return float(20 * np.log10(peak + 1e-12))
 
 def calculate_crest_factor(audio):
@@ -494,8 +506,11 @@ def master_audio(
     if not output_path:
         base = os.path.splitext(input_path)[0]
         output_path = f"{base}_mastered.wav"
-        
-    sr = 48000
+    try:
+        info = sf.info(input_path)
+        sr = info.samplerate
+    except Exception:
+        sr = 44100
     
     # Handle backward-compatible target_profile parameter
     target_profile = kwargs.get('target_profile')

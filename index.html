@@ -1903,11 +1903,9 @@
                     toggleMuteStem(stem);
                 };
 
-                // Volume slider
                 stem.volSlider.oninput = (e) => {
                     e.stopPropagation();
                     stem.volume = parseFloat(e.target.value);
-                    stem.audio.volume = stem.volume;
                     if (stem.volume === 0) {
                         stem.volIcon.innerText = "🔇";
                     } else if (stem.volume < 0.5) {
@@ -1915,6 +1913,7 @@
                     } else {
                         stem.volIcon.innerText = "🔊";
                     }
+                    applySoloMuteStates();
                 };
 
                 // Timeline click (seek mix)
@@ -1931,48 +1930,34 @@
                 stem.muteBtn.classList.toggle('active', stem.isMuted);
                 stem.volIcon.innerText = stem.isMuted ? "🔇" : (stem.volume < 0.5 ? "🔉" : "🔊");
                 applySoloMuteStates();
-
-                // If unmuted while mix is playing, ensure it plays in sync
-                if (!stem.isMuted && isGlobalPlaying) {
-                    const refTime = getMasterCurrentTime();
-                    if (Math.abs(stem.audio.currentTime - refTime) > 0.3) {
-                        stem.audio.currentTime = refTime;
-                    }
-                    stem.audio.play().catch(() => {});
-                }
             }
 
             function applySoloMuteStates() {
                 const anySolo = stemsData.some(s => s.isSolo);
 
                 stemsData.forEach(s => {
-                    let shouldMute = false;
+                    let isAudible = true;
                     if (anySolo) {
-                        shouldMute = !s.isSolo;
+                        isAudible = s.isSolo;
                     } else {
-                        shouldMute = s.isMuted;
+                        isAudible = !s.isMuted;
                     }
 
-                    s.audio.muted = shouldMute;
-                    s.card.classList.toggle('is-muted', shouldMute);
+                    // Keep audio.muted = false ALWAYS so the browser's hardware decoding pipeline never sleeps!
+                    // Volume 0 silences the track completely while keeping its timeline 100% in sync.
+                    s.audio.muted = false;
+                    const baseVol = (typeof s.volume === 'number') ? s.volume : 1.0;
+                    s.audio.volume = isAudible ? baseVol : 0.0;
+
+                    s.card.classList.toggle('is-muted', !isAudible);
                     s.card.classList.toggle('is-solo', s.isSolo);
-
-                    // If active and playback is ongoing, ensure it is playing
-                    if (!shouldMute && isGlobalPlaying && s.audio.paused) {
-                        const refTime = getMasterCurrentTime();
-                        if (Math.abs(s.audio.currentTime - refTime) > 0.3) {
-                            s.audio.currentTime = refTime;
-                        }
-                        s.audio.play().catch(() => {});
-                    }
                 });
             }
 
             function getMasterStem() {
-                // Return a consistent master reference audio element (preferably unmuted)
-                return stemsData.find(s => !s.audio.muted && !s.audio.paused && !s.audio.ended) ||
-                       stemsData.find(s => !s.audio.paused && !s.audio.ended) ||
-                       stemsData[0];
+                // The master timeline clock is ALWAYS track 0 (Original Song).
+                // It never hops or shifts, guaranteeing monotonic, non-interrupted time.
+                return stemsData[0] || null;
             }
 
             function getMasterCurrentTime() {
@@ -2003,22 +1988,13 @@
                 });
             }
 
-            function checkAllEnded() {
-                const allDone = stemsData.every(s => s.audio.ended || s.audio.paused);
-                if (allDone && isGlobalPlaying) {
-                    pauseAll();
-                    seekAllTo(0);
-                }
-            }
-
             function playAll() {
-                const anySolo = stemsData.some(s => s.isSolo);
                 const refTime = getMasterCurrentTime();
                 const now = Date.now();
 
+                applySoloMuteStates();
+
                 stemsData.forEach(s => {
-                    const shouldMute = anySolo ? !s.isSolo : s.isMuted;
-                    s.audio.muted = shouldMute;
                     s.audio.currentTime = refTime;
                     s.audio.playbackRate = 1.0;
                     s.lastHardSeek = now;
@@ -2038,22 +2014,34 @@
                     const curr = master.audio.currentTime;
                     updateVisualProgress(curr);
 
+                    // End playback only when master track reaches finish
+                    if (master.audio.ended || (maxTrackDuration > 0 && curr >= maxTrackDuration)) {
+                        pauseAll();
+                        seekAllTo(0);
+                        return;
+                    }
+
                     const nowTick = Date.now();
                     stemsData.forEach(s => {
-                        if (s === master || s.audio.paused || s.audio.ended) return;
-                        
+                        if (s === master || s.audio.ended) return;
+
+                        // If a secondary track paused, resume it
+                        if (s.audio.paused && isGlobalPlaying) {
+                            s.audio.play().catch(() => {});
+                        }
+
                         const drift = curr - s.audio.currentTime; // positive if s is behind
                         const absDrift = Math.abs(drift);
 
-                        // 1. Subtle smooth speed adjustment (no buffer flush, no stuttering)
+                        // 1. Subtle smooth speed adjustment (no clicks, no buffer drops, no phrase repeating)
                         if (absDrift > 0.04 && absDrift < 0.45) {
                             s.audio.playbackRate = drift > 0 ? 1.035 : 0.965;
                         } else if (absDrift <= 0.04) {
                             if (s.audio.playbackRate !== 1.0) s.audio.playbackRate = 1.0;
                         } 
-                        // 2. Large outlier drift (> 0.6s) handled with safe seek & 2s cooldown
-                        else if (absDrift >= 0.6) {
-                            if (!s.lastHardSeek || (nowTick - s.lastHardSeek > 2000)) {
+                        // 2. Large outlier drift (> 0.7s) handled with safe seek & 2.5s cooldown
+                        else if (absDrift >= 0.7) {
+                            if (!s.lastHardSeek || (nowTick - s.lastHardSeek > 2500)) {
                                 s.audio.currentTime = curr;
                                 s.audio.playbackRate = 1.0;
                                 s.lastHardSeek = nowTick;
