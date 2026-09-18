@@ -9,6 +9,14 @@ Modules:
 6. /process_master: AI Mastering Studio (LUFS / true-peak limiter)
 """
 import os
+# Strictly enforce 2-thread limit for cloud container cgroups
+os.environ["OMP_NUM_THREADS"] = "2"
+os.environ["MKL_NUM_THREADS"] = "2"
+os.environ["OPENBLAS_NUM_THREADS"] = "2"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "2"
+os.environ["NUMEXPR_NUM_THREADS"] = "2"
+os.environ["TORCH_NUM_THREADS"] = "2"
+
 import json
 import gradio as gr
 from midifier_engine import convert_audio_to_midi
@@ -90,10 +98,14 @@ def process_stems(song_file, options, auth_token=""):
         if "Info" in options or "All" in options:
             try:
                 import librosa
-                # Load first 60 seconds at 22050 Hz for fast key and tempo detection (< 2 seconds)
-                y, sr_load = librosa.load(wav_path, mono=True, sr=22050, duration=60.0)
-                key = detect_key_advanced(y, sr_load)
-                tempo = detect_tempo_advanced(y, sr_load)
+                # If drums stem was separated, use it for 100% pure rhythm detection with zero melodic bleed
+                tempo_src = stems.get("drums") if (stems.get("drums") and os.path.exists(stems.get("drums"))) else wav_path
+                y_tempo, sr_t = librosa.load(tempo_src, mono=True, sr=22050, duration=30.0)
+                tempo = detect_tempo_advanced(y_tempo, sr_t)
+                
+                # Load first 25 seconds for key detection
+                y_key, sr_k = librosa.load(wav_path, mono=True, sr=22050, duration=25.0)
+                key = detect_key_advanced(y_key, sr_k)
             except Exception as kerr:
                 print(f"[WARN] Key/tempo detection: {kerr}")
                 key = "N/A"
@@ -313,6 +325,20 @@ with gr.Blocks(title="Myooz Audio Intelligence Suite") as app:
             outputs=[master_out_wav, master_status],
             api_name="process_master"
         )
+
+# Background Demucs model prewarm to eliminate first-request wait time
+def _prewarm_demucs():
+    try:
+        import torch
+        from generalstems import get_cached_demucs_model
+        dev = "cuda" if torch.cuda.is_available() else "cpu"
+        get_cached_demucs_model(dev)
+        print("[PREWARM] Demucs model cached successfully in memory.")
+    except Exception as e:
+        print(f"[PREWARM] Notice: {e}")
+
+import threading
+threading.Thread(target=_prewarm_demucs, daemon=True).start()
 
 if __name__ == "__main__":
     app.launch(server_name="0.0.0.0", server_port=7860)

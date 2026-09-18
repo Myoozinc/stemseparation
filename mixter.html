@@ -756,9 +756,39 @@
                 });
 
                 mixFileName.innerText = `Usando ${stems.length} Stems Importados de Stemer`;
-                localStorage.removeItem('stemerStems');
             } catch (e) {
                 console.error("Error receiving stems in Mixter:", e);
+            }
+        })();
+
+        // Check for active mix sessions in Mixter (persists when navigating to Master/Stemer)
+        (function checkActiveMixSession() {
+            try {
+                let isPageReload = false;
+                try {
+                    const navEntries = performance.getEntriesByType('navigation');
+                    if (navEntries.length > 0 && navEntries[0].type === 'reload') isPageReload = true;
+                    else if (performance.navigation && performance.navigation.type === 1) isPageReload = true;
+                } catch (e) {}
+
+                if (isPageReload) {
+                    sessionStorage.removeItem('mixterActiveVersions');
+                    return;
+                }
+
+                const saved = sessionStorage.getItem('mixterActiveVersions');
+                if (saved) {
+                    const vers = JSON.parse(saved);
+                    if (Array.isArray(vers) && vers.length > 0) {
+                        mixVersions = vers;
+                        activeVersionIndex = mixVersions.length - 1;
+                        mixDeckSection.style.display = 'block';
+                        renderVersionsTabs();
+                        switchActiveVersion(activeVersionIndex);
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not restore mixterActiveVersions:", err);
             }
         })();
 
@@ -1013,6 +1043,11 @@
 
                 mixVersions.push(newVersion);
                 activeVersionIndex = mixVersions.length - 1;
+
+                // Persist active mix versions across navigation
+                try {
+                    sessionStorage.setItem('mixterActiveVersions', JSON.stringify(mixVersions));
+                } catch (e) {}
 
                 // Auto-sync latest mixdown to Master transfer slot
                 try {
