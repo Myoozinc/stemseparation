@@ -288,7 +288,7 @@
 
 <body>
     <nav class="custom-header">
-        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Volver a Tool Box">
+        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Volver a TOOLBOX">
             <img src="logo.png" alt="Mixter Logo" class="logo-img">
             <div class="logo-text">MIXTER</div>
         </a>
@@ -328,10 +328,10 @@
                 <div class="upload-zone" id="mixDropZone" style="border: 2px dashed var(--glass-border); border-radius: 18px; padding: 2.5rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 1.5rem; background: rgba(255,255,255,0.015);">
                     <img src="upload.png" alt="Upload" style="width: 55px; height: 55px; opacity: 0.6; margin-bottom: 1rem;">
                     <h3 id="mixFileName" style="font-family: 'Righteous', sans-serif; letter-spacing: 1px; margin-bottom: 0.5rem;">
-                        Selecciona o Arrastra Múltiples Stems Aquí
+                        Arrastra tus stems aquí
                     </h3>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">WAV o MP3 (Selecciona varios archivos a la vez)</p>
-                    <input type="file" id="mixFileInput" class="hidden" accept=".mp3,.wav" multiple>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">o haz clic para buscar en tu dispositivo · WAV, MP3, FLAC, M4A, AIFF (Selecciona varios)</p>
+                    <input type="file" id="mixFileInput" class="hidden" accept="audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg,.aiff" multiple>
                 </div>
                 <div id="uploadTipsBox" style="display: none; margin-bottom: 1.75rem; padding: 1rem 1.25rem; border-radius: 14px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); text-align: left; font-size: 0.8rem; line-height: 1.5;"></div>
             </div>
@@ -483,7 +483,7 @@
 
     <!-- 5-Tool Bottom Nav -->
     <div class="tool-nav">
-        <a href="index.html" class="tool-link">Tool Box</a>
+        <a href="index.html" class="tool-link">TOOLBOX</a>
         <a href="stemer.html" class="tool-link">Stemer</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
@@ -709,6 +709,36 @@
         mixFileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 selectedFiles = Array.from(e.target.files);
+                updateFilesDisplay();
+            }
+        });
+
+        // Drag & Drop on Zone
+        mixDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            mixDropZone.style.borderColor = 'var(--accent-emerald)';
+            mixDropZone.style.background = 'rgba(16, 185, 129, 0.08)';
+        });
+        mixDropZone.addEventListener('dragleave', () => {
+            mixDropZone.style.borderColor = 'var(--glass-border)';
+            mixDropZone.style.background = 'rgba(255,255,255,0.015)';
+        });
+        mixDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            mixDropZone.style.borderColor = 'var(--glass-border)';
+            mixDropZone.style.background = 'rgba(255,255,255,0.015)';
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                selectedFiles = Array.from(e.dataTransfer.files);
+                updateFilesDisplay();
+            }
+        });
+
+        // Window-level Drag & Drop
+        window.addEventListener('dragover', (e) => { e.preventDefault(); });
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                selectedFiles = Array.from(e.dataTransfer.files);
                 updateFilesDisplay();
             }
         });
@@ -1081,6 +1111,33 @@
             }
         };
     </script>
+
+<script>
+// ── Receive file from TOOLBOX home ──
+(function checkToolboxPendingFile() {
+    if (localStorage.getItem('toolboxPendingTool') !== 'mixter') return;
+    localStorage.removeItem('toolboxPendingTool');
+    try {
+        const req = indexedDB.open('ToolboxDB', 1);
+        req.onsuccess = function(e) {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('files')) return;
+            const tx = db.transaction('files', 'readwrite');
+            const store = tx.objectStore('files');
+            const getReq = store.get('pendingFile');
+            getReq.onsuccess = function() {
+                const file = getReq.result;
+                if (file instanceof File) {
+                    store.delete('pendingFile');
+                    selectedFiles = [file];
+                    updateFilesDisplay();
+                }
+            };
+        };
+    } catch(err) { /* ignore */ }
+})();
+</script>
 </body>
+
 
 </html>

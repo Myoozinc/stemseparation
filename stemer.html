@@ -1081,7 +1081,7 @@
 
 <body>
     <nav class="custom-header">
-        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Volver a Tool Box">
+        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Volver a TOOLBOX">
             <img src="logo.png" alt="stemerlogo" class="logo-img">
             <div class="logo-text">STEMER</div>
         </a>
@@ -1119,9 +1119,9 @@
                 <div class="upload-zone" id="dropZone">
                     <img src="upload.png" alt="Upload" class="upload-icon-img">
                     <h3 id="fileName" style="margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; font-family: 'Righteous', sans-serif;">
-                        Upload Track Here</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 1px;">MP3 & WAV only</p>
-                    <input type="file" id="fileInput" class="hidden" accept=".mp3,.wav">
+                        Arrastra tu audio aquí</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 1px;">o haz clic para buscar en tu dispositivo · WAV, MP3, FLAC, M4A, AIFF</p>
+                    <input type="file" id="fileInput" class="hidden" accept="audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg,.aiff">
                 </div>
 
                 <div class="options-container">
@@ -1511,7 +1511,7 @@
             const validExts = [".mp3", ".wav", ".flac", ".m4a", ".aac", ".ogg", ".aiff"];
             const lowerName = file.name.toLowerCase();
             if (!validExts.some(ext => lowerName.endsWith(ext))) {
-                alert("Por favor selecciona un archivo de audio compatible (MP3 o WAV).");
+                alert("Por favor selecciona un archivo de audio compatible (WAV, MP3, FLAC, M4A, AAC, OGG, AIFF).");
                 return;
             }
 
@@ -1553,6 +1553,32 @@
             }
         }
 
+        // Check for pending file forwarded from TOOLBOX home page
+        (function checkToolboxPendingFile() {
+            try {
+                const tool = localStorage.getItem('toolboxPendingTool');
+                if (tool === 'stemer') {
+                    localStorage.removeItem('toolboxPendingTool');
+                    const req = indexedDB.open('ToolboxDB', 1);
+                    req.onsuccess = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains('files')) return;
+                        const tx = db.transaction('files', 'readwrite');
+                        const store = tx.objectStore('files');
+                        const getReq = store.get('pendingFile');
+                        getReq.onsuccess = () => {
+                            if (getReq.result) {
+                                handleSelectedFile(getReq.result);
+                                store.delete('pendingFile');
+                            }
+                        };
+                    };
+                }
+            } catch (err) {
+                console.warn("Error reading toolboxPendingFile in stemer:", err);
+            }
+        })();
+
         dropZone.addEventListener('click', (e) => {
             if (e.target !== fileInput) {
                 fileInput.click();
@@ -1582,6 +1608,19 @@
             e.preventDefault();
             dropZone.classList.remove("dragover");
             if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleSelectedFile(e.dataTransfer.files[0]);
+            }
+        });     
+
+        // Window drag & drop
+        window.addEventListener("dragover", (e) => { e.preventDefault(); });
+        window.addEventListener("drop", (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                if (!resultsContent.classList.contains('hidden')) {
+                    resultsContent.classList.add('hidden');
+                    uploadView.classList.remove('hidden');
+                }
                 handleSelectedFile(e.dataTransfer.files[0]);
             }
         });     
@@ -2577,7 +2616,7 @@
     </script>
 
     <div class="tool-nav">
-        <a href="index.html" class="tool-link">Tool Box</a>
+        <a href="index.html" class="tool-link">TOOLBOX</a>
         <a href="stemer.html" class="tool-link active">Stemer</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>

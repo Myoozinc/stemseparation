@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Box | Audio Intelligence Suite by Myooz Labs</title>
-    <meta name="description" content="Tool Box: Suite integral de producción musical e inteligencia artificial. 5 herramientas neuronales de alta precisión para separar stems, convertir audio a MIDI, crear kits de samples, mezclar y masterizar a 32-bit Float.">
+    <title>TOOLBOX | Audio Intelligence Suite by Myooz Labs</title>
+    <meta name="description" content="TOOLBOX: Suite integral de producción musical e inteligencia artificial. 5 herramientas neuronales de alta precisión para separar stems, convertir audio a MIDI, crear kits de samples, mezclar y masterizar a 32-bit Float.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Righteous&display=swap" rel="stylesheet">
@@ -531,6 +531,111 @@
                 padding: 2rem 1.25rem;
             }
         }
+
+        /* ──── Quick Upload Zone ──── */
+        .upload-zone-section {
+            padding: 1.5rem 2.5rem 0;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .quick-upload-card {
+            border: 2px dashed rgba(139, 92, 246, 0.45);
+            border-radius: 18px;
+            background: rgba(139, 92, 246, 0.05);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.25s, background 0.25s;
+            position: relative;
+        }
+        .quick-upload-card:hover,
+        .quick-upload-card.drag-over {
+            border-color: rgba(139, 92, 246, 0.85);
+            background: rgba(139, 92, 246, 0.12);
+        }
+        .quick-upload-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .quick-upload-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #e2d9f3;
+            margin-bottom: 0.3rem;
+        }
+        .quick-upload-sub {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.45);
+            letter-spacing: 0.5px;
+        }
+        .quick-upload-actions {
+            margin-top: 1.2rem;
+        }
+        .selected-file-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: rgba(139, 92, 246, 0.15);
+            border-radius: 10px;
+            padding: 0.55rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #d8b4fe;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+            word-break: break-all;
+        }
+        .tool-chooser {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .tool-chooser-label {
+            font-size: 0.82rem;
+            color: rgba(255,255,255,0.55);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .tool-chooser-select {
+            background: rgba(30, 20, 50, 0.85);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            color: #e2d9f3;
+            border-radius: 10px;
+            padding: 0.45rem 0.8rem;
+            font-size: 0.82rem;
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+        }
+        .tool-chooser-select:focus {
+            border-color: rgba(139, 92, 246, 0.9);
+        }
+        .launch-tool-btn {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s;
+            white-space: nowrap;
+        }
+        .launch-tool-btn:hover {
+            opacity: 0.88;
+            transform: translateY(-1px);
+        }
+        @media (max-width: 600px) {
+            .upload-zone-section { padding: 1.25rem 1rem 0; }
+            .tool-chooser { flex-direction: column; }
+        }
     </style>
 </head>
 
@@ -541,9 +646,9 @@
 
     <!-- Top Navigation Header -->
     <nav class="custom-header">
-        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Tool Box Home">
-            <img src="logo.png" alt="Tool Box Logo" class="logo-img">
-            <div class="logo-text">TOOL BOX</div>
+        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="TOOLBOX Home">
+            <img src="logo.png" alt="TOOLBOX Logo" class="logo-img">
+            <div class="logo-text">TOOLBOX</div>
         </a>
         <div class="header-right">
             <div class="header-tag">BY MYOOZ LABS</div>
@@ -554,34 +659,53 @@
     <div class="home-container">
         <!-- Hero Section -->
         <header class="hero">
-            <div class="hero-badge">
-                <span>⚡</span>
-                <span>Audio Intelligence Suite 2026</span>
-            </div>
-            <h1 class="hero-title">TOOL BOX</h1>
+            <h1 class="hero-title">TOOLBOX</h1>
             <p class="hero-subtitle">
                 Suite autónoma de producción musical con Inteligencia Artificial. Cinco herramientas de estudio interconectadas con procesamiento nativo a <strong>32-bit Float</strong> sin pérdidas de compresión.
             </p>
 
             <div class="hero-specs-row">
                 <div class="spec-pill">
-                    <span class="icon">🎛️</span>
                     <span>5 Herramientas IA</span>
                 </div>
                 <div class="spec-pill">
-                    <span class="icon">🔊</span>
                     <span>32-bit Float WAV</span>
                 </div>
                 <div class="spec-pill">
-                    <span class="icon">⚡</span>
                     <span>0s Latencia de Paso</span>
                 </div>
                 <div class="spec-pill">
-                    <span class="icon">☁️</span>
                     <span>$0 Free Cloud</span>
                 </div>
             </div>
         </header>
+
+        <!-- Quick Upload Zone -->
+        <div class="upload-zone-section">
+            <div class="quick-upload-card" id="homeDropZone">
+                <input type="file" id="homeFileInput" accept="audio/*,.wav,.mp3,.flac,.aiff,.ogg,.m4a" style="display:none">
+                <div class="quick-upload-icon">🎵</div>
+                <div class="quick-upload-title">Arrastra tu audio aquí</div>
+                <div class="quick-upload-sub">o haz clic para buscar en tu dispositivo · WAV · MP3 · FLAC · M4A</div>
+                <div class="quick-upload-actions" id="homeFileSelected" style="display:none">
+                    <div class="selected-file-info">
+                        <span class="selected-file-icon">🎵</span>
+                        <span class="selected-file-name" id="homeFileName"></span>
+                    </div>
+                    <div class="tool-chooser">
+                        <span class="tool-chooser-label">Enviar a:</span>
+                        <select id="toolChooser" class="tool-chooser-select">
+                            <option value="stemer">Stemer — Separar Pistas</option>
+                            <option value="mixter">Mixter — Mezcla IA</option>
+                            <option value="master">Master — Masterizar</option>
+                            <option value="midifier">Midifier — Audio a MIDI</option>
+                            <option value="sampler">Sampler — Slicear Samples</option>
+                        </select>
+                        <button class="launch-tool-btn" id="launchToolBtn">Abrir herramienta →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Tools Grid Section -->
         <div class="section-header">
@@ -708,7 +832,7 @@
 
         <!-- Ecosystem Flow Diagram -->
         <section class="flow-section">
-            <h3 class="flow-title">Flujo de Trabajo Conectado de Tool Box</h3>
+            <h3 class="flow-title">Flujo de Trabajo Conectado de TOOLBOX</h3>
             <p class="flow-sub">
                 Cada herramienta se comunica con las demás en memoria. Puedes enviar stems aislados a Midifier o Sampler con un clic, o transferir tu mezcla terminada directamente a Master sin re-subir archivos.
             </p>
@@ -759,19 +883,146 @@
 
         <!-- Footer -->
         <footer class="home-footer">
-            <p><strong>TOOL BOX</strong> BY MYOOZ LABS &bull; SUITE DE INTELIGENCIA DE AUDIO 2026 &bull; 32-BIT FLOAT PIPELINE</p>
+            <p><strong>TOOLBOX</strong> BY MYOOZ LABS &bull; SUITE DE INTELIGENCIA DE AUDIO 2026 &bull; 32-BIT FLOAT PIPELINE</p>
         </footer>
     </div>
 
     <!-- 6-Link Bottom Nav Dock -->
     <div class="tool-nav">
-        <a href="index.html" class="tool-link active">Tool Box</a>
+        <a href="index.html" class="tool-link active">TOOLBOX</a>
         <a href="stemer.html" class="tool-link">Stemer</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
         <a href="mixter.html" class="tool-link">Mixter</a>
         <a href="master.html" class="tool-link">Master</a>
     </div>
+
+<script>
+(function() {
+    const dropZone   = document.getElementById('homeDropZone');
+    const fileInput  = document.getElementById('homeFileInput');
+    const fileSelected = document.getElementById('homeFileSelected');
+    const fileNameEl = document.getElementById('homeFileName');
+    const toolChooser = document.getElementById('toolChooser');
+    const launchBtn  = document.getElementById('launchToolBtn');
+
+    let pendingFile = null;
+
+    const toolUrls = {
+        stemer:   'stemer.html',
+        mixter:   'mixter.html',
+        master:   'master.html',
+        midifier: 'midifier.html',
+        sampler:  'sampler.html'
+    };
+
+    function showFile(file) {
+        pendingFile = file;
+        fileNameEl.textContent = file.name;
+        fileSelected.style.display = 'block';
+    }
+
+    // Click to browse
+    dropZone.addEventListener('click', function(e) {
+        if (e.target.closest('.quick-upload-actions')) return; // don't re-open if clicking controls
+        fileInput.click();
+    });
+
+    function isValidAudio(file) {
+        if (!file) return false;
+        if (file.type && file.type.startsWith('audio')) return true;
+        return /\.(mp3|wav|flac|m4a|aac|ogg|aiff)$/i.test(file.name || '');
+    }
+
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0 && isValidAudio(fileInput.files[0])) {
+            showFile(fileInput.files[0]);
+        }
+    });
+
+    // Drag & drop on zone
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', function() {
+        dropZone.classList.remove('drag-over');
+    });
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && isValidAudio(files[0])) {
+            showFile(files[0]);
+        }
+    });
+
+    // Window-level drag & drop support
+    window.addEventListener('dragover', function(e) {
+        e.preventDefault();
+    });
+    window.addEventListener('drop', function(e) {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && isValidAudio(files[0])) {
+            showFile(files[0]);
+            dropZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    function navigateWithFile(tool) {
+        const dest = toolUrls[tool] || 'stemer.html';
+        if (!pendingFile) {
+            window.location.href = dest;
+            return;
+        }
+
+        const request = indexedDB.open('ToolboxDB', 1);
+        request.onupgradeneeded = function(e) {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('files')) {
+                db.createObjectStore('files');
+            }
+        };
+        request.onsuccess = function(e) {
+            const db = e.target.result;
+            const tx = db.transaction('files', 'readwrite');
+            const store = tx.objectStore('files');
+            store.put(pendingFile, 'pendingFile');
+            tx.oncomplete = function() {
+                localStorage.setItem('toolboxPendingTool', tool);
+                window.location.href = dest;
+            };
+        };
+        request.onerror = function() {
+            localStorage.setItem('toolboxPendingTool', tool);
+            window.location.href = dest;
+        };
+    }
+
+    // Launch tool with file via button
+    launchBtn.addEventListener('click', function() {
+        if (!pendingFile) return;
+        navigateWithFile(toolChooser.value);
+    });
+
+    // Also enable clicking any tool card to forward the selected audio
+    document.querySelectorAll('.tool-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (pendingFile) {
+                e.preventDefault();
+                let tool = 'stemer';
+                if (card.classList.contains('card-midifier')) tool = 'midifier';
+                else if (card.classList.contains('card-sampler')) tool = 'sampler';
+                else if (card.classList.contains('card-mixter')) tool = 'mixter';
+                else if (card.classList.contains('card-master')) tool = 'master';
+                navigateWithFile(tool);
+            }
+        });
+    });
+})();
+</script>
 </body>
+
 
 </html>

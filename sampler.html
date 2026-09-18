@@ -396,7 +396,7 @@
 
 <body>
     <nav class="custom-header">
-        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Volver a Tool Box">
+        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Volver a TOOLBOX">
             <img src="logo.png" alt="sampler logo" class="logo-img">
             <div class="logo-text">SAMPLER</div>
         </a>
@@ -433,10 +433,10 @@
             <div class="upload-zone" id="samplerDropZone" style="border: 2px dashed var(--glass-border); border-radius: 16px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 2rem;">
                 <img src="upload.png" alt="Upload" style="width: 60px; height: 60px; opacity: 0.6; margin-bottom: 1rem;">
                 <h3 id="samplerFileName" style="font-family: 'Righteous', sans-serif; letter-spacing: 1px; margin-bottom: 0.5rem;">
-                    Upload Audio or Choose Stem Above
+                    Arrastra tu audio aquí
                 </h3>
-                <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">WAV or MP3</p>
-                <input type="file" id="samplerFileInput" class="hidden" accept=".mp3,.wav">
+                <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">o haz clic para buscar en tu dispositivo · WAV, MP3, FLAC, M4A, AIFF</p>
+                <input type="file" id="samplerFileInput" class="hidden" accept="audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg,.aiff">
             </div>
 
             <!-- Parameters -->
@@ -491,7 +491,7 @@
     </div>
 
     <div class="tool-nav">
-        <a href="index.html" class="tool-link">Tool Box</a>
+        <a href="index.html" class="tool-link">TOOLBOX</a>
         <a href="stemer.html" class="tool-link">Stemer</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link active">Sampler</a>
@@ -549,11 +549,44 @@
             if (e.target !== samplerFileInput) samplerFileInput.click();
         });
         samplerFileInput.addEventListener('click', (e) => e.stopPropagation());
+        function handleSamplerFile(file) {
+            if (!file) return;
+            selectedAudio = file;
+            samplerFileName.innerText = selectedAudio.name;
+            document.querySelectorAll('input[name="stemSelect"]').forEach(cb => cb.checked = false);
+        }
+
         samplerFileInput.addEventListener('change', (e) => {
             if (e.target.files[0]) {
-                selectedAudio = e.target.files[0];
-                samplerFileName.innerText = selectedAudio.name;
-                document.querySelectorAll('input[name="stemSelect"]').forEach(cb => cb.checked = false);
+                handleSamplerFile(e.target.files[0]);
+            }
+        });
+
+        // Drag & Drop on Zone
+        samplerDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            samplerDropZone.style.borderColor = 'var(--accent-cyan)';
+            samplerDropZone.style.background = 'rgba(0, 229, 255, 0.08)';
+        });
+        samplerDropZone.addEventListener('dragleave', () => {
+            samplerDropZone.style.borderColor = 'var(--glass-border)';
+            samplerDropZone.style.background = '';
+        });
+        samplerDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            samplerDropZone.style.borderColor = 'var(--glass-border)';
+            samplerDropZone.style.background = '';
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleSamplerFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Window-level Drag & Drop
+        window.addEventListener('dragover', (e) => { e.preventDefault(); });
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleSamplerFile(e.dataTransfer.files[0]);
             }
         });
 
@@ -761,7 +794,35 @@
             }
         });
     </script>
+
+<script>
+// ── Receive file from TOOLBOX home ──
+(function checkToolboxPendingFile() {
+    if (localStorage.getItem('toolboxPendingTool') !== 'sampler') return;
+    localStorage.removeItem('toolboxPendingTool');
+    try {
+        const req = indexedDB.open('ToolboxDB', 1);
+        req.onsuccess = function(e) {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('files')) return;
+            const tx = db.transaction('files', 'readwrite');
+            const store = tx.objectStore('files');
+            const getReq = store.get('pendingFile');
+            getReq.onsuccess = function() {
+                const file = getReq.result;
+                if (file instanceof File) {
+                    store.delete('pendingFile');
+                    selectedAudio = file;
+                    const nameEl = document.getElementById('samplerFileName');
+                    if (nameEl) nameEl.innerText = file.name;
+                }
+            };
+        };
+    } catch(err) { /* ignore */ }
+})();
+</script>
 </body>
+
 
 </html>
 

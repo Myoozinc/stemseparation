@@ -344,13 +344,19 @@
             background: rgba(139, 92, 246, 0.1);
             transform: translateY(-2px);
         }
+
+        .hidden { display: none !important; }
+        .dropzone.dragover {
+            border-color: var(--accent-violet) !important;
+            background: rgba(139, 92, 246, 0.12) !important;
+        }
     </style>
 </head>
 
 <body>
     <!-- Top Navigation -->
     <nav class="custom-header">
-        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Volver a Tool Box">
+        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Volver a TOOLBOX">
             <img src="logo.png" alt="Logo" class="logo-img">
             <div class="logo-text">MASTER</div>
         </a>
@@ -397,10 +403,10 @@
                 <div class="dropzone" id="masterDropzone" style="margin-bottom: 2rem;">
                     <img src="upload.png" alt="Upload" style="width: 60px; height: 60px; opacity: 0.6; margin-bottom: 1rem;">
                     <h3 id="masterFileName" style="font-family: 'Righteous', sans-serif; letter-spacing: 1px; margin-bottom: 0.5rem;">
-                        Selecciona o Arrastra tu Mezcla Stereo Aquí
+                        Arrastra tu mezcla stereo aquí
                     </h3>
-                    <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">Recomendado: WAV 24-bit o 32-bit Float a 44.1/48 kHz</p>
-                    <input type="file" id="masterFileInput" class="hidden" accept=".mp3,.wav">
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px;">o haz clic para buscar en tu dispositivo · WAV, MP3, FLAC, M4A, AIFF</p>
+                    <input type="file" id="masterFileInput" class="hidden" accept="audio/*,.wav,.mp3,.flac,.m4a,.aac,.ogg,.aiff">
                 </div>
             </div>
 
@@ -629,7 +635,7 @@
 
     <!-- 5-Tool Bottom Nav -->
     <nav class="tool-nav">
-        <a href="index.html" class="tool-link">Tool Box</a>
+        <a href="index.html" class="tool-link">TOOLBOX</a>
         <a href="stemer.html" class="tool-link">Stemer</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
@@ -766,12 +772,44 @@
             if (e.target !== masterFileInput) masterFileInput.click();
         });
         masterFileInput.addEventListener('click', (e) => e.stopPropagation());
+        function handleMasterFile(file) {
+            if (!file) return;
+            selectedFile = file;
+            originalAudioUrl = URL.createObjectURL(selectedFile);
+            const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(1);
+            masterFileName.innerText = `Track Cargado: ${selectedFile.name} (${sizeMB} MB)`;
+            importedTrackCard.style.display = 'none';
+            if (uploadContainer) uploadContainer.style.display = 'block';
+        }
+
         masterFileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                selectedFile = e.target.files[0];
-                originalAudioUrl = URL.createObjectURL(selectedFile);
-                const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(1);
-                masterFileName.innerText = `Track Cargado: ${selectedFile.name} (${sizeMB} MB)`;
+                handleMasterFile(e.target.files[0]);
+            }
+        });
+
+        // Drag & Drop on Zone
+        masterDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            masterDropzone.classList.add('dragover');
+        });
+        masterDropzone.addEventListener('dragleave', () => {
+            masterDropzone.classList.remove('dragover');
+        });
+        masterDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            masterDropzone.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleMasterFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Window-level Drag & Drop
+        window.addEventListener('dragover', (e) => { e.preventDefault(); });
+        window.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleMasterFile(e.dataTransfer.files[0]);
             }
         });
 
@@ -780,9 +818,10 @@
             if (uploadContainer) uploadContainer.style.display = 'block';
             selectedFile = null;
             originalAudioUrl = null;
-            masterFileName.innerText = "Selecciona o Arrastra tu Mezcla Stereo Aquí";
+            masterFileName.innerText = "Arrastra tu mezcla stereo aquí";
             localStorage.removeItem('mixterMasterTrack');
             localStorage.removeItem('stemerMasterTrack');
+            masterFileInput.click();
         };
 
         // Check incoming track from Mixter or Stemer
@@ -1032,6 +1071,37 @@
             window.location.href = 'stemer.html';
         };
     </script>
+
+<script>
+// ── Receive file from TOOLBOX home ──
+(function checkToolboxPendingFile() {
+    if (localStorage.getItem('toolboxPendingTool') !== 'master') return;
+    localStorage.removeItem('toolboxPendingTool');
+    try {
+        const req = indexedDB.open('ToolboxDB', 1);
+        req.onsuccess = function(e) {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('files')) return;
+            const tx = db.transaction('files', 'readwrite');
+            const store = tx.objectStore('files');
+            const getReq = store.get('pendingFile');
+            getReq.onsuccess = function() {
+                const file = getReq.result;
+                if (file instanceof File) {
+                    store.delete('pendingFile');
+                    selectedFile = file;
+                    const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+                    const nameEl = document.getElementById('masterFileName');
+                    if (nameEl) nameEl.innerText = 'Track Cargado: ' + file.name + ' (' + sizeMB + ' MB)';
+                    const urlEl = document.getElementById('originalAudioUrl');
+                    try { window.originalAudioUrl = URL.createObjectURL(file); } catch(e2) {}
+                }
+            };
+        };
+    } catch(err) { /* ignore */ }
+})();
+</script>
 </body>
+
 
 </html>
