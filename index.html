@@ -1,26 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stem Separation | Myooz Labs Audio Tool</title>
+    <title>Tool Box | Audio Intelligence Suite by Myooz Labs</title>
+    <meta name="description" content="Tool Box: Suite integral de producción musical e inteligencia artificial. 5 herramientas neuronales de alta precisión para separar stems, convertir audio a MIDI, crear kits de samples, mezclar y masterizar a 32-bit Float.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Kaushan+Script&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Righteous&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="header.css">
     <link rel="stylesheet" href="shared.css">
     <style>
         :root {
-            --bg-black: #050505;
-            --header-white: #FFFFFF;
-            --accent-purple: #26014b;
-            --accent-purple-glow: rgba(38, 1, 75, 0.5);
-            --accent-magenta: #D946EF;
-            --accent-magenta-glow: rgba(217, 70, 239, 0.5);
-            --text-white: #FFFFFF;
-            --text-secondary: rgba(255, 255, 255, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --radius: 20px;
+            --bg-deep: #07080d;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.65);
+            --text-muted: rgba(255, 255, 255, 0.4);
+
+            /* Tool Accents */
+            --accent-stemer: #00f5ff;
+            --accent-stemer-glow: rgba(0, 245, 255, 0.28);
+            --accent-midifier: #a855f7;
+            --accent-midifier-glow: rgba(168, 85, 247, 0.28);
+            --accent-sampler: #f43f5e;
+            --accent-sampler-glow: rgba(244, 63, 94, 0.28);
+            --accent-mixter: #f59e0b;
+            --accent-mixter-glow: rgba(245, 158, 11, 0.28);
+            --accent-master: #10b981;
+            --accent-master-glow: rgba(16, 185, 129, 0.28);
         }
 
         * {
@@ -31,2213 +41,737 @@
 
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-black);
-            background-image:
-                radial-gradient(circle at 10% 20%, rgba(38, 1, 75, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(217, 70, 239, 0.08) 0%, transparent 40%);
-            color: var(--text-white);
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            padding: 0;
-            line-height: 1.6;
             overflow-x: hidden;
-            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
         }
 
-        body::before {
-            content: "";
+        /* Ambient Glow Background Orbs */
+        .ambient-glow-1 {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.4) 100%);
+            top: -150px;
+            left: 10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 245, 255, 0.12) 0%, transparent 70%);
+            filter: blur(80px);
             pointer-events: none;
-            z-index: 1;
+            z-index: 0;
         }
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            padding: 2rem;
-            margin-top: 80px;
-        }
-
-        nav.custom-header {
+        .ambient-glow-2 {
             position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 1100px;
-            height: 70px;
+            top: 25%;
+            right: 5%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.10) 0%, transparent 70%);
+            filter: blur(90px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ambient-glow-3 {
+            position: fixed;
+            bottom: 10%;
+            left: 20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(244, 63, 94, 0.08) 0%, transparent 70%);
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Container */
+        .home-container {
+            width: 100%;
+            max-width: 1240px;
+            padding: 0 1.5rem 100px;
+            margin-top: 110px;
+            z-index: 1;
+            position: relative;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 18px;
+            border-radius: 30px;
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            z-index: 1000;
-            border-radius: 40px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            gap: 1rem;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-left: auto;
-        }
-
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo-img {
-            width: 45px;
-            height: 45px;
-            object-fit: contain;
-            border-radius: 50%;
-            filter: drop-shadow(0 0 10px var(--accent-purple-glow));
-        }
-
-        .logo-text {
-            font-family: 'Righteous', sans-serif;
-            font-weight: 400;
-            font-size: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            font-size: 0.72rem;
+            font-weight: 800;
             letter-spacing: 3px;
             color: #fff;
             text-transform: uppercase;
-        }
-
-        .header-tag {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 0.7rem;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            padding: 10px 24px;
-            border-radius: 50px;
-            background: transparent;
-            position: relative;
-            background-image: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            white-space: nowrap;
-        }
-        
-        .header-tag::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 50px;
-            padding: 2px;
-            background: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-
-        header.tool-header {
-            text-align: left;
-            margin-bottom: 3rem;
-            padding-left: 1rem;
-        }
-
-        h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(3rem, 10vw, 5.5rem);
-            line-height: 0.95;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: -3px;
             margin-bottom: 1.5rem;
-            background: linear-gradient(180deg, #fff 30%, rgba(255, 255, 255, 0.2) 100%);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.12);
+            animation: badgePulse 3s infinite ease-in-out;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { border-color: rgba(0, 245, 255, 0.3); box-shadow: 0 0 20px rgba(0, 245, 255, 0.15); }
+            50% { border-color: rgba(168, 85, 247, 0.3); box-shadow: 0 0 20px rgba(168, 85, 247, 0.15); }
+        }
+
+        .hero-title {
+            font-family: 'Righteous', sans-serif;
+            font-size: clamp(3.2rem, 9vw, 6.5rem);
+            line-height: 1.0;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 30%, rgba(255, 255, 255, 0.35) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
         }
 
-        .subtitle {
+        .hero-subtitle {
+            font-size: clamp(0.95rem, 2vw, 1.25rem);
             color: var(--text-secondary);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 4px;
+            max-width: 780px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.6;
+            font-weight: 400;
         }
 
-        .main-layout {
+        .hero-specs-row {
             display: flex;
-            flex-direction: column;
-            gap: 2rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            margin-bottom: 1rem;
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border);
-            border-radius: 30px;
-            padding: 3rem;
+        .spec-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .spec-pill span.icon {
+            font-size: 0.85rem;
+        }
+
+        /* 5 Tools Section */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
             margin-bottom: 2rem;
-            transition: transform 0.4s ease, border-color 0.4s ease;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
-        .glass-card:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-5px);
+        .section-title {
+            font-family: 'Righteous', sans-serif;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+            color: #fff;
+            text-transform: uppercase;
         }
 
-        .upload-section {
-            width: 100%;
+        .section-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Tool Cards Grid */
+        .tools-grid {
             display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 3rem;
-            align-items: stretch;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 4rem;
         }
 
-        @media (max-width: 900px) {
-            .upload-section {
+        @media (max-width: 1024px) {
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .tools-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        .upload-zone {
-            border: 2px dashed var(--glass-border);
-            border-radius: 12px;
-            padding: 3rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            height: 100%;
+        /* Card Base */
+        .tool-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2rem;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .upload-zone:hover {
-            border-color: var(--accent-magenta);
-            background: rgba(217, 70, 239, 0.1);
-        }
-
-        /* PNG upload icon */
-        .upload-icon-img {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 1.5rem;
-            opacity: 0.5;
-            transition: all 0.3s ease;
-        }
-
-        .upload-zone:hover .upload-icon-img {
-            opacity: 0.8;
-            transform: translateY(-5px);
-        }
-
-        .options-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .label-title {
-            display: block;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 1rem;
-            color: var(--header-white);
-            font-weight: 400;
-            font-family: 'Righteous', sans-serif;
-        }
-
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 0.8rem;
-        }
-
-        .option-item {
-            position: relative;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .option-item input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        }
-
-        .checkmark {
-            display: block;
-            padding: 10px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            font-size: 0.8rem;
-            text-align: center;
-            transition: all 0.2s;
-            color: var(--text-white);
-            font-weight: 500;
-        }
-
-        .option-item input:checked~.checkmark {
-            background: var(--accent-purple);
-            border-color: var(--accent-purple);
-            font-weight: 700;
-            box-shadow: 0 0 15px rgba(46, 4, 88, 0.4);
-        }
-
-        .btn {
-            background: linear-gradient(180deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
-            color: white;
-            border: none;
-            padding: 16px 45px;
-            border-radius: 100px;
-            font-weight: 400;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-family: 'Righteous', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
             position: relative;
             overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         }
 
-        .btn::before {
+        .tool-card::before {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
+            inset: 0;
+            background: radial-gradient(circle at top right, var(--card-glow, rgba(255, 255, 255, 0.05)), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            pointer-events: none;
         }
 
-        .btn:hover::before {
-            width: 300px;
-            height: 300px;
+        .tool-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--card-accent, rgba(255, 255, 255, 0.3));
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 30px var(--card-glow, transparent);
         }
 
-        .btn:hover:not(:disabled) {
-            transform: translateY(-2px);
+        .tool-card:hover::before {
+            opacity: 1;
         }
 
-        .btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
+        /* Card Specific Colors */
+        .tool-card.card-stemer {
+            --card-accent: var(--accent-stemer);
+            --card-glow: var(--accent-stemer-glow);
         }
 
-        .song-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+        .tool-card.card-midifier {
+            --card-accent: var(--accent-midifier);
+            --card-glow: var(--accent-midifier-glow);
         }
 
-        .info-card {
-            background: transparent;
-            border: 1px solid var(--accent-purple);
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(46, 4, 88, 0.2);
+        .tool-card.card-sampler {
+            --card-accent: var(--accent-sampler);
+            --card-glow: var(--accent-sampler-glow);
         }
 
-        .info-card .val {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--accent-magenta);
-            display: block;
-            filter: brightness(1.2);
+        .tool-card.card-mixter {
+            --card-accent: var(--accent-mixter);
+            --card-glow: var(--accent-mixter-glow);
         }
 
-        .info-card .lbl {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            letter-spacing: 2px;
+        .tool-card.card-master {
+            --card-accent: var(--accent-master);
+            --card-glow: var(--accent-master-glow);
         }
 
-        .stems-container {
+        /* Card Header */
+        .card-top {
             display: flex;
-            flex-direction: column;
-            gap: 0.85rem;
-        }
-
-        /* Master Synchronized Player Deck */
-        .master-sync-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(217, 70, 239, 0.35);
-            border-radius: 20px;
-            padding: 1.5rem 2rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 25px rgba(217, 70, 239, 0.12);
-        }
-
-        .master-header {
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1.25rem;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
         }
 
-        .master-left {
+        .tool-icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--card-border);
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            justify-content: center;
+            font-size: 1.75rem;
+            transition: transform 0.3s ease, border-color 0.3s ease;
         }
 
-        .sync-main-btn {
-            background: linear-gradient(180deg, var(--accent-magenta) 0%, var(--accent-purple) 100%);
-            color: #fff;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 50px;
-            font-family: 'Righteous', sans-serif;
-            font-size: 0.8rem;
-            letter-spacing: 2px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 20px rgba(217, 70, 239, 0.35);
+        .tool-card:hover .tool-icon-box {
+            transform: scale(1.08) rotate(3deg);
+            border-color: var(--card-accent);
+            box-shadow: 0 0 20px var(--card-glow);
         }
 
-        .sync-main-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(217, 70, 239, 0.5);
-        }
-
-        .sync-main-btn.is-playing {
-            background: linear-gradient(180deg, #f43f5e 0%, #881337 100%);
-            box-shadow: 0 4px 20px rgba(244, 63, 94, 0.4);
-        }
-
-        .sync-sub-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid var(--glass-border);
-            color: rgba(255, 255, 255, 0.8);
-            padding: 10px 18px;
-            border-radius: 50px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .sync-sub-btn:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: #fff;
-        }
-
-        .master-quick {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .sync-pill {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: var(--text-secondary);
-            padding: 6px 14px;
-            border-radius: 30px;
+        .tool-badge {
             font-size: 0.65rem;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .sync-pill:hover {
-            border-color: var(--accent-magenta);
-            color: #fff;
-            background: rgba(217, 70, 239, 0.15);
-        }
-
-        .master-timer {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--accent-magenta);
-            letter-spacing: 2px;
-            background: rgba(217, 70, 239, 0.08);
-            padding: 6px 16px;
-            border-radius: 30px;
-            border: 1px solid rgba(217, 70, 239, 0.2);
-        }
-
-        .master-scrub-row {
-            width: 100%;
-            display: flex;
-            align-items: center;
-        }
-
-        .master-scrubber {
-            width: 100%;
-            height: 8px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            outline: none;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .master-scrubber::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--accent-magenta);
-            box-shadow: 0 0 12px var(--accent-magenta-glow);
-            cursor: pointer;
-            transition: transform 0.15s;
-        }
-
-        .master-scrubber::-webkit-slider-thumb:hover {
-            transform: scale(1.25);
-        }
-
-        /* Stem Row (DAW Mixer Style) */
-        .stem-player {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            transition: all 0.25s ease;
-            position: relative;
-        }
-
-        .stem-player:hover {
-            border-color: rgba(217, 70, 239, 0.3);
+            padding: 5px 12px;
+            border-radius: 20px;
             background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--card-accent);
         }
 
-        .stem-player.is-muted {
-            opacity: 0.4;
-            filter: grayscale(0.6);
-        }
-
-        .stem-player.is-solo {
-            border-color: #ffd700;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.18);
-            opacity: 1 !important;
-            filter: none !important;
-        }
-
-        .stem-left-col {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 155px;
-            flex-shrink: 0;
-        }
-
-        .stem-pulse-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: var(--accent-magenta);
-            box-shadow: 0 0 8px var(--accent-magenta-glow);
-            opacity: 0.35;
-            transition: all 0.3s;
-            flex-shrink: 0;
-        }
-
-        .stem-player.is-playing:not(.is-muted) .stem-pulse-dot {
-            opacity: 1;
-            animation: stemPulse 1s infinite alternate;
-        }
-
-        @keyframes stemPulse {
-            from { transform: scale(0.85); box-shadow: 0 0 5px var(--accent-magenta-glow); }
-            to { transform: scale(1.3); box-shadow: 0 0 12px var(--accent-magenta); }
-        }
-
-        @keyframes eqPulse {
-            0%, 100% { height: 6px; opacity: 0.35; transform: scaleY(0.6); }
-            50% { height: 26px; opacity: 1; transform: scaleY(1.0); filter: drop-shadow(0 0 8px rgba(0, 245, 255, 0.8)); }
-        }
-
-        .stem-label {
-            font-size: 0.8rem;
-            font-weight: 700;
+        .tool-card-title {
+            font-family: 'Righteous', sans-serif;
+            font-size: 1.75rem;
+            letter-spacing: 2px;
+            color: #fff;
+            margin-bottom: 0.35rem;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #fff;
-            white-space: nowrap;
         }
 
-        .stem-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-
-        .stem-ctrl-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            background: rgba(255, 255, 255, 0.05);
-            color: rgba(255, 255, 255, 0.6);
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 0.75rem;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .stem-ctrl-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #fff;
-        }
-
-        /* Solo state */
-        .stem-ctrl-btn.solo-btn.active {
-            background: #ffd700;
-            border-color: #ffd700;
-            color: #000;
-            box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
-        }
-
-        /* Mute state (active = muted) */
-        .stem-ctrl-btn.mute-btn.active {
-            background: #ef4444;
-            border-color: #ef4444;
-            color: #fff;
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
-        }
-
-        /* Volume control */
-        .stem-vol-wrap {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 0 6px;
-        }
-
-        .stem-vol-icon {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .stem-vol-slider {
-            width: 60px;
-            height: 4px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 4px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .stem-vol-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
-        }
-
-        /* Individual track scrubber */
-        .stem-track-timeline {
-            flex: 1;
-            height: 32px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            padding: 0 12px;
-            min-width: 120px;
-        }
-
-        .stem-track-timeline:hover {
-            border-color: rgba(217, 70, 239, 0.4);
-        }
-
-        .stem-track-fill {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 0%;
-            background: linear-gradient(90deg, rgba(38, 1, 75, 0.4), rgba(217, 70, 239, 0.45));
-            border-right: 2px solid var(--accent-magenta);
-            pointer-events: none;
-            transition: width 0.1s linear;
-        }
-
-        .stem-track-time {
-            position: relative;
-            z-index: 2;
-            font-size: 0.68rem;
-            color: rgba(255, 255, 255, 0.7);
-            font-family: 'Outfit', sans-serif;
-            font-weight: 600;
+        .tool-card-role {
+            font-size: 0.78rem;
+            font-weight: 700;
             letter-spacing: 1px;
-            pointer-events: none;
-        }
-
-        /* Quick download button per stem */
-        .stem-dl-icon-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            border: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-secondary);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-        }
-
-        .stem-dl-icon-btn:hover {
-            background: rgba(217, 70, 239, 0.2);
-            border-color: var(--accent-magenta);
-            color: #fff;
-        }
-
-        @media (max-width: 768px) {
-            .stem-player {
-                flex-wrap: wrap;
-                gap: 0.75rem;
-                padding: 1rem;
-            }
-            .stem-left-col {
-                min-width: auto;
-                flex: 1 1 100%;
-            }
-            .stem-track-timeline {
-                order: 4;
-                flex: 1 1 100%;
-            }
-            .master-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .master-left {
-                width: 100%;
-                justify-content: space-between;
-            }
-        }
-
-        .progress-box {
-            position: relative;
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 1.5rem;
-        }
-
-        .progress-ring {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            animation: rotate 3s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .ring-segment {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: var(--accent-magenta);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--accent-magenta-glow);
-        }
-
-        .ring-segment:nth-child(1) { top: 0%; left: 50%; transform: translateX(-50%); }
-        .ring-segment:nth-child(2) { top: 15%; right: 15%; }
-        .ring-segment:nth-child(3) { top: 50%; right: 0%; transform: translateY(-50%); }
-        .ring-segment:nth-child(4) { bottom: 15%; right: 15%; }
-        .ring-segment:nth-child(5) { bottom: 0%; left: 50%; transform: translateX(-50%); }
-        .ring-segment:nth-child(6) { bottom: 15%; left: 15%; }
-        .ring-segment:nth-child(7) { top: 50%; left: 0%; transform: translateY(-50%); }
-        .ring-segment:nth-child(8) { top: 15%; left: 15%; }
-
-        .progress-val {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--accent-magenta);
-            filter: brightness(1.2);
-            z-index: 10;
-        }
-
-        .error-message {
-            background: rgba(217, 70, 239, 0.1);
-            border: 2px solid var(--accent-magenta);
-            border-radius: 15px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .error-message h3 {
-            color: var(--accent-magenta);
-            font-size: 1.2rem;
+            text-transform: uppercase;
+            color: var(--card-accent);
             margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
         }
 
-        .error-message p {
-            color: var(--text-white);
-            font-size: 0.95rem;
-            line-height: 1.8;
+        .tool-card-desc {
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
         }
 
-        .hidden {
-            display: none !important;
+        .tool-tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 1.75rem;
         }
 
-        .upload-zone.dragover {
-            border-color: var(--accent-magenta);
-            background: rgba(217, 70, 239, 0.15);
+        .tool-tag-item {
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.7);
         }
 
-        /* Incoming track banner from Master or Mixter */
-        .incoming-banner {
-            background: linear-gradient(135deg, rgba(217, 70, 239, 0.12), rgba(38, 1, 75, 0.4));
-            border: 1px solid rgba(217, 70, 239, 0.4);
-            box-shadow: 0 10px 30px rgba(217, 70, 239, 0.15);
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .incoming-banner-badge {
-            display: inline-block;
-            font-size: 0.65rem;
-            font-weight: 800;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: var(--accent-magenta);
-            background: rgba(217, 70, 239, 0.15);
-            border: 1px solid rgba(217, 70, 239, 0.3);
-            padding: 4px 12px;
-            border-radius: 20px;
-            margin-bottom: 0.75rem;
-        }
-
-        .incoming-banner-body {
+        .card-action-btn {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .incoming-banner-info {
-            flex: 1 1 240px;
-        }
-
-        .incoming-title {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-
-        .incoming-meta {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        .incoming-banner-player audio {
-            height: 38px;
-            min-width: 220px;
-        }
-
-        .incoming-banner-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-incoming-primary {
-            background: linear-gradient(90deg, var(--accent-magenta), var(--accent-purple));
-            border: none;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 30px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             font-family: 'Righteous', sans-serif;
             font-size: 0.8rem;
             letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(217, 70, 239, 0.3);
-        }
-
-        .btn-incoming-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(217, 70, 239, 0.5);
-        }
-
-        .btn-incoming-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: var(--text-secondary);
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-incoming-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
             color: #fff;
+            text-transform: uppercase;
+            transition: all 0.25s ease;
         }
 
-        /* Stem quick routing pill buttons */
-        .stem-actions-cell {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-        }
-
-        .stem-route-pill-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: var(--text-white);
-            font-size: 0.68rem;
+        .tool-card:hover .card-action-btn {
+            background: var(--card-accent);
+            color: #000;
             font-weight: 700;
-            font-family: 'Outfit', sans-serif;
-            letter-spacing: 1px;
-            padding: 6px 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
+            border-color: transparent;
+            box-shadow: 0 4px 15px var(--card-glow);
         }
 
-        .stem-route-pill-btn:hover {
-            background: linear-gradient(135deg, rgba(217, 70, 239, 0.25), rgba(38, 1, 75, 0.5));
-            border-color: var(--accent-magenta);
+        .card-action-arrow {
+            font-size: 1rem;
+            transition: transform 0.25s ease;
+        }
+
+        .tool-card:hover .card-action-arrow {
+            transform: translateX(4px);
+        }
+
+        /* Ecosystem Flow Section */
+        .flow-section {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 3rem 2.5rem;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .flow-title {
+            font-family: 'Righteous', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
             color: #fff;
-            transform: translateY(-1px);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
         }
 
+        .flow-sub {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.5;
+        }
+
+        .flow-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            position: relative;
+        }
+
+        .flow-step-box {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 18px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            transition: all 0.25s ease;
+        }
+
+        .flow-step-box:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .step-num {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            line-height: 26px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .step-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .step-name {
+            font-family: 'Righteous', sans-serif;
+            font-size: 0.95rem;
+            color: #fff;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .step-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Footer */
+        .home-footer {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .home-footer strong {
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        /* Responsive Tweaks */
+        @media (max-width: 768px) {
+            .home-container {
+                margin-top: 90px;
+                padding-bottom: 90px;
+            }
+
+            .hero {
+                margin-bottom: 2.5rem;
+            }
+
+            .hero-specs-row {
+                gap: 0.5rem;
+            }
+
+            .spec-pill {
+                font-size: 0.65rem;
+                padding: 5px 12px;
+            }
+
+            .tool-card {
+                padding: 1.5rem;
+            }
+
+            .flow-section {
+                padding: 2rem 1.25rem;
+            }
+        }
     </style>
 </head>
 
 <body>
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+    <div class="ambient-glow-3"></div>
+
+    <!-- Top Navigation Header -->
     <nav class="custom-header">
-        <div class="logo-container">
-            <img src="logo.png" alt="stemerlogo" class="logo-img">
-            <div class="logo-text">STEMER</div>
-        </div>
+        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Tool Box Home">
+            <img src="logo.png" alt="Tool Box Logo" class="logo-img">
+            <div class="logo-text">TOOL BOX</div>
+        </a>
         <div class="header-right">
             <div class="header-tag">BY MYOOZ LABS</div>
         </div>
     </nav>
 
-    <div class="container">
-        <header class="tool-header">
-            <h1>Stem Separation</h1>
-            <p class="subtitle">Studio-Grade Audio Decomposition</p>
+    <!-- Main Container -->
+    <div class="home-container">
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="hero-badge">
+                <span>⚡</span>
+                <span>Audio Intelligence Suite 2026</span>
+            </div>
+            <h1 class="hero-title">TOOL BOX</h1>
+            <p class="hero-subtitle">
+                Suite autónoma de producción musical con Inteligencia Artificial. Cinco herramientas de estudio interconectadas con procesamiento nativo a <strong>32-bit Float</strong> sin pérdidas de compresión.
+            </p>
+
+            <div class="hero-specs-row">
+                <div class="spec-pill">
+                    <span class="icon">🎛️</span>
+                    <span>5 Herramientas IA</span>
+                </div>
+                <div class="spec-pill">
+                    <span class="icon">🔊</span>
+                    <span>32-bit Float WAV</span>
+                </div>
+                <div class="spec-pill">
+                    <span class="icon">⚡</span>
+                    <span>0s Latencia de Paso</span>
+                </div>
+                <div class="spec-pill">
+                    <span class="icon">☁️</span>
+                    <span>$0 Free Cloud</span>
+                </div>
+            </div>
         </header>
 
-        <div class="main-layout">
-            <!-- Incoming track imported from Master or Mixter -->
-            <div id="incomingTrackBanner" class="incoming-banner hidden">
-                <div class="incoming-banner-badge" id="incomingBannerBadge">📥 AUDIO IMPORTADO</div>
-                <div class="incoming-banner-body">
-                    <div class="incoming-banner-info">
-                        <h4 id="incomingTrackTitle" class="incoming-title">Master Track</h4>
-                        <p id="incomingTrackMeta" class="incoming-meta">Desde Master Studio • Listo para separar en stems</p>
-                    </div>
-                    <div class="incoming-banner-player">
-                        <audio id="incomingAudioPreview" controls preload="metadata"></audio>
-                    </div>
-                    <div class="incoming-banner-actions">
-                        <button id="incomingSeparateBtn" class="btn-incoming-primary">⚡ SEPARAR EN STEMS</button>
-                        <button id="incomingDismissBtn" class="btn-incoming-secondary" title="Descartar y subir archivo local">✕</button>
-                    </div>
-                </div>
+        <!-- Tools Grid Section -->
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Herramientas de Estudio</h2>
+                <div class="section-sub">Selecciona una herramienta para comenzar tu proceso de audio</div>
             </div>
-
-            <div id="uploadView" class="glass-card upload-section">
-                <div class="upload-zone" id="dropZone">
-                    <img src="upload.png" alt="Upload" class="upload-icon-img">
-                    <h3 id="fileName" style="margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; font-family: 'Righteous', sans-serif;">
-                        Upload Track Here</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); letter-spacing: 1px;">MP3 & WAV only</p>
-                    <input type="file" id="fileInput" class="hidden" accept=".mp3,.wav">
-                </div>
-
-                <div class="options-container">
-                    <span class="label-title">Processing Options</span>
-                    <div class="options-grid">
-                        <label class="option-item">
-                            <input type="checkbox" name="process_opt" value="All" checked onclick="toggleAll(this)">
-                            <span class="checkmark">Full Split</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" name="process_opt" value="Convert to WAV">
-                            <span class="checkmark">Song WAV</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" name="process_opt" value="Vocals">
-                            <span class="checkmark">Vocals</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" name="process_opt" value="Bass">
-                            <span class="checkmark">Bass</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" name="process_opt" value="Other">
-                            <span class="checkmark">Other</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" name="process_opt" value="Drums">
-                            <span class="checkmark">Drums</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" name="process_opt" value="Refine Drums">
-                            <span class="checkmark">Precise Drums</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" name="process_opt" value="Info" checked>
-                            <span class="checkmark">Key & BPM</span>
-                        </label>
-                    </div>
-                    <div style="margin-top: auto; padding-top: 1rem; text-align: right;">
-                        <button class="btn" id="startBtn">PROCESS AUDIO</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="loadingView" class="glass-card hidden" style="text-align: center; max-width: 620px; margin: 0 auto 2rem;">
-                <div class="progress-box">
-                    <div class="progress-ring" id="progressRing">
-                        <div class="ring-segment"></div>
-                        <div class="ring-segment"></div>
-                        <div class="ring-segment"></div>
-                        <div class="ring-segment"></div>
-                        <div class="ring-segment"></div>
-                        <div class="ring-segment"></div>
-                        <div class="ring-segment"></div>
-                        <div class="ring-segment"></div>
-                    </div>
-                    <div class="progress-val" id="progressText">0%</div>
-                </div>
-
-                <!-- Real-time dynamic activity indicator -->
-                <div class="active-audio-bars" style="display: flex; justify-content: center; align-items: flex-end; gap: 4px; height: 26px; margin: 10px auto 14px;">
-                    <span class="a-bar" style="width: 4px; height: 8px; background: #00f5ff; border-radius: 2px; animation: eqPulse 1.2s infinite ease-in-out 0.1s;"></span>
-                    <span class="a-bar" style="width: 4px; height: 20px; background: #bf00ff; border-radius: 2px; animation: eqPulse 0.9s infinite ease-in-out 0.25s;"></span>
-                    <span class="a-bar" style="width: 4px; height: 14px; background: #ff007f; border-radius: 2px; animation: eqPulse 1.3s infinite ease-in-out 0.15s;"></span>
-                    <span class="a-bar" style="width: 4px; height: 24px; background: #00f5ff; border-radius: 2px; animation: eqPulse 1.1s infinite ease-in-out 0.35s;"></span>
-                    <span class="a-bar" style="width: 4px; height: 12px; background: #bf00ff; border-radius: 2px; animation: eqPulse 1.4s infinite ease-in-out 0.2s;"></span>
-                    <span class="a-bar" style="width: 4px; height: 18px; background: #ff007f; border-radius: 2px; animation: eqPulse 0.8s infinite ease-in-out 0.3s;"></span>
-                    <span class="a-bar" style="width: 4px; height: 9px; background: #00f5ff; border-radius: 2px; animation: eqPulse 1.25s infinite ease-in-out 0.05s;"></span>
-                </div>
-
-                <h3 id="loadingStageTitle" style="text-transform: uppercase; letter-spacing: 2px; font-size: 1.15rem; color: #fff;">SEPARANDO STEMS CON IA...</h3>
-                <div id="loadingStageSub" style="margin-top: 8px; font-size: 0.84rem; color: var(--text-secondary); min-height: 24px;">
-                    Cargando red neuronal Demucs v4 y preparando canales estéreo...
-                </div>
-
-                <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 14px;">
-                    <div id="timer" style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; color: var(--accent-magenta); font-weight: 700;">00:00</div>
-                    <span style="color: rgba(255, 255, 255, 0.25);">|</span>
-                    <div id="timerEta" style="font-size: 0.8rem; color: #00f5ff; font-weight: 600; letter-spacing: 0.5px;">Calculando tiempo estimado...</div>
-                </div>
-
-                <div style="margin-top: 16px; padding: 12px 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; font-size: 0.72rem; color: rgba(255, 255, 255, 0.6); line-height: 1.5; letter-spacing: 0.4px; text-align: left;">
-                    💡 <strong>Procesamiento Neuronal Demucs v4:</strong> Se están aislando 8 canales de estudio en <strong>WAV 32-bit Float</strong> sin compresión destructiva. En hardware cloud sin GPU, la separación toma aproximadamente 1.2x a 1.5x la duración de tu canción. No cierres esta pestaña.
-                </div>
-            </div>
-
-            <div id="resultsContent" class="hidden">
-                <div class="song-info-grid">
-                    <div class="info-card">
-                        <span class="lbl">Harmonic Key</span>
-                        <span id="keyVal" class="val">--</span>
-                    </div>
-                    <div class="info-card">
-                        <span class="lbl">Detected Tempo</span>
-                        <span id="bpmVal" class="val">--</span>
-                    </div>
-                </div>
-
-                <!-- Synchronized Master Control Deck -->
-                <div class="master-sync-card" id="masterSyncCard">
-                    <div class="master-header">
-                        <div class="master-left">
-                            <button class="sync-main-btn" id="masterPlayBtn">
-                                <span id="masterPlayIcon">▶</span>
-                                <span id="masterPlayText">PLAY ALL SYNC</span>
-                            </button>
-                            <button class="sync-sub-btn" id="masterResetBtn" title="Reset playback to 00:00">
-                                ↺ RESET
-                            </button>
-                        </div>
-                        <div class="master-quick">
-                            <button class="sync-pill" id="quickUnmuteAll">UNMUTE ALL</button>
-                            <button class="sync-pill" id="quickMuteAll">MUTE ALL</button>
-                            <button class="sync-pill" id="quickClearSolo">CLEAR SOLO</button>
-                        </div>
-                        <div class="master-timer" id="masterTimer">00:00 / 00:00</div>
-                    </div>
-                    <div class="master-scrub-row">
-                        <input type="range" id="masterScrubber" min="0" max="100" value="0" step="0.1" class="master-scrubber">
-                    </div>
-                </div>
-
-                <div id="stemsList" class="stems-container"></div>
-
-                <div class="glass-card" style="margin-top: 2rem;">
-                    <span class="label-title">Export Options</span>
-                    <div class="options-grid" style="margin-bottom: 2rem;">
-                        <label class="option-item">
-                            <input type="checkbox" class="dl-opt" value="Download All" checked onclick="toggleAllDl(this)">
-                            <span class="checkmark">Download All</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" class="dl-opt" value="WAV">
-                            <span class="checkmark">Song WAV</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" class="dl-opt" value="Vocals">
-                            <span class="checkmark">Vocals</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" class="dl-opt" value="Bass">
-                            <span class="checkmark">Bass</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" class="dl-opt" value="Other">
-                            <span class="checkmark">Other</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" class="dl-opt" value="Drums (Raw)">
-                            <span class="checkmark">Drums (Raw)</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" class="dl-opt" value="Kick">
-                            <span class="checkmark">Kick</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" class="dl-opt" value="Snare">
-                            <span class="checkmark">Snare</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="checkbox" class="dl-opt" value="Hi-hat">
-                            <span class="checkmark">Hi-hat</span>
-                        </label>
-                    </div>
-                    <div style="text-align: center; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
-                        <button class="btn" id="downloadAllBtn">DOWNLOAD SELECTED STEMS</button>
-                        <div style="margin-top: 1.5rem;">
-                            <button class="btn" style="background: transparent; border: 2px solid; border-image: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%) 1;"
-                                id="resetBtn">START NEW TRACK</button>
-                        </div>
-                    </div>
-
-                    <!-- Process Further Section for Midifier & Sampler -->
-                    <div style="margin-top: 2.5rem; border-top: 1px solid var(--glass-border); padding-top: 1.75rem;">
-                        <h3 style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 3px; text-align: center;">
-                            Process Further</h3>
-                        <p style="margin-bottom: 1.25rem; font-size: 0.75rem; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-align: center;">
-                            Send your separated stems to other Myooz Labs audio tools
-                        </p>
-                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                            <button onclick="sendToTool('midifier')" class="btn"
-                                style="background: transparent; border: 2px solid #cc7a00; border-radius: 50px; color: #cc7a00; font-size: 0.75rem; padding: 12px 30px; min-width: 190px; font-family: 'Righteous', sans-serif; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease;">
-                                Send to Midifier
-                            </button>
-                            <button onclick="sendToTool('sampler')" class="btn"
-                                style="background: transparent; border: 2px solid #00e5ff; border-radius: 50px; color: #00e5ff; font-size: 0.75rem; padding: 12px 30px; min-width: 190px; font-family: 'Righteous', sans-serif; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease;">
-                                Send to Sampler
-                            </button>
-                            <button onclick="sendToTool('mixter')" class="btn"
-                                style="background: transparent; border: 2px solid #10b981; border-radius: 50px; color: #10b981; font-size: 0.75rem; padding: 12px 30px; min-width: 190px; font-family: 'Righteous', sans-serif; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease;">
-                                Send to Mixter
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div style="font-size: 0.72rem; color: var(--accent-stemer); font-weight: 700; letter-spacing: 1px;">
+                FLUJO INTEGRADO CON 1 CLIC
             </div>
         </div>
+
+        <div class="tools-grid">
+            <!-- 1. Stemer -->
+            <a href="stemer.html" class="tool-card card-stemer">
+                <div class="card-top">
+                    <div class="tool-icon-box">🎛️</div>
+                    <span class="tool-badge">Demucs v4</span>
+                </div>
+                <h3 class="tool-card-title">Stemer</h3>
+                <div class="tool-card-role">Separación de Pistas en Alta Fidelidad</div>
+                <p class="tool-card-desc">
+                    Aísla tu canción en 8 canales de estudio (Vocales, Bajo, Batería completa, Otros y Kit desglosado de Kick, Snare y Hi-Hat) sin artefactos ni distorsión. Incluye reproductor multi-pista sincronizado.
+                </p>
+                <div class="tool-tags-list">
+                    <span class="tool-tag-item">8 Canales WAV</span>
+                    <span class="tool-tag-item">BPM & Key Pro</span>
+                    <span class="tool-tag-item">Multi-Stem Player</span>
+                </div>
+                <div class="card-action-btn">
+                    <span>Abrir Stemer</span>
+                    <span class="card-action-arrow">→</span>
+                </div>
+            </a>
+
+            <!-- 2. Midifier -->
+            <a href="midifier.html" class="tool-card card-midifier">
+                <div class="card-top">
+                    <div class="tool-icon-box">🎹</div>
+                    <span class="tool-badge">Neural Pitch</span>
+                </div>
+                <h3 class="tool-card-title">Midifier</h3>
+                <div class="tool-card-role">Audio a MIDI Polifónico</div>
+                <p class="tool-card-desc">
+                    Convierte cualquier pista de voz, bajo, guitarra o melodía en secuencias MIDI editables para Ableton, FL Studio, Logic o tu DAW preferido con detección avanzada de notas y articulación.
+                </p>
+                <div class="tool-tags-list">
+                    <span class="tool-tag-item">Exportación .MID</span>
+                    <span class="tool-tag-item">Sensibilidad Fina</span>
+                    <span class="tool-tag-item">Transcripción Rápida</span>
+                </div>
+                <div class="card-action-btn">
+                    <span>Abrir Midifier</span>
+                    <span class="card-action-arrow">→</span>
+                </div>
+            </a>
+
+            <!-- 3. Sampler -->
+            <a href="sampler.html" class="tool-card card-sampler">
+                <div class="card-top">
+                    <div class="tool-icon-box">🥁</div>
+                    <span class="tool-badge">MPC Slicer</span>
+                </div>
+                <h3 class="tool-card-title">Sampler</h3>
+                <div class="tool-card-role">Recorte Inteligente & Kit Creator</div>
+                <p class="tool-card-desc">
+                    Trocea automáticamente loops o pistas por transitorios o golpes rítmicos. Toca los 8 pads interactivos en vivo con el teclado y descarga tu kit de batería empaquetado en archivo ZIP.
+                </p>
+                <div class="tool-tags-list">
+                    <span class="tool-tag-item">Detección Transitoria</span>
+                    <span class="tool-tag-item">8 Pads con Teclado</span>
+                    <span class="tool-tag-item">Descarga ZIP Kit</span>
+                </div>
+                <div class="card-action-btn">
+                    <span>Abrir Sampler</span>
+                    <span class="card-action-arrow">→</span>
+                </div>
+            </a>
+
+            <!-- 4. Mixter -->
+            <a href="mixter.html" class="tool-card card-mixter">
+                <div class="card-top">
+                    <div class="tool-icon-box">🎚️</div>
+                    <span class="tool-badge">AI Mixing Studio</span>
+                </div>
+                <h3 class="tool-card-title">Mixter</h3>
+                <div class="tool-card-role">Mezcla Multi-Pista +20 Géneros</div>
+                <p class="tool-card-desc">
+                    Balance frecuencial quirúrgico, supresión de resonancias, compresión multi-canal y apertura estéreo analógica. Presets de Urbano, Reggaeton, Trap, EDM, Pop y Rock calibrados a -6.0 dBFS.
+                </p>
+                <div class="tool-tags-list">
+                    <span class="tool-tag-item">+20 Subgéneros 2026</span>
+                    <span class="tool-tag-item">Headroom -6 dBFS</span>
+                    <span class="tool-tag-item">Versiones V1-V5</span>
+                </div>
+                <div class="card-action-btn">
+                    <span>Abrir Mixter</span>
+                    <span class="card-action-arrow">→</span>
+                </div>
+            </a>
+
+            <!-- 5. Master -->
+            <a href="master.html" class="tool-card card-master">
+                <div class="card-top">
+                    <div class="tool-icon-box">⚡</div>
+                    <span class="tool-badge">ITU-R BS.1770-4</span>
+                </div>
+                <h3 class="tool-card-title">Master</h3>
+                <div class="tool-card-role">Mastering Comercial Analógico</div>
+                <p class="tool-card-desc">
+                    Cadena de 5 etapas para sonoridad comercial: EQ de contorno, compresión multi-banda, saturación analógica, mono-sub (<120 Hz) y limitador True-Peak 4x sobremuestreado a 32-bit Float.
+                </p>
+                <div class="tool-tags-list">
+                    <span class="tool-tag-item">Limitador True-Peak 4x</span>
+                    <span class="tool-tag-item">Comparación A/B</span>
+                    <span class="tool-tag-item">Mono-Sub Calibrado</span>
+                </div>
+                <div class="card-action-btn">
+                    <span>Abrir Master</span>
+                    <span class="card-action-arrow">→</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Ecosystem Flow Diagram -->
+        <section class="flow-section">
+            <h3 class="flow-title">Flujo de Trabajo Conectado de Tool Box</h3>
+            <p class="flow-sub">
+                Cada herramienta se comunica con las demás en memoria. Puedes enviar stems aislados a Midifier o Sampler con un clic, o transferir tu mezcla terminada directamente a Master sin re-subir archivos.
+            </p>
+
+            <div class="flow-steps-grid">
+                <div class="flow-step-box">
+                    <div class="step-num">1</div>
+                    <div class="step-icon">🎵</div>
+                    <div class="step-name">Audio Original</div>
+                    <div class="step-desc">Carga tu canción completa en WAV o MP3.</div>
+                </div>
+
+                <div class="flow-step-box">
+                    <div class="step-num">2</div>
+                    <div class="step-icon">🎛️</div>
+                    <div class="step-name">Stemer</div>
+                    <div class="step-desc">Separa en 8 pistas puras a 32-bit Float.</div>
+                </div>
+
+                <div class="flow-step-box">
+                    <div class="step-num">3</div>
+                    <div class="step-icon">🎹 🥁</div>
+                    <div class="step-name">Midi & Slices</div>
+                    <div class="step-desc">Transcribe melodías o crea kits de batería.</div>
+                </div>
+
+                <div class="flow-step-box">
+                    <div class="step-num">4</div>
+                    <div class="step-icon">🎚️</div>
+                    <div class="step-name">Mixter</div>
+                    <div class="step-desc">Balancea con curvas de ecualización pro.</div>
+                </div>
+
+                <div class="flow-step-box">
+                    <div class="step-num">5</div>
+                    <div class="step-icon">⚡</div>
+                    <div class="step-name">Master</div>
+                    <div class="step-desc">Loudness comercial y True-Peak ceiling.</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2.5rem;">
+                <a href="stemer.html" class="btn" style="text-decoration: none;">
+                    COMENZAR CON STEMER →
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="home-footer">
+            <p><strong>TOOL BOX</strong> BY MYOOZ LABS &bull; SUITE DE INTELIGENCIA DE AUDIO 2026 &bull; 32-BIT FLOAT PIPELINE</p>
+        </footer>
     </div>
 
-    <script type="module">
-        import { Client, handle_file } from "https://esm.sh/@gradio/client";
-
-        const SPACE_ID = "tinahmbuz/audiostems";
-
-        // DOM elements
-        const fileInput = document.getElementById('fileInput');
-        const dropZone = document.getElementById('dropZone');
-        const fileNameDisp = document.getElementById('fileName');
-        const startBtn = document.getElementById('startBtn');
-        const uploadView = document.getElementById('uploadView');
-        const loadingView = document.getElementById('loadingView');
-        const progressText = document.getElementById('progressText');
-        const timerDisp = document.getElementById('timer');
-        const resultsContent = document.getElementById('resultsContent');
-        const stemsList = document.getElementById('stemsList');
-        const resetBtn = document.getElementById('resetBtn');
-
-        let selectedFile = null;
-        let tInterval;
-        let startTime;
-        let errorShown = false;
-        let trackDurationSec = 180; // default 3 min fallback
-
-        function resolveGradioUrl(fileObj) {
-            if (!fileObj) return "";
-            let raw = "";
-            if (typeof fileObj === 'string') {
-                raw = fileObj;
-            } else if (typeof fileObj === 'object') {
-                raw = fileObj.url || fileObj.path || "";
-            }
-            if (!raw) return "";
-            if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("blob:") || raw.startsWith("data:")) {
-                return raw;
-            }
-            const origin = "https://tinahmbuz-audiostems.hf.space";
-            if (raw.startsWith("/tmp/gradio/")) {
-                return `${origin}/gradio_api/file=${raw}`;
-            }
-            return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
-        }
-
-        // Check for incoming track passed from Master or Mixter
-        (function checkForIncomingTrack() {
-            try {
-                const raw = localStorage.getItem('stemerIncomingTrack');
-                if (!raw) return;
-                const payload = JSON.parse(raw);
-                if (Date.now() - payload.timestamp > 45 * 60 * 1000) {
-                    localStorage.removeItem('stemerIncomingTrack');
-                    return;
-                }
-
-                const banner = document.getElementById('incomingTrackBanner');
-                const badge = document.getElementById('incomingBannerBadge');
-                const title = document.getElementById('incomingTrackTitle');
-                const meta = document.getElementById('incomingTrackMeta');
-                const preview = document.getElementById('incomingAudioPreview');
-                const sepBtn = document.getElementById('incomingSeparateBtn');
-                const dismissBtn = document.getElementById('incomingDismissBtn');
-
-                if (!banner || !payload.url) return;
-
-                banner.classList.remove('hidden');
-                badge.innerText = payload.isMastered ? "💎 MASTER 32-BIT FLOAT" : "🎛 MEZCLA DESDE MIXTER";
-                title.innerText = payload.name || "Track Importado";
-                meta.innerText = `${payload.source || 'Master Studio'} • Listo para procesar y descomponer en stems`;
-                preview.src = payload.url;
-
-                dismissBtn.onclick = () => {
-                    localStorage.removeItem('stemerIncomingTrack');
-                    banner.classList.add('hidden');
-                    preview.pause();
-                };
-
-                sepBtn.onclick = async () => {
-                    try {
-                        sepBtn.disabled = true;
-                        sepBtn.innerText = "CARGANDO AUDIO...";
-                        const resp = await fetch(payload.url);
-                        const blob = await resp.blob();
-                        const fileName = (payload.name && payload.name.endsWith('.wav')) ? payload.name : `${(payload.name || 'imported_track').replace(/\s+/g, '_')}.wav`;
-                        selectedFile = new File([blob], fileName, { type: "audio/wav" });
-                        fileNameDisp.innerText = selectedFile.name;
-                        localStorage.removeItem('stemerIncomingTrack');
-                        banner.classList.add('hidden');
-                        preview.pause();
-                        startBtn.click();
-                    } catch (err) {
-                        console.error("Error loading incoming track:", err);
-                        alert("No se pudo descargar el audio para separación: " + err.message);
-                        sepBtn.disabled = false;
-                        sepBtn.innerText = "⚡ SEPARAR EN STEMS";
-                    }
-                };
-            } catch (err) {
-                console.error("Error checking incoming track:", err);
-            }
-        })();
-
-        // Check for active Stemer session (persists when navigating between Stemer, Mixter, Master, etc.)
-        (function checkActiveSession() {
-            try {
-                let isPageReload = false;
-                try {
-                    const navEntries = performance.getEntriesByType('navigation');
-                    if (navEntries.length > 0 && navEntries[0].type === 'reload') {
-                        isPageReload = true;
-                    } else if (performance.navigation && performance.navigation.type === 1) {
-                        isPageReload = true;
-                    }
-                } catch (e) {}
-
-                if (isPageReload) {
-                    sessionStorage.removeItem('stemerActiveSession');
-                    return;
-                }
-
-                const raw = sessionStorage.getItem('stemerActiveSession');
-                if (!raw) return;
-                const sess = JSON.parse(raw);
-                if (!sess || !sess.data) return;
-
-                // Restore results view immediately
-                uploadView.classList.add('hidden');
-                loadingView.classList.add('hidden');
-                resultsContent.classList.remove('hidden');
-
-                document.getElementById('keyVal').innerText = sess.key || "N/A";
-                document.getElementById('bpmVal').innerText = sess.bpm || "N/A";
-
-                initSyncPlayer(sess.data);
-
-                // Add indicator banner that active session is loaded
-                let sessionBanner = document.getElementById('restoredSessionBanner');
-                if (!sessionBanner) {
-                    sessionBanner = document.createElement('div');
-                    sessionBanner.id = 'restoredSessionBanner';
-                    sessionBanner.style.cssText = "margin-bottom: 1.5rem; padding: 12px 20px; background: rgba(0, 245, 255, 0.08); border: 1px solid rgba(0, 245, 255, 0.3); border-radius: 12px; color: #00f5ff; font-size: 0.84rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;";
-                    sessionBanner.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span>⚡</span>
-                            <span><strong>Sesión activa restaurada:</strong> ${sess.fileName || 'Pista de Audio'}</span>
-                        </div>
-                        <button id="clearRestoredSessionBtn" style="background: transparent; border: 1px solid rgba(0, 245, 255, 0.4); color: #00f5ff; border-radius: 20px; padding: 5px 14px; cursor: pointer; font-size: 0.76rem; font-weight: 700; transition: all 0.2s ease;">
-                            🔄 EMPEZAR NUEVO TRACK
-                        </button>
-                    `;
-                    resultsContent.insertBefore(sessionBanner, resultsContent.firstChild);
-                    document.getElementById('clearRestoredSessionBtn').onclick = () => {
-                        sessionStorage.removeItem('stemerActiveSession');
-                        location.reload();
-                    };
-                }
-            } catch (err) {
-                console.warn("Error checking active session:", err);
-            }
-        })();
-
-        window.toggleAll = (el) => {
-            const checks = document.querySelectorAll('input[name="process_opt"]');
-            if (el.checked) {
-                checks.forEach(c => { if (c !== el && c.value !== "Info") c.checked = false; });
-            }
-        };
-
-        window.toggleAllDl = (el) => {
-            const checks = document.querySelectorAll('.dl-opt');
-            if (el.checked) {
-                checks.forEach(c => { if (c !== el) c.checked = false; });
-            }
-        };
-
-        function handleSelectedFile(file) {
-            if (!file) return;
-            const validExts = [".mp3", ".wav", ".flac", ".m4a", ".aac", ".ogg", ".aiff"];
-            const lowerName = file.name.toLowerCase();
-            if (!validExts.some(ext => lowerName.endsWith(ext))) {
-                alert("Por favor selecciona un archivo de audio compatible (MP3 o WAV).");
-                return;
-            }
-
-            selectedFile = file;
-            fileNameDisp.innerText = file.name;
-            const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-
-            probeAudioDuration(file, sizeMb);
-        }
-
-        function probeAudioDuration(file, sizeMb) {
-            try {
-                const audio = new Audio();
-                const objUrl = URL.createObjectURL(file);
-                audio.src = objUrl;
-                audio.onloadedmetadata = () => {
-                    if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
-                        trackDurationSec = audio.duration;
-                        const m = Math.floor(trackDurationSec / 60);
-                        const s = Math.floor(trackDurationSec % 60).toString().padStart(2, '0');
-                        const estTotalSec = Math.max(75, Math.round(trackDurationSec * 1.35));
-                        const estM = Math.floor(estTotalSec / 60);
-                        const estS = (estTotalSec % 60).toString().padStart(2, '0');
-
-                        let badge = document.getElementById('fileDurationBadge');
-                        if (!badge) {
-                            badge = document.createElement('div');
-                            badge.id = 'fileDurationBadge';
-                            badge.style.cssText = "margin-top: 10px; font-size: 0.78rem; padding: 6px 14px; background: rgba(0, 245, 255, 0.08); border: 1px solid rgba(0, 245, 255, 0.25); border-radius: 20px; color: #00f5ff; display: inline-flex; align-items: center; gap: 8px;";
-                            fileNameDisp.parentNode.appendChild(badge);
-                        }
-                        badge.innerHTML = `<span>⏱ <strong>${m}:${s}</strong> (${sizeMb} MB)</span> <span style="opacity: 0.5;">•</span> <span>Est. IA Cloud: ~<strong>${estM}:${estS} min</strong></span>`;
-                    }
-                    URL.revokeObjectURL(objUrl);
-                };
-                audio.onerror = () => URL.revokeObjectURL(objUrl);
-            } catch (e) {
-                console.warn("Probe duration failed:", e);
-            }
-        }
-
-        dropZone.addEventListener('click', (e) => {
-            if (e.target !== fileInput) {
-                fileInput.click();
-            }
-        });
-
-        fileInput.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                handleSelectedFile(e.target.files[0]);
-            }
-        });
-        
-        dropZone.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            dropZone.classList.add("dragover");
-        });
-        
-        dropZone.addEventListener("dragleave", () => {
-            dropZone.classList.remove("dragover");
-        });
-        
-        dropZone.addEventListener("drop", (e) => {
-            e.preventDefault();
-            dropZone.classList.remove("dragover");
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                handleSelectedFile(e.dataTransfer.files[0]);
-            }
-        });     
-        
-        resetBtn.onclick = () => {
-            sessionStorage.removeItem('stemerActiveSession');
-            location.reload();
-        };
-
-        function clearExistingErrors() {
-            const existingErrors = uploadView.querySelectorAll('.error-message');
-            existingErrors.forEach(err => err.remove());
-        }
-
-        function showError(title, message) {
-            clearExistingErrors();
-            
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.innerHTML = `
-                <h3>${title}</h3>
-                <p>${message}</p>
-            `;
-            uploadView.insertBefore(errorDiv, uploadView.firstChild);
-            
-            setTimeout(() => {
-                if (errorDiv.parentNode) {
-                    errorDiv.remove();
-                }
-            }, 15000);
-        }
-
-        startBtn.onclick = async () => {
-            if (!selectedFile) return alert("Select a file first.");
-            
-            errorShown = false;
-            clearExistingErrors();
-
-            try {
-                const selectedOptions = Array.from(document.querySelectorAll('input[name="process_opt"]:checked')).map(c => c.value);
-
-                uploadView.classList.add('hidden');
-                loadingView.classList.remove('hidden');
-
-                startProcessingUI();
-
-                const client = await Client.connect(SPACE_ID);
-                
-                const result = await client.predict("/process", [
-                    handle_file(selectedFile),
-                    selectedOptions,
-                    ""
-                ]);
-
-                handleBackendResponse(result.data);
-                
-            } catch (err) {
-                console.error("API Error:", err);
-                clearInterval(tInterval);
-                loadingView.classList.add('hidden');
-                uploadView.classList.remove('hidden');
-                
-                if (!errorShown) {
-                    showError("Connection Error", "Unable to connect to the server. Please check your internet connection and try again.");
-                    errorShown = true;
-                }
-            }
-        };
-
-        function handleBackendResponse(data) {
-            if (errorShown) return;
-            
-            const statusMsg = (data && data[8]) ? String(data[8]) : "";
-            console.log("[DEBUG] Backend response:", statusMsg);
-
-            // Check for daily limit
-            if (statusMsg.includes("LIMIT_ERROR:DAILY:")) {
-                const match = statusMsg.match(/LIMIT_ERROR:DAILY:(.+)/);
-                clearInterval(tInterval);
-                loadingView.classList.add('hidden');
-                uploadView.classList.remove('hidden');
-                showError(
-                    `Límite Diario Alcanzado`,
-                    `Has alcanzado el límite diario gratuito.<br>`
-                );
-                errorShown = true;
-                return;
-            }
-            
-            // Check for auth required
-            if (statusMsg === "AUTH_REQUIRED") {
-                clearInterval(tInterval);
-                loadingView.classList.add('hidden');
-                uploadView.classList.remove('hidden');
-                showError(
-                    `Uso Gratuito Completado`,
-                    `Has utilizado tu proceso gratuito diario.<br><br>Inicia sesión para continuar.`
-                );
-                errorShown = true;
-                return;
-            }
-
-            // Check for monthly limit
-            if (statusMsg.includes("LIMIT_ERROR:MONTHLY:")) {
-                clearInterval(tInterval);
-                loadingView.classList.add('hidden');
-                uploadView.classList.remove('hidden');
-                showError(
-                    `Límite Mensual Alcanzado`,
-                    `Has utilizado los 15 procesos mensuales disponibles.<br>`
-                );
-                errorShown = true;
-                return;
-            }
-
-            // Check for processing error
-            if (statusMsg.startsWith("PROCESSING_ERROR")) {
-                const detail = statusMsg.replace("PROCESSING_ERROR:", "").trim();
-                clearInterval(tInterval);
-                loadingView.classList.add('hidden');
-                uploadView.classList.remove('hidden');
-                showError(
-                    `Error de Procesamiento en Servidor`,
-                    `El motor de separación reportó un problema:<br><code style="background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px;">${detail || 'Fallo interno en Demucs/PyTorch'}</code><br><br>Verifica el formato del archivo o prueba con otra pista.`
-                );
-                errorShown = true;
-                return;
-            }
-
-            // Check if any valid stem was generated
-            const hasValidStem = data && data.slice(0, 8).some(item => !!resolveGradioUrl(item));
-
-            // Success case - look for "SUCCESS:" anywhere in the message or valid audio url
-            if (statusMsg.includes("SUCCESS:") || hasValidStem) {
-                renderResults(data);
-            } else {
-                // Fallback if we don't recognize the response
-                clearInterval(tInterval);
-                loadingView.classList.add('hidden');
-                uploadView.classList.remove('hidden');
-                showError(
-                    `Respuesta Inesperada del Servidor`,
-                    `No se recibieron stems de audio válidos.<br><strong>Detalle:</strong> <code style="background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 6px;">${statusMsg || 'Sin mensaje de estado'}</code><br><br>Asegúrate de que el backend en Hugging Face esté sincronizado.`
-                );
-                errorShown = true;
-            }
-        }
-
-        function startProcessingUI() {
-            startTime = Date.now();
-            const stageTitle = document.getElementById('loadingStageTitle');
-            const stageSub = document.getElementById('loadingStageSub');
-            const etaDisp = document.getElementById('timerEta');
-            
-            if (tInterval) clearInterval(tInterval);
-
-            // Realistic total estimate on Hugging Face 2 vCPUs: ~1.35x audio duration, minimum 75 seconds
-            const estimatedTotalSec = Math.max(75, Math.round(trackDurationSec * 1.35));
-
-            tInterval = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
-                const s = (elapsed % 60).toString().padStart(2, '0');
-                timerDisp.innerText = `${m}:${s}`;
-
-                const remainingSec = Math.max(0, estimatedTotalSec - elapsed);
-                const remM = Math.floor(remainingSec / 60).toString().padStart(2, '0');
-                const remS = (remainingSec % 60).toString().padStart(2, '0');
-
-                if (etaDisp) {
-                    if (elapsed < estimatedTotalSec) {
-                        etaDisp.innerText = `Tiempo restante est.: ~${remM}:${remS}`;
-                    } else {
-                        etaDisp.innerText = `Finalizando ensamblaje de stems...`;
-                    }
-                }
-
-                // Smooth, dynamic percentage progression based on real track length
-                let pct = 0;
-                if (elapsed < 8) {
-                    pct = Math.min(10, Math.floor((elapsed / 8) * 10));
-                    if (stageTitle) stageTitle.innerText = "SUBIENDO Y PREPARANDO AUDIO...";
-                    if (stageSub) stageSub.innerText = "Transfiriendo canales estéreo a 44.1 kHz hacia el servidor...";
-                } else if (elapsed < estimatedTotalSec * 0.45) {
-                    const frac = (elapsed - 8) / (estimatedTotalSec * 0.45 - 8);
-                    pct = 10 + Math.floor(frac * 35);
-                    if (stageTitle) stageTitle.innerText = "SEPARANDO VOCALES Y BASE...";
-                    if (stageSub) stageSub.innerText = "Red neuronal Demucs v4 descomponiendo espectrogramas y armónicos...";
-                } else if (elapsed < estimatedTotalSec * 0.75) {
-                    const frac = (elapsed - estimatedTotalSec * 0.45) / (estimatedTotalSec * 0.30);
-                    pct = 45 + Math.floor(frac * 30);
-                    if (stageTitle) stageTitle.innerText = "AISLANDO BAJO Y BATERÍA...";
-                    if (stageSub) stageSub.innerText = "Extrayendo líneas de bajo y patrones rítmicos en 32-bit Float...";
-                } else if (elapsed < estimatedTotalSec * 0.90) {
-                    const frac = (elapsed - estimatedTotalSec * 0.75) / (estimatedTotalSec * 0.15);
-                    pct = 75 + Math.floor(frac * 15);
-                    if (stageTitle) stageTitle.innerText = "REFINANDO KICK, SNARE Y HI-HAT...";
-                    if (stageSub) stageSub.innerText = "Filtros digitales Butterworth de fase cero para separación de percusión...";
-                } else if (elapsed < estimatedTotalSec) {
-                    const frac = (elapsed - estimatedTotalSec * 0.90) / (estimatedTotalSec * 0.10);
-                    pct = 90 + Math.floor(frac * 6);
-                    if (stageTitle) stageTitle.innerText = "ANÁLISIS ARMÓNICO Y TEMPO...";
-                    if (stageSub) stageSub.innerText = "Detectando escala musical tonal (Key) y BPM exacto...";
-                } else {
-                    // Soft crawl towards 99%
-                    const overSec = elapsed - estimatedTotalSec;
-                    pct = Math.min(99, 96 + Math.floor(overSec / 30));
-                    if (stageTitle) stageTitle.innerText = "FINALIZANDO EXPORTACIÓN 32-BIT...";
-                    if (stageSub) stageSub.innerText = "Generando archivos WAV y sincronizando consola DAW multi-pista...";
-                }
-
-                progressText.innerText = `${pct}%`;
-            }, 1000);
-        }
-
-        // ──────────────────────────────────────────────
-        // Synchronized Stem Playback System (DAW Style)
-        // ──────────────────────────────────────────────
-        let lastProcessedData = null;
-        let stemsData = [];
-        let isGlobalPlaying = false;
-        let maxTrackDuration = 0;
-        let syncTicker = null;
-
-        function formatTime(seconds) {
-            if (isNaN(seconds) || seconds < 0) return "00:00";
-            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-            return `${m}:${s}`;
-        }
-
-        function renderResults(data) {
-            clearInterval(tInterval);
-            progressText.innerText = '100%';
-            const stageTitle = document.getElementById('loadingStageTitle');
-            const stageSub = document.getElementById('loadingStageSub');
-            if (stageTitle) stageTitle.innerText = "¡PROCESO COMPLETADO!";
-            if (stageSub) stageSub.innerText = "Cargando consola de reproducción...";
-
-            setTimeout(() => {
-                loadingView.classList.add('hidden');
-                resultsContent.classList.remove('hidden');
-
-                const raw = data[8] || "";
-                let key = "N/A", bpm = "N/A";
-                
-                const k = raw.match(/Key[:\s]*([A-G][b#]?\s*(?:major|minor|maj|min)?)/i) || raw.match(/([A-G][b#]?\s*(?:major|minor|maj|min))/i);
-                if (k) key = k[1];
-                
-                const b = raw.match(/(?:Tempo|BPM)[:\s]*(\d+\.?\d*)/i) || raw.match(/(\d+\.?\d*)\s*(?:Tempo|BPM)/i);
-                if (b) bpm = Math.round(parseFloat(b[1]));
-
-                document.getElementById('keyVal').innerText = key;
-                document.getElementById('bpmVal').innerText = bpm;
-
-                // Save active session for instant restoration across tools navigation
-                try {
-                    const sessionPayload = {
-                        data: data,
-                        fileName: selectedFile ? selectedFile.name : 'Track_Procesado',
-                        key: key,
-                        bpm: bpm,
-                        timestamp: Date.now()
-                    };
-                    sessionStorage.setItem('stemerActiveSession', JSON.stringify(sessionPayload));
-                } catch (storeErr) {
-                    console.warn("Could not save stemerActiveSession:", storeErr);
-                }
-
-                // Also auto-sync stems to Mixter/tools storage immediately
-                try {
-                    const autoStems = [];
-                    const sLabels = ["ORIGINAL SONG", "VOCALS", "BASS", "OTHER", "DRUMS", "KICK", "SNARE", "HI-HAT"];
-                    for (let si = 0; si < 8; si++) {
-                        const sUrl = resolveGradioUrl(data[si]);
-                        if (sUrl) autoStems.push({ label: sLabels[si], url: sUrl });
-                    }
-                    localStorage.setItem('stemerStems', JSON.stringify({
-                        stems: autoStems,
-                        key: key,
-                        bpm: bpm,
-                        timestamp: Date.now()
-                    }));
-                } catch (storeStemsErr) {
-                    console.warn("Could not auto-save stemerStems:", storeStemsErr);
-                }
-
-                initSyncPlayer(data);
-
-                console.log("[SUCCESS] Processing completed & Sync Player initialized");
-            }, 500);
-        }
-
-        function initSyncPlayer(data) {
-            lastProcessedData = data;
-            stemsData = [];
-            isGlobalPlaying = false;
-            maxTrackDuration = 0;
-            if (syncTicker) clearInterval(syncTicker);
-
-            const labels = ["ORIGINAL SONG", "VOCALS", "BASS", "OTHER", "DRUMS", "KICK", "SNARE", "HI-HAT"];
-            const stemsList = document.getElementById('stemsList');
-            stemsList.innerHTML = '';
-
-            const masterPlayBtn = document.getElementById('masterPlayBtn');
-            const masterPlayIcon = document.getElementById('masterPlayIcon');
-            const masterPlayText = document.getElementById('masterPlayText');
-            const masterResetBtn = document.getElementById('masterResetBtn');
-            const masterTimer = document.getElementById('masterTimer');
-            const masterScrubber = document.getElementById('masterScrubber');
-            const quickUnmuteAll = document.getElementById('quickUnmuteAll');
-            const quickMuteAll = document.getElementById('quickMuteAll');
-            const quickClearSolo = document.getElementById('quickClearSolo');
-
-            masterPlayIcon.innerText = "▶";
-            masterPlayText.innerText = "PLAY ALL SYNC";
-            masterPlayBtn.classList.remove('is-playing');
-            masterScrubber.value = 0;
-            masterTimer.innerText = "00:00 / 00:00";
-
-            for (let i = 0; i < 8; i++) {
-                const stemUrl = resolveGradioUrl(data[i]);
-                if (!stemUrl) continue;
-                const itemIndex = stemsData.length;
-
-                let tagBadge = '';
-                if (i === 0) {
-                    tagBadge = '<span style="font-size: 0.65rem; padding: 2px 6px; background: rgba(0, 245, 255, 0.15); border: 1px solid rgba(0, 245, 255, 0.4); border-radius: 4px; color: #00f5ff; margin-left: 6px; font-weight: 700;">REF</span>';
-                } else if (i >= 5) {
-                    tagBadge = '<span style="font-size: 0.65rem; padding: 2px 6px; background: rgba(255, 0, 127, 0.15); border: 1px solid rgba(255, 0, 127, 0.4); border-radius: 4px; color: #ff007f; margin-left: 6px; font-weight: 700;">KIT</span>';
-                }
-
-                const card = document.createElement('div');
-                card.className = 'stem-player';
-                card.id = `stemPlayer_${itemIndex}`;
-
-                card.innerHTML = `
-                    <div class="stem-left-col">
-                        <div class="stem-pulse-dot" id="stemPulse_${itemIndex}"></div>
-                        <div class="stem-label">${labels[i]} ${tagBadge}</div>
-                    </div>
-
-                    <div class="stem-controls">
-                        <button class="stem-ctrl-btn solo-btn" id="soloBtn_${itemIndex}" title="Solo: Escuchar solo este stem">S</button>
-                        <button class="stem-ctrl-btn mute-btn" id="muteBtn_${itemIndex}" title="Mute/Unmute stem">M</button>
-                        <div class="stem-vol-wrap">
-                            <span class="stem-vol-icon" id="volIcon_${itemIndex}" title="Silenciar">🔊</span>
-                            <input type="range" class="stem-vol-slider" id="volSlider_${itemIndex}" min="0" max="1" step="0.01" value="1" title="Volumen">
-                        </div>
-                    </div>
-
-                    <div class="stem-track-timeline" id="stemTimeline_${itemIndex}" title="Clic para sincronizar aquí">
-                        <div class="stem-track-fill" id="stemFill_${itemIndex}"></div>
-                        <span class="stem-track-time" id="stemTime_${itemIndex}">00:00</span>
-                    </div>
-
-                    <div class="stem-actions-cell">
-                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'midifier')" title="Convertir ${labels[i]} a MIDI en Midifier">🎹 MIDI</button>
-                        <button class="stem-route-pill-btn" onclick="sendSingleStemToTool(${itemIndex}, 'sampler')" title="Enviar ${labels[i]} a Sampler">🥁 SAMPLER</button>
-                        <a href="${stemUrl}" download="${labels[i].toLowerCase().replace(/\s+/g, '_')}.wav" class="stem-dl-icon-btn" title="Descargar stem ${labels[i]}">
-                            ↓
-                        </a>
-                    </div>
-
-                    <audio id="audioElement_${itemIndex}" preload="auto">
-                        <source src="${stemUrl}" type="audio/wav">
-                    </audio>
-                `;
-
-                stemsList.appendChild(card);
-
-                const audio = card.querySelector(`#audioElement_${itemIndex}`);
-
-                // Default mute configuration:
-                // Primary mix is 4 stems (Vocals, Bass, Other, Drums).
-                // Original Song (i === 0) is muted by default as Reference.
-                // Refined drums (Kick, Snare, Hi-hat; i >= 5) are muted by default to avoid doubling with Drums.
-                const shouldBeMutedByDefault = (i === 0 || i >= 5);
-
-                const stemObj = {
-                    index: itemIndex,
-                    originalIndex: i,
-                    label: labels[i],
-                    url: stemUrl,
-                    audio: audio,
-                    card: card,
-                    pulse: card.querySelector(`#stemPulse_${itemIndex}`),
-                    soloBtn: card.querySelector(`#soloBtn_${itemIndex}`),
-                    muteBtn: card.querySelector(`#muteBtn_${itemIndex}`),
-                    volSlider: card.querySelector(`#volSlider_${itemIndex}`),
-                    volIcon: card.querySelector(`#volIcon_${itemIndex}`),
-                    timeline: card.querySelector(`#stemTimeline_${itemIndex}`),
-                    fill: card.querySelector(`#stemFill_${itemIndex}`),
-                    timeSpan: card.querySelector(`#stemTime_${itemIndex}`),
-                    isMuted: shouldBeMutedByDefault,
-                    isSolo: false,
-                    volume: 1
-                };
-
-                audio.addEventListener('loadedmetadata', () => {
-                    if (audio.duration && audio.duration > maxTrackDuration) {
-                        maxTrackDuration = audio.duration;
-                        masterScrubber.max = maxTrackDuration;
-                        masterTimer.innerText = `00:00 / ${formatTime(maxTrackDuration)}`;
-                    }
-                });
-
-                audio.addEventListener('ended', () => {
-                    checkAllEnded();
-                });
-
-                stemsData.push(stemObj);
-            }
-
-            stemsData.forEach(stem => {
-                // Solo button
-                stem.soloBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    stem.isSolo = !stem.isSolo;
-                    applySoloMuteStates();
-                };
-
-                // Mute button
-                stem.muteBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    stem.isMuted = !stem.isMuted;
-                    applySoloMuteStates();
-                };
-
-                // Volume icon toggle
-                stem.volIcon.onclick = (e) => {
-                    e.stopPropagation();
-                    stem.isMuted = !stem.isMuted;
-                    applySoloMuteStates();
-                };
-
-                stem.volSlider.oninput = (e) => {
-                    e.stopPropagation();
-                    stem.volume = parseFloat(e.target.value);
-                    if (stem.volume === 0) {
-                        stem.isMuted = true;
-                    } else if (stem.isMuted) {
-                        stem.isMuted = false;
-                    }
-                    applySoloMuteStates();
-                };
-
-                // Timeline click (seek mix)
-                stem.timeline.onclick = (e) => {
-                    const rect = stem.timeline.getBoundingClientRect();
-                    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                    const targetTime = ratio * (maxTrackDuration || stem.audio.duration || 0);
-                    seekAllTo(targetTime);
-                };
-            });
-
-            function applySoloMuteStates() {
-                const anySolo = stemsData.some(s => s.isSolo);
-
-                stemsData.forEach(s => {
-                    let isAudible = anySolo ? (s.isSolo && !s.isMuted) : !s.isMuted;
-
-                    s.audio.muted = false;
-                    const baseVol = (typeof s.volume === 'number') ? s.volume : 1.0;
-                    s.audio.volume = isAudible ? Math.max(0, Math.min(1, baseVol)) : 0.0;
-
-                    s.card.classList.toggle('is-muted', !isAudible);
-                    s.card.classList.toggle('is-solo', s.isSolo);
-                    s.muteBtn.classList.toggle('active', s.isMuted);
-                    s.soloBtn.classList.toggle('active', s.isSolo);
-                    s.volIcon.innerText = !isAudible ? "🔇" : (baseVol < 0.5 ? "🔉" : "🔊");
-                });
-            }
-
-            function getMasterStem() {
-                return stemsData.find(s => s && s.audio && !isNaN(s.audio.duration) && s.audio.duration > 0) || stemsData[0] || null;
-            }
-
-            function getMasterCurrentTime() {
-                const master = getMasterStem();
-                return (master && master.audio) ? master.audio.currentTime : 0;
-            }
-
-            function checkAllEnded() {
-                const master = getMasterStem();
-                if (!master || !master.audio) return;
-                if (master.audio.ended || (maxTrackDuration > 0 && master.audio.currentTime >= maxTrackDuration)) {
-                    pauseAll();
-                    seekAllTo(0);
-                }
-            }
-
-            function seekAllTo(time) {
-                stemsData.forEach(s => {
-                    s.audio.currentTime = time;
-                    s.audio.playbackRate = 1.0;
-                });
-                masterScrubber.value = time;
-                updateVisualProgress(time);
-            }
-
-            function updateVisualProgress(currentTime) {
-                const total = maxTrackDuration || 1;
-                const pct = Math.min(100, Math.max(0, (currentTime / total) * 100));
-                masterScrubber.value = currentTime;
-                masterTimer.innerText = `${formatTime(currentTime)} / ${formatTime(total)}`;
-
-                stemsData.forEach(s => {
-                    s.fill.style.width = `${pct}%`;
-                    s.timeSpan.innerText = formatTime(s.audio.currentTime);
-                });
-            }
-
-            function playAll() {
-                const master = getMasterStem();
-                if (!master || !master.audio) return;
-
-                const refTime = getMasterCurrentTime();
-                applySoloMuteStates();
-
-                stemsData.forEach(s => {
-                    if (Math.abs(s.audio.currentTime - refTime) > 0.04) {
-                        s.audio.currentTime = refTime;
-                    }
-                    s.audio.playbackRate = 1.0;
-                    s.audio.play().catch(e => console.warn("Audio play error", e));
-                    s.card.classList.add('is-playing');
-                });
-
-                isGlobalPlaying = true;
-                masterPlayIcon.innerText = "⏸";
-                masterPlayText.innerText = "PAUSE";
-                masterPlayBtn.classList.add('is-playing');
-
-                if (syncTicker) clearInterval(syncTicker);
-                syncTicker = setInterval(() => {
-                    const m = getMasterStem();
-                    if (!m || !m.audio) return;
-                    const curr = m.audio.currentTime;
-                    updateVisualProgress(curr);
-
-                    // End playback only when master track reaches finish
-                    if (m.audio.ended || (maxTrackDuration > 0 && curr >= maxTrackDuration)) {
-                        pauseAll();
-                        seekAllTo(0);
-                        return;
-                    }
-
-                    stemsData.forEach(s => {
-                        if (s === m || s.audio.ended) return;
-
-                        if (s.audio.paused && isGlobalPlaying && !s.audio.seeking) {
-                            s.audio.play().catch(() => {});
-                        }
-
-                        const drift = curr - s.audio.currentTime;
-                        const absDrift = Math.abs(drift);
-
-                        // Smooth micro-speed adjustment (no hard seeks during active playback!)
-                        // Completely removes stutter loops and phrase repeating
-                        if (absDrift > 0.03 && absDrift < 0.6) {
-                            s.audio.playbackRate = drift > 0 ? 1.025 : 0.975;
-                        } else {
-                            if (s.audio.playbackRate !== 1.0) s.audio.playbackRate = 1.0;
-                        }
-                    });
-                }, 200);
-            }
-
-            function pauseAll() {
-                stemsData.forEach(s => {
-                    s.audio.pause();
-                    s.audio.playbackRate = 1.0;
-                    s.card.classList.remove('is-playing');
-                });
-                isGlobalPlaying = false;
-                masterPlayIcon.innerText = "▶";
-                masterPlayText.innerText = "PLAY ALL SYNC";
-                masterPlayBtn.classList.remove('is-playing');
-                if (syncTicker) clearInterval(syncTicker);
-            }
-
-            masterPlayBtn.onclick = () => {
-                if (isGlobalPlaying) {
-                    pauseAll();
-                } else {
-                    playAll();
-                }
-            };
-
-            masterResetBtn.onclick = () => {
-                pauseAll();
-                seekAllTo(0);
-            };
-
-            masterScrubber.oninput = (e) => {
-                const targetTime = parseFloat(e.target.value);
-                seekAllTo(targetTime);
-            };
-
-            quickUnmuteAll.onclick = () => {
-                stemsData.forEach(s => {
-                    s.isMuted = false;
-                    s.isSolo = false;
-                });
-                applySoloMuteStates();
-            };
-
-            quickMuteAll.onclick = () => {
-                stemsData.forEach(s => {
-                    s.isMuted = true;
-                    s.isSolo = false;
-                });
-                applySoloMuteStates();
-            };
-
-            quickClearSolo.onclick = () => {
-                stemsData.forEach(s => {
-                    s.isSolo = false;
-                });
-                applySoloMuteStates();
-            };
-
-            // Set initial muted states on player startup
-            applySoloMuteStates();
-        }
-
-        // Quick Send individual stem to Midifier or Sampler
-        window.sendSingleStemToTool = (itemIndex, tool) => {
-            const stem = stemsData[itemIndex];
-            if (!stem || !stem.url) {
-                alert("Audio del stem no disponible.");
-                return;
-            }
-
-            const payload = {
-                label: stem.label,
-                url: stem.url,
-                timestamp: Date.now()
-            };
-
-            if (tool === 'midifier') {
-                localStorage.setItem('incomingToMidifier', JSON.stringify(payload));
-                window.location.href = 'midifier.html';
-            } else if (tool === 'sampler') {
-                localStorage.setItem('incomingToSampler', JSON.stringify(payload));
-                window.location.href = 'sampler.html';
-            }
-        };
-
-        // Navigation to Midifier / Sampler / Mixter / Master
-        window.sendToTool = (tool) => {
-            const stems = [];
-            const labels = ["ORIGINAL SONG", "VOCALS", "BASS", "OTHER", "DRUMS", "KICK", "SNARE", "HI-HAT"];
-
-            if (lastProcessedData) {
-                for (let i = 0; i < 8; i++) {
-                    const resolvedUrl = resolveGradioUrl(lastProcessedData[i]);
-                    if (resolvedUrl) {
-                        stems.push({
-                            label: labels[i],
-                            url: resolvedUrl
-                        });
-                    }
-                }
-            }
-
-            if (stems.length === 0) {
-                alert("No stems available yet. Please process a song first.");
-                return;
-            }
-
-            const keyVal = document.getElementById('keyVal').innerText;
-            const bpmVal = document.getElementById('bpmVal').innerText;
-
-            const payload = {
-                stems: stems,
-                key: keyVal,
-                bpm: bpmVal,
-                timestamp: Date.now()
-            };
-
-            localStorage.setItem('stemerStems', JSON.stringify(payload));
-            console.log(`[TRANSFER] Sending ${stems.length} stems to ${tool}`);
-
-            if (tool === 'midifier') {
-                window.location.href = 'midifier.html';
-            } else if (tool === 'sampler') {
-                window.location.href = 'sampler.html';
-            } else if (tool === 'mixter') {
-                window.location.href = 'mixter.html';
-            } else if (tool === 'master') {
-                const origSong = stems.find(s => s.label === "ORIGINAL SONG") || stems[0];
-                if (origSong) {
-                    localStorage.setItem('stemerMasterTrack', JSON.stringify({
-                        url: origSong.url,
-                        name: selectedFile ? selectedFile.name : 'Stemer Mix Track',
-                        source: 'Stemer',
-                        timestamp: Date.now()
-                    }));
-                }
-                window.location.href = 'master.html';
-            }
-        };
-
-        document.getElementById('downloadAllBtn').onclick = async () => {
-            const btn = document.getElementById('downloadAllBtn');
-            const selectedFiles = Array.from(document.querySelectorAll('.dl-opt:checked')).map(c => c.value);
-            const originalText = btn.innerText;
-            btn.innerText = "PREPARING ZIP...";
-            try {
-                const c = await Client.connect(SPACE_ID);
-                const res = await c.predict("/create_download_zip", { selected_files: selectedFiles });
-                const a = document.createElement('a'); 
-                a.href = res.data[0].url; 
-                a.download = "stems_pack.zip"; 
-                a.click();
-            } catch (e) { 
-                alert("Download failed"); 
-            }
-            btn.innerText = originalText;
-        };
-
-        // Ensure bottom dock links sync current stems to tools
-        document.querySelectorAll('.tool-link').forEach(link => {
-            link.addEventListener('click', () => {
-                if (lastProcessedData) {
-                    try {
-                        const autoStems = [];
-                        const sLabels = ["ORIGINAL SONG", "VOCALS", "BASS", "OTHER", "DRUMS", "KICK", "SNARE", "HI-HAT"];
-                        for (let si = 0; si < 8; si++) {
-                            const sUrl = resolveGradioUrl(lastProcessedData[si]);
-                            if (sUrl) autoStems.push({ label: sLabels[si], url: sUrl });
-                        }
-                        const keyVal = document.getElementById('keyVal').innerText;
-                        const bpmVal = document.getElementById('bpmVal').innerText;
-                        localStorage.setItem('stemerStems', JSON.stringify({
-                            stems: autoStems,
-                            key: keyVal,
-                            bpm: bpmVal,
-                            timestamp: Date.now()
-                        }));
-                    } catch (e) {}
-                }
-            });
-        });
-    </script>
-
+    <!-- 6-Link Bottom Nav Dock -->
     <div class="tool-nav">
-        <a href="index.html" class="tool-link active">Stemer</a>
+        <a href="index.html" class="tool-link active">Tool Box</a>
+        <a href="stemer.html" class="tool-link">Stemer</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
         <a href="mixter.html" class="tool-link">Mixter</a>
         <a href="master.html" class="tool-link">Master</a>
     </div>
-
 </body>
 
 </html>
-

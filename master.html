@@ -350,10 +350,10 @@
 <body>
     <!-- Top Navigation -->
     <nav class="custom-header">
-        <div class="logo-container">
+        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Volver a Tool Box">
             <img src="logo.png" alt="Logo" class="logo-img">
             <div class="logo-text">MASTER</div>
-        </div>
+        </a>
         <div class="header-right">
             <div class="header-tag">BY MYOOZ LABS</div>
         </div>
@@ -629,7 +629,8 @@
 
     <!-- 5-Tool Bottom Nav -->
     <nav class="tool-nav">
-        <a href="index.html" class="tool-link">Stemer</a>
+        <a href="index.html" class="tool-link">Tool Box</a>
+        <a href="stemer.html" class="tool-link">Stemer</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
         <a href="mixter.html" class="tool-link">Mixter</a>
@@ -1015,7 +1016,7 @@
                 timestamp: Date.now()
             };
             localStorage.setItem('stemerIncomingTrack', JSON.stringify(payload));
-            window.location.href = 'index.html';
+            window.location.href = 'stemer.html';
         };
 
         sendOriginalVersionBtn.onclick = () => {
@@ -1028,7 +1029,7 @@
                 timestamp: Date.now()
             };
             localStorage.setItem('stemerIncomingTrack', JSON.stringify(payload));
-            window.location.href = 'index.html';
+            window.location.href = 'stemer.html';
         };
     </script>
 </body>
