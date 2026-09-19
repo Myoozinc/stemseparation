@@ -50,18 +50,22 @@ def normalize(y, peak=0.95):
     return y
 
 def save_stem(path, audio, sr):
-    """Normalize and save audio in studio-grade 32-bit Float WAV."""
+    """Normalize and save audio in studio-grade 16-bit PCM stereo WAV (50% smaller transfer size)."""
     if isinstance(audio, torch.Tensor):
         arr = audio.detach().cpu().numpy()
         if arr.ndim == 2:
             arr = arr.T  # (channels, samples) -> (samples, channels)
+        elif arr.ndim == 1:
+            arr = np.column_stack([arr, arr])
         max_val = np.max(np.abs(arr))
         if max_val > 1e-6:
             arr = (arr / max_val) * 0.95
-        sf.write(path, arr.astype(np.float32), sr, subtype='FLOAT')
+        sf.write(path, arr.astype(np.float32), sr, subtype='PCM_16')
     else:
         norm_audio = normalize(audio)
-        sf.write(path, norm_audio.astype(np.float32), sr, subtype='FLOAT')
+        if norm_audio.ndim == 1:
+            norm_audio = np.column_stack([norm_audio, norm_audio])
+        sf.write(path, norm_audio.astype(np.float32), sr, subtype='PCM_16')
 
 # ----------------------------- 
 # Advanced Key Detection
@@ -69,7 +73,7 @@ def save_stem(path, audio, sr):
 def detect_key_advanced(y, sr):
     """
     Professional key detection using Essentia (industry standard).
-    Falls back to Krumhansl-Schmuckler if Essentia is unavailable.
+    Falls back cleanly to Krumhansl-Schmuckler if Essentia is unavailable or fails.
     """
     try:
         import essentia.standard as es
@@ -77,77 +81,84 @@ def detect_key_advanced(y, sr):
         # Resample to 44100 if needed (Essentia works best at this rate)
         if sr != 44100:
             import librosa as lr
-            y = lr.resample(y, orig_sr=sr, target_sr=44100)
-            sr = 44100
+            y_res = lr.resample(y, orig_sr=sr, target_sr=44100)
+        else:
+            y_res = y
         
-        # Ensure float32
-        audio = y.astype(np.float32)
+        # Ensure float32 mono
+        audio = y_res.astype(np.float32)
+        if len(audio) > 44100 and np.max(np.abs(audio)) > 1e-4:
+            key_detector = es.KeyExtractor()
+            key, scale, strength = key_detector(audio)
+            if key and scale:
+                return f"{key} {scale.capitalize()}"
+    except Exception:
+        pass
         
-        # Use Essentia's Key detector (used by Spotify, Beatport, etc.)
-        key_detector = es.KeyExtractor()
-        key, scale, strength = key_detector(audio)
-        
-        # Essentia returns scale as "major" or "minor"
-        return f"{key} {scale}"
-        
-    except ImportError:
-        # Fallback to Krumhansl-Schmuckler if Essentia not available
+    # Robust fallback
+    try:
         return detect_key_krumhansl(y, sr)
+    except Exception:
+        return "C Major"
 
 def detect_key_krumhansl(y, sr):
     """
-    Fallback: Krumhansl-Schmuckler algorithm for key detection.
+    Fallback: Krumhansl-Schmuckler algorithm for key detection with zero-division protection.
     """
-    # Krumhansl-Schmuckler key profiles
-    major_profile = np.array([6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88])
-    minor_profile = np.array([6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17])
-    
-    keys = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
-    
-    # Focus on first 30 seconds to speed up CQT analysis by 10x
-    max_samples = int(sr * 30)
-    y_slice = y[:max_samples] if len(y) > max_samples else y
-    
-    # Use harmonic component on slice
-    y_harmonic = librosa.effects.harmonic(y_slice, margin=4)
-    
-    # Fast CQT chroma
-    chroma = librosa.feature.chroma_cqt(y=y_harmonic, sr=sr, hop_length=512, n_chroma=12)
-    
-    # Simple average
-    mean_chroma = np.mean(chroma, axis=1)
-    mean_chroma = mean_chroma / np.linalg.norm(mean_chroma)
-    
-    best_corr = -1
-    best_key = None
-    best_is_major = True
-    
-    for i, key in enumerate(keys):
-        # Roll profiles
-        major_prof = np.roll(major_profile, i)
-        minor_prof = np.roll(minor_profile, i)
+    try:
+        major_profile = np.array([6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88])
+        minor_profile = np.array([6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17])
         
-        # Normalize
-        major_prof = major_prof / np.linalg.norm(major_prof)
-        minor_prof = minor_prof / np.linalg.norm(minor_prof)
+        keys = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
         
-        # Calculate correlation
-        corr_major = np.corrcoef(mean_chroma, major_prof)[0, 1]
-        corr_minor = np.corrcoef(mean_chroma, minor_prof)[0, 1]
+        # Focus on first 30 seconds to speed up CQT analysis
+        max_samples = int(sr * 30)
+        y_slice = y[:max_samples] if len(y) > max_samples else y
         
-        if corr_major > best_corr:
-            best_corr = corr_major
-            best_key = key
-            best_is_major = True
+        if np.max(np.abs(y_slice)) < 1e-4:
+            return "C Major"
         
-        if corr_minor > best_corr:
-            best_corr = corr_minor
-            best_key = key
-            best_is_major = False
-    
-    # Format output
-    mode = "major" if best_is_major else "minor"
-    return f"{best_key} {mode}"
+        # Use harmonic component on slice
+        y_harmonic = librosa.effects.harmonic(y_slice, margin=4)
+        
+        # Fast CQT chroma
+        chroma = librosa.feature.chroma_cqt(y=y_harmonic, sr=sr, hop_length=512, n_chroma=12)
+        
+        # Simple average
+        mean_chroma = np.mean(chroma, axis=1)
+        norm = np.linalg.norm(mean_chroma)
+        if norm < 1e-6:
+            return "C Major"
+        mean_chroma = mean_chroma / norm
+        
+        best_corr = -1
+        best_key = "C"
+        best_is_major = True
+        
+        for i, key in enumerate(keys):
+            major_prof = np.roll(major_profile, i)
+            minor_prof = np.roll(minor_profile, i)
+            
+            major_prof = major_prof / np.linalg.norm(major_prof)
+            minor_prof = minor_prof / np.linalg.norm(minor_prof)
+            
+            corr_major = np.corrcoef(mean_chroma, major_prof)[0, 1]
+            corr_minor = np.corrcoef(mean_chroma, minor_prof)[0, 1]
+            
+            if corr_major > best_corr:
+                best_corr = corr_major
+                best_key = key
+                best_is_major = True
+            
+            if corr_minor > best_corr:
+                best_corr = corr_minor
+                best_key = key
+                best_is_major = False
+        
+        mode = "Major" if best_is_major else "Minor"
+        return f"{best_key} {mode}"
+    except Exception:
+        return "C Major"
 
 # ----------------------------- 
 # Advanced Tempo Detection
@@ -155,25 +166,41 @@ def detect_key_krumhansl(y, sr):
 def detect_tempo_advanced(y, sr):
     """
     Ultra-fast and musically accurate BPM detection snap to nearest whole integer.
-    Computes onset envelope directly (<0.05s) avoiding heavy STFT harmonic-percussive separation.
+    Computes onset envelope directly (<0.05s) with zero-energy handling.
     """
-    # Focus on first 30 seconds for maximum rhythm clarity and 10x faster execution
-    max_samples = int(sr * 30)
-    y_slice = y[:max_samples] if len(y) > max_samples else y
-    
-    # Compute onset envelope directly
-    onset_env = librosa.onset.onset_strength(y=y_slice, sr=sr)
-    
-    # Use median aggregation for robust tempo
-    tempo = librosa.beat.tempo(onset_envelope=onset_env, sr=sr, aggregate=np.median)
-    
-    # Extract the value (librosa returns ndarray)
-    if isinstance(tempo, np.ndarray):
-        bpm = float(tempo[0]) if len(tempo) > 0 else 120.0
-    else:
-        bpm = float(tempo)
-    
-    return int(round(bpm))
+    try:
+        if y is None or len(y) == 0:
+            return 120
+            
+        # Focus on first 35 seconds for maximum rhythm clarity
+        max_samples = int(sr * 35)
+        y_slice = y[:max_samples] if len(y) > max_samples else y
+        
+        peak_amp = np.max(np.abs(y_slice))
+        if peak_amp < 1e-4:
+            return 120
+            
+        y_norm = y_slice / peak_amp
+        
+        # Compute onset envelope directly
+        onset_env = librosa.onset.onset_strength(y=y_norm, sr=sr)
+        if np.max(onset_env) < 1e-4:
+            return 120
+            
+        # Use median aggregation for robust tempo
+        tempo = librosa.beat.tempo(onset_envelope=onset_env, sr=sr, aggregate=np.median)
+        
+        if isinstance(tempo, np.ndarray) and len(tempo) > 0:
+            bpm = float(tempo[0])
+        else:
+            bpm = float(tempo)
+        
+        if np.isnan(bpm) or bpm < 40 or bpm > 260:
+            return 120
+        
+        return int(round(bpm))
+    except Exception:
+        return 120
     
 # ----------------------------- 
 # Convert MP3 → WAV

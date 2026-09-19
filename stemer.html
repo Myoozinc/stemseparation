@@ -631,6 +631,63 @@
             gap: 8px;
         }
 
+        /* Drum Mode Switcher Bar */
+        .drum-mode-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-md, 8px);
+            padding: 8px 16px;
+            margin-bottom: 0.85rem;
+            flex-wrap: wrap;
+        }
+        .drum-mode-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.85);
+            text-transform: uppercase;
+        }
+        .drum-mode-toggle-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .drum-mode-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .drum-mode-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+        .drum-mode-btn.active {
+            background: rgba(0, 245, 255, 0.16);
+            border-color: #00f5ff;
+            color: #00f5ff;
+            box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+        }
+        .drum-mode-btn.active-kit {
+            background: rgba(255, 0, 127, 0.16);
+            border-color: #ff007f;
+            color: #ff007f;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
+        }
+
         /* Stem Row (DAW Mixer Style) */
         .stem-player {
             background: rgba(255, 255, 255, 0.03);
@@ -1267,6 +1324,22 @@
                     <span style="font-size: 0.68rem; color: var(--accent-magenta); font-weight: 600; letter-spacing: 1px;">SINCRONIZADO</span>
                 </div>
 
+                <!-- Drum Routing Control Bar -->
+                <div class="drum-mode-bar" id="drumModeBar" style="display: none;">
+                    <div class="drum-mode-label">
+                        <span aria-hidden="true">🥁</span>
+                        <span>Audición de Batería:</span>
+                    </div>
+                    <div class="drum-mode-toggle-group">
+                        <button type="button" class="drum-mode-btn active" id="btnDrumRaw" title="Escuchar la batería completa sin duplicaciones">
+                            Batería Completa (Raw)
+                        </button>
+                        <button type="button" class="drum-mode-btn" id="btnDrumKit" title="Escuchar el kit desglosado: Kick, Snare y Hi-Hat">
+                            Kit Desglosado (Kick / Snare / Hi-Hat)
+                        </button>
+                    </div>
+                </div>
+
                 <div id="stemsList" class="stems-container"></div>
 
                 <div class="glass-card" style="margin-top: 2rem;">
@@ -1381,8 +1454,12 @@
                 return raw;
             }
             const origin = "https://tinahmbuz-audiostems.hf.space";
-            if (raw.startsWith("/tmp/gradio/")) {
-                return `${origin}/gradio_api/file=${raw}`;
+            if (raw.startsWith("/gradio_api/")) {
+                return `${origin}${raw}`;
+            }
+            if (raw.startsWith("/tmp/") || raw.startsWith("tmp/")) {
+                const normPath = raw.startsWith("/") ? raw : `/${raw}`;
+                return `${origin}/gradio_api/file=${normPath}`;
             }
             return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
         }
@@ -2090,6 +2167,11 @@
                 stemsSectionHeader.style.display = 'flex';
             }
 
+            const drumModeBar = document.getElementById('drumModeBar');
+            const btnDrumRaw = document.getElementById('btnDrumRaw');
+            const btnDrumKit = document.getElementById('btnDrumKit');
+            let currentDrumMode = 'raw'; // 'raw' or 'kit'
+
             // 2. =========================================================================
             // PISTAS DE STEMS (ÍNDICES 1 A 7: VOCALS, BASS, OTHER, DRUMS, KICK, SNARE, HI-HAT)
             // =========================================================================
@@ -2140,7 +2222,7 @@
                         </a>
                     </div>
 
-                    <audio id="audioElement_${itemIndex}" preload="auto">
+                    <audio id="audioElement_${itemIndex}" preload="metadata">
                         <source src="${stemUrl}" type="audio/wav">
                     </audio>
                 `;
@@ -2149,8 +2231,19 @@
 
                 const audio = card.querySelector(`#audioElement_${itemIndex}`);
 
-                // Stems 1 to 4 (Vocals, Bass, Other, Drums) active by default
-                // Detailed drum kit (Kick, Snare, Hi-hat; i >= 5) muted by default to prevent doubling with Drums
+                // Error listener with automatic canonical retry
+                audio.addEventListener('error', (e) => {
+                    console.warn(`[AUDIO WARN] Stem ${currentLabel} failed to load from ${stemUrl}:`, e);
+                    const currentSrc = audio.currentSrc || stemUrl;
+                    if (currentSrc && currentSrc.includes('/tmp/') && !currentSrc.includes('/gradio_api/file=')) {
+                        const fixedUrl = currentSrc.replace('/tmp/', '/gradio_api/file=/tmp/');
+                        console.log(`[AUDIO RETRY] Retrying ${currentLabel} with canonical API route:`, fixedUrl);
+                        audio.src = fixedUrl;
+                        audio.load();
+                    }
+                });
+
+                // Detailed drum kit (Kick, Snare, Hi-hat; i >= 5) muted by default when in Raw mode to prevent doubling
                 const shouldBeMutedByDefault = (i >= 5);
 
                 const stemObj = {
@@ -2184,6 +2277,47 @@
                 stemsData.push(stemObj);
             }
 
+            // Show drum mode selector if both raw drums and kit stems are present
+            const hasKitStems = stemsData.some(s => ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k)));
+            if (drumModeBar) {
+                drumModeBar.style.display = hasKitStems ? 'flex' : 'none';
+            }
+
+            function setDrumAuditionMode(mode) {
+                currentDrumMode = mode;
+                const isRaw = (mode === 'raw');
+                if (btnDrumRaw) btnDrumRaw.classList.toggle('active', isRaw);
+                if (btnDrumKit) {
+                    btnDrumKit.classList.toggle('active-kit', !isRaw);
+                    btnDrumKit.classList.toggle('active', false);
+                }
+
+                const rawDrum = stemsData.find(s => s.label.includes('DRUMS (RAW)'));
+                const kitStems = stemsData.filter(s => ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k)));
+
+                if (isRaw) {
+                    if (rawDrum) rawDrum.isMuted = false;
+                    kitStems.forEach(k => k.isMuted = true);
+                } else {
+                    if (rawDrum) rawDrum.isMuted = true;
+                    kitStems.forEach(k => k.isMuted = false);
+                }
+                applySoloMuteStates();
+            }
+
+            if (btnDrumRaw) {
+                btnDrumRaw.onclick = (e) => {
+                    e.stopPropagation();
+                    setDrumAuditionMode('raw');
+                };
+            }
+            if (btnDrumKit) {
+                btnDrumKit.onclick = (e) => {
+                    e.stopPropagation();
+                    setDrumAuditionMode('kit');
+                };
+            }
+
             stemsData.forEach(stem => {
                 // Solo button (Solo overrides Mute)
                 stem.soloBtn.onclick = (e) => {
@@ -2192,10 +2326,30 @@
                     applySoloMuteStates();
                 };
 
-                // Mute button
+                // Mute button with intelligent Drum Mode synchronization
                 stem.muteBtn.onclick = (e) => {
                     e.stopPropagation();
                     stem.isMuted = !stem.isMuted;
+
+                    const isKit = ['KICK', 'SNARE', 'HI-HAT'].some(k => stem.label.includes(k));
+                    const isRaw = stem.label.includes('DRUMS (RAW)');
+                    const rawDrum = stemsData.find(s => s.label.includes('DRUMS (RAW)'));
+                    const kitStems = stemsData.filter(s => ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k)));
+
+                    if (isKit && !stem.isMuted) {
+                        // User unmuted a kit stem: silence raw drums to prevent doubling
+                        if (rawDrum) rawDrum.isMuted = true;
+                        currentDrumMode = 'kit';
+                        if (btnDrumRaw) btnDrumRaw.classList.remove('active');
+                        if (btnDrumKit) btnDrumKit.classList.add('active-kit');
+                    } else if (isRaw && !stem.isMuted) {
+                        // User unmuted raw drums: silence kit stems to prevent doubling
+                        kitStems.forEach(k => k.isMuted = true);
+                        currentDrumMode = 'raw';
+                        if (btnDrumRaw) btnDrumRaw.classList.add('active');
+                        if (btnDrumKit) btnDrumKit.classList.remove('active-kit');
+                    }
+
                     applySoloMuteStates();
                 };
 
@@ -2466,8 +2620,12 @@
 
             quickUnmuteAll.onclick = () => {
                 stemsData.forEach(s => {
-                    s.isMuted = false;
                     s.isSolo = false;
+                    if (currentDrumMode === 'raw') {
+                        s.isMuted = ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k));
+                    } else {
+                        s.isMuted = s.label.includes('DRUMS (RAW)');
+                    }
                 });
                 applySoloMuteStates();
             };

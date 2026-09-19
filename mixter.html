@@ -688,8 +688,12 @@
             if (!raw) return "";
             if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("blob:") || raw.startsWith("data:")) return raw;
             const origin = "https://tinahmbuz-audiostems.hf.space";
-            if (raw.startsWith("/tmp/gradio/")) {
-                return `${origin}/gradio_api/file=${raw}`;
+            if (raw.startsWith("/gradio_api/")) {
+                return `${origin}${raw}`;
+            }
+            if (raw.startsWith("/tmp/") || raw.startsWith("tmp/")) {
+                const normPath = raw.startsWith("/") ? raw : `/${raw}`;
+                return `${origin}/gradio_api/file=${normPath}`;
             }
             return raw.startsWith("/") ? (origin + raw) : (origin + "/" + raw);
         }
