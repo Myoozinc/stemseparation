@@ -12,6 +12,21 @@ import numpy as np
 import soundfile as sf
 import scipy.signal as signal
 
+try:
+    from audio_analysis import (
+        calculate_lufs,
+        calculate_true_peak,
+        calculate_crest_factor,
+        calculate_spectral_balance
+    )
+except ImportError:
+    from backend.audio_analysis import (
+        calculate_lufs,
+        calculate_true_peak,
+        calculate_crest_factor,
+        calculate_spectral_balance
+    )
+
 # ==========================================================
 # PRESETS MATRIX BY GENRE & CHARACTER
 # ==========================================================
@@ -238,54 +253,8 @@ MASTER_PRESETS = {
 }
 
 # ==========================================================
-# STUDIO METRICS ENGINE
+# STUDIO METRICS ENGINE (ITU-R BS.1770-4 & Spatial Correlation)
 # ==========================================================
-
-def calculate_lufs(audio, sr=48000):
-    """Exact ITU-R BS.1770-4 K-Weighting Integrated Loudness (LUFS)"""
-    if audio.ndim == 1:
-        audio = audio[:, np.newaxis]
-        
-    b1 = [1.53512485958697, -2.69169618940638, 1.19839281085285]
-    a1 = [1.0, -1.69065929318241, 0.73248077421585]
-    b2 = [1.0, -2.0, 1.0]
-    a2 = [1.0, -1.99004745483398, 0.99007225035621]
-    
-    y = np.zeros_like(audio)
-    for ch in range(audio.shape[1]):
-        filtered1 = signal.lfilter(b1, a1, audio[:, ch])
-        y[:, ch] = signal.lfilter(b2, a2, filtered1)
-        
-    block_size = int(0.400 * sr)
-    hop_size = int(0.100 * sr)
-    n_blocks = (len(y) - block_size) // hop_size + 1
-    if n_blocks <= 0:
-        return -70.0
-        
-    block_powers = []
-    for i in range(n_blocks):
-        start = i * hop_size
-        block = y[start:start+block_size, :]
-        power = np.mean(block**2, axis=0)
-        z = np.sum(power)
-        block_powers.append(z)
-        
-    block_powers = np.array(block_powers)
-    block_loudness = -0.691 + 10 * np.log10(block_powers + 1e-12)
-    
-    idx_abs = block_loudness > -70.0
-    if not np.any(idx_abs):
-        return -70.0
-        
-    z_avg = np.mean(block_powers[idx_abs])
-    gamma_r = -0.691 + 10 * np.log10(z_avg + 1e-12) - 10.0
-    
-    idx_rel = block_loudness > gamma_r
-    if not np.any(idx_rel):
-        return float(gamma_r)
-        
-    integrated_lufs = -0.691 + 10 * np.log10(np.mean(block_powers[idx_rel]) + 1e-12)
-    return float(integrated_lufs)
 
 def calculate_short_term_max_lufs(audio, sr=48000):
     """Calculates Max Short-Term LUFS over 3-second windows"""
@@ -316,30 +285,6 @@ def calculate_short_term_max_lufs(audio, sr=48000):
         if l > max_lufs:
             max_lufs = l
     return float(max_lufs)
-
-def calculate_true_peak(audio, sr=44100):
-    """Calculates True-Peak in dBFS using fast localized 4x polyphase oversampling"""
-    sample_peak = np.max(np.abs(audio))
-    if sample_peak < 1e-6:
-        return -70.0
-    mono = np.max(np.abs(audio), axis=1) if audio.ndim == 2 else np.abs(audio)
-    top_idx = int(np.argmax(mono))
-    window = int(sr * 2)
-    start_idx = max(0, top_idx - window)
-    end_idx = min(len(audio), top_idx + window)
-    slice_audio = audio[start_idx:end_idx]
-    if len(slice_audio) > 0:
-        audio_4x = signal.resample_poly(slice_audio, 4, 1, axis=0)
-        peak = max(sample_peak, float(np.max(np.abs(audio_4x))))
-    else:
-        peak = sample_peak
-    return float(20 * np.log10(peak + 1e-12))
-
-def calculate_crest_factor(audio):
-    """Dynamic Range Crest Factor (Peak to RMS ratio in dB)"""
-    peak = np.max(np.abs(audio)) + 1e-9
-    rms = np.sqrt(np.mean(audio**2)) + 1e-9
-    return float(20 * np.log10(peak / rms))
 
 def calculate_stereo_correlation(audio):
     """Pearson correlation coefficient between Left and Right channels (-1 to +1)"""
@@ -548,11 +493,25 @@ def master_audio(
     input_true_peak = calculate_true_peak(data, sr)
     input_dr = calculate_crest_factor(data)
     input_corr = calculate_stereo_correlation(data)
+    input_spectral = calculate_spectral_balance(data, sr)
+    adaptive_notes = []
     
-    # Stage 1: Pre-Master Precision EQ
+    # Stage 1: Pre-Master Precision EQ & Adaptive Sub/Mud Correction
     sub_hpf = preset.get("sub_hpf", 28)
+    sub_pct = input_spectral.get("bands_pct", {}).get("sub", 0.0)
+    if sub_pct > 22.0:
+        sub_hpf = max(sub_hpf, 34)
+        adaptive_notes.append(f"Sub-bass energy high ({sub_pct}%). Adjusted HPF cutoff to {sub_hpf} Hz.")
+    elif sub_pct > 16.0:
+        sub_hpf = max(sub_hpf, 30)
+
     sos_hpf = signal.butter(3, sub_hpf, btype='high', fs=sr, output='sos')
     mastered = signal.sosfilt(sos_hpf, data, axis=0)
+
+    # Adaptive low-mid de-mudding if boxiness detected
+    if input_spectral.get("has_excess_mud"):
+        mastered = biquad_peak(mastered, freq=320, gain_db=-1.2, sr=sr, q=1.4)
+        adaptive_notes.append("Low-mid boxiness detected. Applied -1.2 dB corrective dip at 320 Hz.")
     
     if preset.get("eq_sub_gain", 0) > 0:
         mastered = biquad_peak(mastered, preset["eq_sub_freq"], preset["eq_sub_gain"], sr=sr, q=1.1)
@@ -572,27 +531,75 @@ def master_audio(
     mastered = fast_tape_saturation(mastered, drive_amount=preset.get("tape_drive", 0.5))
     
     # Stage 4: Mid/Side Spatial Enhancement & Mono Sub
+    stereo_width = preset.get("stereo_width", 1.15)
+    if input_corr < 0.50:
+        stereo_width = min(stereo_width, 1.05)
+        adaptive_notes.append(f"Phase correlation low ({input_corr:.2f}). Protected mono compatibility by limiting stereo width to {stereo_width}.")
+    elif input_corr < 0.70:
+        stereo_width = min(stereo_width, 1.12)
+
     mastered = fast_mid_side_polish(
         mastered,
         sr=sr,
         mono_sub_hz=preset.get("mono_sub_hz", 120),
-        stereo_width=preset.get("stereo_width", 1.15),
+        stereo_width=stereo_width,
         air_sheen=preset.get("air_sheen", 0.4)
     )
     
-    # Stage 5: Target Loudness Calibration & True-Peak Limiter
-    target_lufs = preset.get("target_lufs", -14.0)
-    current_lufs = calculate_lufs(mastered, sr)
-    gain_db = target_lufs - current_lufs
-    mastered = mastered * (10 ** (gain_db / 20.0))
-    
-    ceiling_db = preset.get("ceiling_db", -0.5)
-    final_master = fast_brickwall_limiter(mastered, ceiling_db=ceiling_db, sr=sr)
-    
-    # Measure output metrics
-    output_lufs = calculate_lufs(final_master, sr)
-    output_st_max = calculate_short_term_max_lufs(final_master, sr)
+    # Stage 5: Closed-Loop Measurement-Correction LUFS Normalization & True-Peak Limiter
+    target_lufs = float(preset.get("target_lufs", -14.0))
+    ceiling_db = float(preset.get("ceiling_db", -0.5))
+
+    pre_limiter_lufs = calculate_lufs(mastered, sr)
+    if pre_limiter_lufs <= -69.0:
+        drive_gain_db = 0.0
+    else:
+        drive_gain_db = target_lufs - pre_limiter_lufs
+
+    final_master = mastered
+    best_master = None
+    best_abs_diff = 999.0
+    actual_lufs = pre_limiter_lufs
+    max_iterations = 6
+    tolerance = 0.3
+    iterations_run = 0
+
+    for iteration in range(1, max_iterations + 1):
+        iterations_run = iteration
+        trial_audio = mastered * (10 ** (drive_gain_db / 20.0))
+        limited_audio = fast_brickwall_limiter(trial_audio, ceiling_db=ceiling_db, sr=sr)
+        meas_lufs = calculate_lufs(limited_audio, sr)
+        
+        diff = meas_lufs - target_lufs
+        abs_diff = abs(diff)
+        
+        if abs_diff < best_abs_diff:
+            best_abs_diff = abs_diff
+            best_master = limited_audio
+            actual_lufs = meas_lufs
+
+        if abs_diff <= tolerance:
+            final_master = limited_audio
+            actual_lufs = meas_lufs
+            break
+
+        # Proportional correction with 0.90 damping factor to smoothly converge through limiter gain reduction
+        correction = -diff * 0.90
+        correction = float(np.clip(correction, -4.0, 4.0))
+        drive_gain_db += correction
+    else:
+        final_master = best_master if best_master is not None else limited_audio
+
+    # Inter-sample True-Peak safety check (ITU-R BS.1770-4 4x polyphase)
     output_true_peak = calculate_true_peak(final_master, sr)
+    if output_true_peak > (ceiling_db + 0.05):
+        tp_trim_db = ceiling_db - output_true_peak
+        final_master = final_master * (10 ** (tp_trim_db / 20.0))
+        actual_lufs = calculate_lufs(final_master, sr)
+        output_true_peak = calculate_true_peak(final_master, sr)
+
+    output_lufs = actual_lufs
+    output_st_max = calculate_short_term_max_lufs(final_master, sr)
     output_dr = calculate_crest_factor(final_master)
     output_corr = calculate_stereo_correlation(final_master)
     
@@ -607,11 +614,16 @@ def master_audio(
         "target_lufs": target_lufs,
         "input_lufs": round(float(input_lufs), 1),
         "output_lufs": round(float(output_lufs), 1),
+        "lufs_error": round(float(output_lufs - target_lufs), 2),
+        "lufs_tolerance": tolerance,
+        "loop_iterations": iterations_run,
         "short_term_max_lufs": round(float(output_st_max), 1),
         "true_peak_dbfs": round(float(output_true_peak), 2),
         "input_true_peak": round(float(input_true_peak), 2),
         "dynamic_range_db": round(float(output_dr), 1),
         "stereo_correlation": round(float(output_corr), 2),
+        "spectral_balance": input_spectral.get("bands_pct", {}),
+        "adaptive_notes": adaptive_notes,
         "sample_rate": f"{sr} Hz",
         "bit_depth": "32-bit Float WAV",
         "output_path": output_path
