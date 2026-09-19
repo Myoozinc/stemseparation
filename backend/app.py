@@ -23,6 +23,7 @@ from midifier_engine import convert_audio_to_midi
 from sampler_engine import slice_audio_samples
 from mixter_engine import process_and_mix_stems
 from master_engine import master_audio
+from generative_engine import generate_instrument_stem
 
 # --- Existing Demucs / Stem separation functions ---
 try:
@@ -223,6 +224,35 @@ def process_master(audio_file, genre="urbano", style="club_banger", warmth=None,
         traceback.print_exc()
         return None, f"ERROR: {e}"
 
+# --- Generative Instrument Endpoint ---
+def process_generate_instrument(prompt, tempo="120", key="C Major", section="chorus", duration=15.0, ref_audio=None):
+    if not prompt or not str(prompt).strip():
+        return None, "ERROR: Please provide an instrument description."
+    try:
+        ref_path = None
+        if ref_audio:
+            ref_path, _ = extract_file_info(ref_audio)
+            
+        out_wav, meta = generate_instrument_stem(
+            prompt=str(prompt).strip(),
+            tempo=str(tempo).strip() if tempo else None,
+            key=str(key).strip() if key else None,
+            section=str(section).strip() if section else None,
+            duration_sec=float(duration) if duration else 15.0,
+            ref_audio_path=ref_path
+        )
+        if not out_wav or not meta.get("success"):
+            err_msg = meta.get("error", "Unknown error during instrument generation.")
+            return None, f"ERROR: {err_msg}"
+            
+        report_json = json.dumps(meta)
+        report_str = f"SUCCESS:{report_json}"
+        return out_wav, report_str
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return None, f"ERROR: {e}"
+
 # --- Gradio Application with defined API Names ---
 with gr.Blocks(title="Myooz Audio Intelligence Suite") as app:
     gr.Markdown("# Myooz Audio Intelligence Suite API")
@@ -325,6 +355,64 @@ with gr.Blocks(title="Myooz Audio Intelligence Suite") as app:
             outputs=[master_out_wav, master_status],
             api_name="process_master"
         )
+
+    # Generative Instruments
+    with gr.Tab("Generative"):
+        gen_prompt = gr.Textbox(
+            label="Instrument Description",
+            placeholder="e.g. 808 sub bass with distortion, soulful rhodes chords, punchy trap brass"
+        )
+        with gr.Row():
+            gen_tempo = gr.Textbox(value="120", label="Tempo (BPM)")
+            gen_key = gr.Textbox(value="C Major", label="Musical Key")
+            gen_section = gr.Dropdown(
+                choices=["chorus", "verse", "intro", "outro", "full"],
+                value="chorus",
+                label="Section"
+            )
+            gen_duration = gr.Slider(5, 30, value=15, step=1, label="Duration (seconds)")
+        gen_ref = gr.Audio(type="filepath", label="Reference Audio for Melodic Conditioning (Optional)")
+        gen_btn = gr.Button("Generate Instrument Stem")
+        gen_out_wav = gr.Audio(label="Generated Instrument WAV")
+        gen_status = gr.Textbox(label="Status / Diagnostics")
+        gen_btn.click(
+            fn=process_generate_instrument,
+            inputs=[gen_prompt, gen_tempo, gen_key, gen_section, gen_duration, gen_ref],
+            outputs=[gen_out_wav, gen_status],
+            api_name="generate_instrument"
+        )
+
+# Direct HTTP POST /generate-instrument route on underlying FastAPI server
+try:
+    from fastapi import Request
+    from fastapi.responses import JSONResponse
+    if hasattr(app, "app") and app.app is not None:
+        @app.app.post("/generate-instrument")
+        async def http_generate_instrument(request: Request):
+            try:
+                body = await request.json()
+            except Exception:
+                body = {}
+            prompt = body.get("prompt") or body.get("description", "")
+            tempo = body.get("tempo", "120")
+            key = body.get("key", "C Major")
+            section = body.get("section", "chorus")
+            duration = float(body.get("duration", 15.0))
+            ref_audio = body.get("ref_audio")
+            
+            out_wav, meta = generate_instrument_stem(
+                prompt=prompt,
+                tempo=tempo,
+                key=key,
+                section=section,
+                duration_sec=duration,
+                ref_audio_path=ref_audio
+            )
+            if not out_wav or not meta.get("success"):
+                return JSONResponse(status_code=400, content={"status": "error", "error": meta.get("error")})
+            return JSONResponse(status_code=200, content={"status": "success", "output_wav": out_wav, "metadata": meta})
+except Exception:
+    pass
 
 # Background Demucs model prewarm to eliminate first-request wait time
 def _prewarm_demucs():

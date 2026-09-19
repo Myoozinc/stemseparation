@@ -11,3 +11,5 @@ gradio
 essentia-tensorflow
 pyloudnorm
 mido
+requests
+huggingface_hub
