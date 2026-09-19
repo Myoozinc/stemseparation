@@ -140,7 +140,8 @@ def process_stems(song_file, options, auth_token=""):
         except Exception as audio_load_err:
             print(f"[WARN] Audio load for key/tempo error: {audio_load_err}")
 
-        info_msg = f"Key: {key} | Tempo: {tempo} BPM | SUCCESS:99:99"
+        profile_str = drum_refined.get("genre", "Universal")
+        info_msg = f"Key: {key} | Tempo: {tempo} BPM | Profile: {profile_str} | SUCCESS:99:99"
 
         return (
             wav_path,

@@ -687,6 +687,12 @@
             color: #ff007f;
             box-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
         }
+        .drum-mode-btn.active-full {
+            background: rgba(168, 85, 247, 0.18);
+            border-color: #a855f7;
+            color: #c084fc;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+        }
 
         /* Stem Row (DAW Mixer Style) */
         .stem-player {
@@ -1329,9 +1335,13 @@
                     <div class="drum-mode-label">
                         <span aria-hidden="true">🥁</span>
                         <span>Audición de Batería:</span>
+                        <span id="drumProfileBadge" style="font-size: 0.65rem; padding: 2px 8px; background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.45); border-radius: 12px; color: #c084fc; font-weight: 700; margin-left: 6px; letter-spacing: 0.5px;">Universal</span>
                     </div>
                     <div class="drum-mode-toggle-group">
-                        <button type="button" class="drum-mode-btn active" id="btnDrumRaw" title="Escuchar la batería completa sin duplicaciones">
+                        <button type="button" class="drum-mode-btn active-full" id="btnDrumFull" title="Escuchar todas las pistas simultáneamente">
+                            Todas Activas (Full)
+                        </button>
+                        <button type="button" class="drum-mode-btn" id="btnDrumRaw" title="Escuchar la batería completa (Raw)">
                             Batería Completa (Raw)
                         </button>
                         <button type="button" class="drum-mode-btn" id="btnDrumKit" title="Escuchar el kit desglosado: Kick, Snare y Hi-Hat">
@@ -1967,6 +1977,18 @@
                 document.getElementById('keyVal').innerText = key;
                 document.getElementById('bpmVal').innerText = bpm;
 
+                let profileDisplay = "Adaptativo";
+                const p = raw.match(/Profile[:\s]*([A-Za-z0-9_]+)/i);
+                if (p) {
+                    const rawProf = p[1].toLowerCase();
+                    if (rawProf.includes('808') || rawProf.includes('urban')) profileDisplay = "Urban / 808";
+                    else if (rawProf.includes('elec')) profileDisplay = "Electronic / Club";
+                    else if (rawProf.includes('rock') || rawProf.includes('acoust')) profileDisplay = "Acoustic / Rock";
+                    else profileDisplay = "Modern Pop";
+                }
+                const drumBadge = document.getElementById('drumProfileBadge');
+                if (drumBadge) drumBadge.innerText = profileDisplay;
+
                 // Save active session for instant restoration across tools navigation
                 try {
                     const sessionPayload = {
@@ -2168,9 +2190,10 @@
             }
 
             const drumModeBar = document.getElementById('drumModeBar');
+            const btnDrumFull = document.getElementById('btnDrumFull');
             const btnDrumRaw = document.getElementById('btnDrumRaw');
             const btnDrumKit = document.getElementById('btnDrumKit');
-            let currentDrumMode = 'raw'; // 'raw' or 'kit'
+            let currentDrumMode = 'full'; // 'full', 'raw', or 'kit'
 
             // 2. =========================================================================
             // PISTAS DE STEMS (ÍNDICES 1 A 7: VOCALS, BASS, OTHER, DRUMS, KICK, SNARE, HI-HAT)
@@ -2243,8 +2266,8 @@
                     }
                 });
 
-                // Detailed drum kit (Kick, Snare, Hi-hat; i >= 5) muted by default when in Raw mode to prevent doubling
-                const shouldBeMutedByDefault = (i >= 5);
+                // All stems active by default for full simultaneous playback freedom
+                const shouldBeMutedByDefault = false;
 
                 const stemObj = {
                     index: itemIndex,
@@ -2285,26 +2308,38 @@
 
             function setDrumAuditionMode(mode) {
                 currentDrumMode = mode;
+                const isFull = (mode === 'full');
                 const isRaw = (mode === 'raw');
+                const isKit = (mode === 'kit');
+                if (btnDrumFull) btnDrumFull.classList.toggle('active-full', isFull);
                 if (btnDrumRaw) btnDrumRaw.classList.toggle('active', isRaw);
                 if (btnDrumKit) {
-                    btnDrumKit.classList.toggle('active-kit', !isRaw);
+                    btnDrumKit.classList.toggle('active-kit', isKit);
                     btnDrumKit.classList.toggle('active', false);
                 }
 
                 const rawDrum = stemsData.find(s => s.label.includes('DRUMS (RAW)'));
                 const kitStems = stemsData.filter(s => ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k)));
 
-                if (isRaw) {
+                if (isFull) {
+                    if (rawDrum) rawDrum.isMuted = false;
+                    kitStems.forEach(k => k.isMuted = false);
+                } else if (isRaw) {
                     if (rawDrum) rawDrum.isMuted = false;
                     kitStems.forEach(k => k.isMuted = true);
-                } else {
+                } else if (isKit) {
                     if (rawDrum) rawDrum.isMuted = true;
                     kitStems.forEach(k => k.isMuted = false);
                 }
                 applySoloMuteStates();
             }
 
+            if (btnDrumFull) {
+                btnDrumFull.onclick = (e) => {
+                    e.stopPropagation();
+                    setDrumAuditionMode('full');
+                };
+            }
             if (btnDrumRaw) {
                 btnDrumRaw.onclick = (e) => {
                     e.stopPropagation();
@@ -2326,30 +2361,10 @@
                     applySoloMuteStates();
                 };
 
-                // Mute button with intelligent Drum Mode synchronization
+                // Mute button (100% independent per track, no auto-shutting off other tracks)
                 stem.muteBtn.onclick = (e) => {
                     e.stopPropagation();
                     stem.isMuted = !stem.isMuted;
-
-                    const isKit = ['KICK', 'SNARE', 'HI-HAT'].some(k => stem.label.includes(k));
-                    const isRaw = stem.label.includes('DRUMS (RAW)');
-                    const rawDrum = stemsData.find(s => s.label.includes('DRUMS (RAW)'));
-                    const kitStems = stemsData.filter(s => ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k)));
-
-                    if (isKit && !stem.isMuted) {
-                        // User unmuted a kit stem: silence raw drums to prevent doubling
-                        if (rawDrum) rawDrum.isMuted = true;
-                        currentDrumMode = 'kit';
-                        if (btnDrumRaw) btnDrumRaw.classList.remove('active');
-                        if (btnDrumKit) btnDrumKit.classList.add('active-kit');
-                    } else if (isRaw && !stem.isMuted) {
-                        // User unmuted raw drums: silence kit stems to prevent doubling
-                        kitStems.forEach(k => k.isMuted = true);
-                        currentDrumMode = 'raw';
-                        if (btnDrumRaw) btnDrumRaw.classList.add('active');
-                        if (btnDrumKit) btnDrumKit.classList.remove('active-kit');
-                    }
-
                     applySoloMuteStates();
                 };
 
@@ -2396,7 +2411,7 @@
                     refTrackData.card.classList.toggle('is-muted', !refAudible && !isAbOriginalActive);
 
                     if (refAudible && isGlobalPlaying) {
-                        if (Math.abs(refTrackData.audio.currentTime - masterTime) > 0.03) {
+                        if (Math.abs(refTrackData.audio.currentTime - masterTime) > 0.8) {
                             refTrackData.audio.currentTime = masterTime;
                         }
                         if (refTrackData.audio.paused && !refTrackData.audio.seeking) {
@@ -2420,14 +2435,13 @@
                         isAudible = !s.isMuted;
                     }
 
-                    const wasSilent = (s.audio.volume === 0.0);
                     s.audio.muted = false;
                     const baseVol = (typeof s.volume === 'number') ? s.volume : 1.0;
                     s.audio.volume = isAudible ? Math.max(0, Math.min(1, baseVol)) : 0.0;
 
-                    // If stem just became audible after being silent, align its clock immediately!
-                    if (isAudible && wasSilent && isGlobalPlaying) {
-                        if (Math.abs(s.audio.currentTime - masterTime) > 0.03) {
+                    // Smooth unmute: only align clock if severely drifted (>0.8s) to avoid buffer flushes
+                    if (isAudible && isGlobalPlaying) {
+                        if (Math.abs(s.audio.currentTime - masterTime) > 0.8) {
                             s.audio.currentTime = masterTime;
                         }
                         if (s.audio.paused && !s.audio.seeking) {
@@ -2444,10 +2458,13 @@
             }
 
             function getMasterStem() {
-                if (refTrackData && refTrackData.audio && !isNaN(refTrackData.audio.duration) && refTrackData.audio.duration > 0) {
+                if (isAbOriginalActive && refTrackData && refTrackData.audio && !isNaN(refTrackData.audio.duration) && refTrackData.audio.duration > 0) {
                     return refTrackData;
                 }
-                return stemsData.find(s => s && s.audio && !isNaN(s.audio.duration) && s.audio.duration > 0) || stemsData[0] || null;
+                const audibleStem = stemsData.find(s => !s.isMuted && s.audio && !isNaN(s.audio.duration) && s.audio.duration > 0);
+                if (audibleStem) return audibleStem;
+
+                return stemsData.find(s => s && s.audio && !isNaN(s.audio.duration) && s.audio.duration > 0) || stemsData[0] || refTrackData || null;
             }
 
             function getMasterCurrentTime() {
@@ -2540,46 +2557,34 @@
                         return;
                     }
 
-                    // Sync Reference Track if not the master clock
-                    if (refTrackData && refTrackData !== m && !refTrackData.audio.ended) {
-                        if (refTrackData.audio.paused && isGlobalPlaying && !refTrackData.audio.seeking) {
-                            refTrackData.audio.play().catch(() => {});
-                        }
-                        const drift = curr - refTrackData.audio.currentTime;
-                        const absDrift = Math.abs(drift);
-                        if (absDrift > 0.03 && absDrift < 0.5) {
-                            refTrackData.audio.playbackRate = drift > 0 ? 1.025 : 0.975;
-                        } else if (absDrift >= 0.5 && !refTrackData.audio.seeking) {
-                            refTrackData.audio.currentTime = curr;
-                            refTrackData.audio.playbackRate = 1.0;
-                        } else {
-                            if (refTrackData.audio.playbackRate !== 1.0) refTrackData.audio.playbackRate = 1.0;
-                        }
-                    }
+                    const allTracks = [];
+                    if (refTrackData) allTracks.push(refTrackData);
+                    stemsData.forEach(s => allTracks.push(s));
 
-                    // Sync Stems
-                    stemsData.forEach(s => {
-                        if (s === m || s.audio.ended) return;
+                    allTracks.forEach(t => {
+                        if (t === m || !t.audio || t.audio.ended) return;
 
-                        if (s.audio.paused && isGlobalPlaying && !s.audio.seeking) {
-                            s.audio.play().catch(() => {});
+                        if (t.audio.paused && isGlobalPlaying && !t.audio.seeking) {
+                            t.audio.play().catch(() => {});
                         }
 
-                        const drift = curr - s.audio.currentTime;
+                        const drift = curr - t.audio.currentTime;
                         const absDrift = Math.abs(drift);
 
                         // Micro-speed adjustment: smooth alignment with zero buffer flush!
-                        if (absDrift > 0.03 && absDrift < 0.5) {
-                            s.audio.playbackRate = drift > 0 ? 1.025 : 0.975;
-                        } else if (absDrift >= 0.5 && !s.audio.seeking) {
-                            // Only realign if drifted by more than half a second
-                            s.audio.currentTime = curr;
-                            s.audio.playbackRate = 1.0;
+                        if (absDrift > 0.04 && absDrift <= 1.0) {
+                            t.audio.playbackRate = drift > 0 ? 1.02 : 0.98;
+                        } else if (absDrift > 1.0 && !t.audio.seeking) {
+                            // Only hard-realign if drifted by more than a full second
+                            t.audio.currentTime = curr;
+                            t.audio.playbackRate = 1.0;
                         } else {
-                            if (s.audio.playbackRate !== 1.0) s.audio.playbackRate = 1.0;
+                            if (t.audio.playbackRate !== 1.0) {
+                                t.audio.playbackRate = 1.0;
+                            }
                         }
                     });
-                }, 150);
+                }, 200);
             }
 
             function pauseAll() {
@@ -2621,12 +2626,12 @@
             quickUnmuteAll.onclick = () => {
                 stemsData.forEach(s => {
                     s.isSolo = false;
-                    if (currentDrumMode === 'raw') {
-                        s.isMuted = ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k));
-                    } else {
-                        s.isMuted = s.label.includes('DRUMS (RAW)');
-                    }
+                    s.isMuted = false;
                 });
+                currentDrumMode = 'full';
+                if (btnDrumFull) btnDrumFull.classList.add('active-full');
+                if (btnDrumRaw) btnDrumRaw.classList.remove('active');
+                if (btnDrumKit) btnDrumKit.classList.remove('active-kit');
                 applySoloMuteStates();
             };
 
