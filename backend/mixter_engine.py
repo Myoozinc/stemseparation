@@ -10,6 +10,25 @@ import numpy as np
 import soundfile as sf
 import scipy.signal as signal
 
+try:
+    from audio_analysis import (
+        calculate_lufs,
+        calculate_true_peak,
+        calculate_crest_factor,
+        calculate_spectral_balance,
+        detect_resonances,
+        analyze_stem
+    )
+except ImportError:
+    from backend.audio_analysis import (
+        calculate_lufs,
+        calculate_true_peak,
+        calculate_crest_factor,
+        calculate_spectral_balance,
+        detect_resonances,
+        analyze_stem
+    )
+
 # ==========================================
 # 2026 GENRE & DERIVATIVE SUBGENRE MATRIX
 # ==========================================
@@ -471,76 +490,6 @@ def apply_spectral_unmasking(instrument_audio, vocal_audio, sr=48000):
     gain_curve = signal.lfilter(b, a, active_vocal.astype(np.float64))[:, np.newaxis]
     return instrument_audio * (1.0 - gain_curve) + carved * gain_curve
 
-# Pure SciPy ITU-R BS.1770-4 K-Weighting Metrics (Zero External Dependencies)
-def calculate_lufs(audio, sr=48000):
-    """Exact ITU-R BS.1770-4 K-Weighting Integrated Loudness (LUFS)"""
-    if audio.ndim == 1:
-        audio = audio[:, np.newaxis]
-        
-    b1 = [1.53512485958697, -2.69169618940638, 1.19839281085285]
-    a1 = [1.0, -1.69065929318241, 0.73248077421585]
-    b2 = [1.0, -2.0, 1.0]
-    a2 = [1.0, -1.99004745483398, 0.99007225035621]
-    
-    y = np.zeros_like(audio)
-    for ch in range(audio.shape[1]):
-        filtered1 = signal.lfilter(b1, a1, audio[:, ch])
-        y[:, ch] = signal.lfilter(b2, a2, filtered1)
-        
-    block_size = int(0.400 * sr)
-    hop_size = int(0.100 * sr)
-    n_blocks = (len(y) - block_size) // hop_size + 1
-    if n_blocks <= 0:
-        return -70.0
-        
-    block_powers = []
-    for i in range(n_blocks):
-        start = i * hop_size
-        block = y[start:start+block_size, :]
-        power = np.mean(block**2, axis=0)
-        z = np.sum(power)
-        block_powers.append(z)
-        
-    block_powers = np.array(block_powers)
-    block_loudness = -0.691 + 10 * np.log10(block_powers + 1e-12)
-    
-    idx_abs = block_loudness > -70.0
-    if not np.any(idx_abs):
-        return -70.0
-        
-    z_avg = np.mean(block_powers[idx_abs])
-    gamma_r = -0.691 + 10 * np.log10(z_avg + 1e-12) - 10.0
-    
-    idx_rel = block_loudness > gamma_r
-    if not np.any(idx_rel):
-        return round(float(gamma_r), 1)
-        
-    integrated_lufs = -0.691 + 10 * np.log10(np.mean(block_powers[idx_rel]) + 1e-12)
-    return round(float(integrated_lufs), 1)
-
-def calculate_true_peak(audio, sr=44100):
-    sample_peak = np.max(np.abs(audio))
-    if sample_peak < 1e-6:
-        return -70.0
-    # Evaluate True-Peak using localized 4x oversampling on the peak window (<0.02s instead of 25s)
-    mono = np.max(np.abs(audio), axis=1) if audio.ndim == 2 else np.abs(audio)
-    top_idx = int(np.argmax(mono))
-    window = int(sr * 2)
-    start_idx = max(0, top_idx - window)
-    end_idx = min(len(audio), top_idx + window)
-    slice_audio = audio[start_idx:end_idx]
-    if len(slice_audio) > 0:
-        audio_4x = signal.resample_poly(slice_audio, 4, 1, axis=0)
-        peak = max(sample_peak, float(np.max(np.abs(audio_4x))))
-    else:
-        peak = sample_peak
-    return round(float(20 * np.log10(peak + 1e-12)), 2)
-
-def calculate_crest_factor(audio):
-    peak = np.max(np.abs(audio)) + 1e-9
-    rms = np.sqrt(np.mean(audio**2)) + 1e-9
-    return round(float(20 * np.log10(peak / rms)), 1)
-
 # Main Mix Function
 def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subgenre=None, vocal_fx_level=0.3, resonance_suppression=True, **kwargs):
     if not stem_paths:
@@ -609,11 +558,23 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
             max_len = len(data_stereo)
             
         conf = classify_stem(fname)
+        try:
+            stem_analysis = analyze_stem(data_stereo, sr, stem_type=conf["type"], stem_name=fname)
+        except Exception as e:
+            stem_analysis = {
+                "lufs": -20.0,
+                "true_peak_dbfs": -6.0,
+                "crest_factor_db": 10.0,
+                "spectral_balance": {},
+                "resonances": [],
+                "recommendations": {"adaptive_gain_db": 0.0, "adaptive_hpf_hz": None, "tame_resonances": []}
+            }
         
         stem_obj = {
             "name": fname,
             "data": data_stereo,
-            "conf": conf
+            "conf": conf,
+            "analysis": stem_analysis
         }
         loaded_stems.append(stem_obj)
         
@@ -652,8 +613,25 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
         conf = s["conf"]
         t = conf["type"]
         
-        # Step A: Dynamic Resonance Suppression
-        if resonance_suppression and t in ["vocal_lead", "vocal_back", "acoustic_strum", "strings", "harp_keys", "other"]:
+        # Step A: Dynamic Resonance Suppression (Adaptive Analysis + Heuristic Fallback)
+        stem_recs = s.get("analysis", {}).get("recommendations", {})
+        detected_res = stem_recs.get("tame_resonances", [])
+
+        if resonance_suppression and detected_res:
+            for item in detected_res:
+                data = fast_biquad_peak(
+                    data,
+                    freq=float(item["freq_hz"]),
+                    gain_db=float(item["recommended_cut_db"]),
+                    sr=sr,
+                    q=float(item.get("q", 4.0))
+                )
+                all_tamed_resonances.append({
+                    "stem": s["name"],
+                    "freq_hz": item["freq_hz"],
+                    "attenuation_db": item["recommended_cut_db"]
+                })
+        elif resonance_suppression and t in ["vocal_lead", "vocal_back", "acoustic_strum", "strings", "harp_keys", "other"]:
             data, tamed = suppress_harsh_resonances(data, sr=sr, sensitivity=1.1)
             for item in tamed:
                 all_tamed_resonances.append({
@@ -662,9 +640,11 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
                     "attenuation_db": item["attenuation_db"]
                 })
                 
-        # Step B: Highpass Filter
-        if "hpf" in conf:
-            data = fast_biquad_highpass(data, conf["hpf"], sr)
+        # Step B: Adaptive Highpass Filter
+        adaptive_hpf = stem_recs.get("adaptive_hpf_hz")
+        hpf_cutoff = adaptive_hpf if adaptive_hpf is not None else conf.get("hpf")
+        if hpf_cutoff:
+            data = fast_biquad_highpass(data, hpf_cutoff, sr)
             
         # Step C: Parametric EQ Peaking & Mud Cut
         if "peak_freq" in conf:
@@ -672,6 +652,11 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
             
         if "mud_cut_freq" in conf:
             data = fast_biquad_peak(data, conf["mud_cut_freq"], conf["mud_cut_gain"], sr, q=1.2)
+
+        # Adaptive De-mudding if excess low-mid boxiness detected
+        spec_bal = s.get("analysis", {}).get("spectral_balance", {})
+        if spec_bal.get("has_excess_mud") and t in ["acoustic_strum", "harp_keys", "other", "vocal_back"]:
+            data = fast_biquad_peak(data, freq=320.0, gain_db=-1.8, sr=sr, q=1.4)
             
         # Step D: Sub-Bass Emphasis from Genre Preset
         if t in ["kick", "bass"] and "sub_boost_freq" in preset:
@@ -737,8 +722,11 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
         if conf.get("pan", 0.0) != 0.0:
             data = fast_stereo_pan(data, conf["pan"])
             
-        # Step L: Channel Fader Gain calibrated by Genre
+        # Step L: Channel Fader Gain calibrated by Genre + Adaptive Loudness Trim
         gain_db = conf.get("gain_db", 0.0)
+        adaptive_trim = stem_recs.get("adaptive_gain_db", 0.0)
+        gain_db += adaptive_trim
+
         if t == "kick":
             gain_db += preset.get("kick_gain", 0.0)
         elif t == "bass":
@@ -774,6 +762,20 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
     mix_lufs = calculate_lufs(summing_bus, sr)
     mix_tp = calculate_true_peak(summing_bus, sr)
     mix_dr = calculate_crest_factor(summing_bus)
+    spectral_mix = calculate_spectral_balance(summing_bus, sr)
+
+    stems_summary = []
+    for s in loaded_stems:
+        ana = s.get("analysis", {})
+        recs = ana.get("recommendations", {})
+        stems_summary.append({
+            "stem": s["name"],
+            "type": s["conf"]["type"],
+            "lufs": ana.get("lufs", -70.0),
+            "adaptive_gain_db": recs.get("adaptive_gain_db", 0.0),
+            "adaptive_hpf_hz": recs.get("adaptive_hpf_hz") or s["conf"].get("hpf"),
+            "resonances_detected": len(ana.get("resonances", []))
+        })
     
     report = {
         "stems_count": len(stem_paths),
@@ -788,6 +790,8 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
         "headroom": "-6.0 dBFS Peak (32-bit Float Calibrated)",
         "resonances_tamed_count": len(all_tamed_resonances),
         "resonances_tamed": all_tamed_resonances[:8],
+        "stems_analysis": stems_summary,
+        "spectral_balance": spectral_mix.get("bands_pct", {}),
         "output_path": output_path,
         "raw_path": raw_path
     }
