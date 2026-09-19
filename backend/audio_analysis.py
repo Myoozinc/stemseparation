@@ -376,3 +376,182 @@ def analyze_stem(
             "tame_resonances": resonances
         }
     }
+
+# ==========================================================
+# 6. SONG STRUCTURE SEGMENTATION & PARAMETER AUTOMATION
+# ==========================================================
+
+def detect_song_sections(
+    audio: np.ndarray,
+    sr: int = 44100,
+    min_section_sec: float = 8.0
+) -> List[Dict[str, Any]]:
+    """
+    Segments audio into musical structure sections: 'intro', 'verse', 'chorus', 'bridge', 'outro'.
+    Uses librosa when available, with a pure NumPy/SciPy RMS/spectral-novelty fallback.
+    """
+    total_samples = len(audio)
+    total_sec = total_samples / float(sr)
+
+    # Bypass for short tracks (< 20s)
+    if total_sec < 20.0:
+        return [{
+            "name": "Main Section",
+            "type": "chorus",
+            "start_sec": 0.0,
+            "end_sec": round(total_sec, 2),
+            "start_idx": 0,
+            "end_idx": total_samples,
+            "energy_norm": 1.0
+        }]
+
+    mono = np.mean(audio, axis=1) if (audio.ndim == 2 and audio.shape[1] > 1) else audio.squeeze()
+
+    # Frame analysis (1.0s window, 0.5s hop)
+    frame_len = int(sr * 1.0)
+    hop_len = int(sr * 0.5)
+    n_frames = max(1, (total_samples - frame_len) // hop_len + 1)
+
+    # Compute short-term RMS energy
+    rms = np.array([
+        float(np.sqrt(np.mean(mono[i * hop_len : i * hop_len + frame_len]**2)))
+        for i in range(n_frames)
+    ], dtype=np.float64)
+
+    times = np.array([i * hop_len / float(sr) for i in range(n_frames)], dtype=np.float64)
+
+    # Optional Librosa segmentation if present
+    detected_cuts = []
+    try:
+        import librosa
+        onset_env = librosa.onset.onset_strength(y=mono, sr=sr, hop_length=hop_len)
+        k_clusters = min(8, max(2, int(total_sec / 15.0)))
+        bounds = librosa.segment.agglomerative(onset_env, k=k_clusters)
+        cut_times = librosa.frames_to_time(bounds, sr=sr, hop_length=hop_len)
+        detected_cuts = [float(t) for t in cut_times if 4.0 < t < (total_sec - 4.0)]
+    except Exception:
+        # Pure SciPy / NumPy Novelty Curve
+        novelty = np.abs(np.diff(rms))
+        kernel_size = 5
+        kernel = np.hanning(kernel_size)
+        kernel /= np.sum(kernel)
+        novelty_smooth = np.convolve(novelty, kernel, mode='same')
+
+        min_frames = max(4, int(min_section_sec / (hop_len / float(sr))))
+        height_thresh = np.mean(novelty_smooth) * 1.15
+        peaks, _ = signal.find_peaks(novelty_smooth, distance=min_frames, height=height_thresh)
+
+        for p in peaks:
+            cut_sec = float(times[min(p + 1, len(times) - 1)])
+            if 6.0 <= cut_sec <= (total_sec - 6.0):
+                detected_cuts.append(cut_sec)
+
+    # Build section boundaries
+    all_cuts = [0.0] + sorted(list(set(detected_cuts))) + [total_sec]
+
+    # Filter boundaries that are too close together
+    filtered_cuts = [all_cuts[0]]
+    for c in all_cuts[1:]:
+        if (c - filtered_cuts[-1]) >= (min_section_sec * 0.75) or c == all_cuts[-1]:
+            filtered_cuts.append(c)
+        else:
+            filtered_cuts[-1] = c
+
+    if len(filtered_cuts) < 2:
+        filtered_cuts = [0.0, total_sec]
+
+    median_rms = float(np.median(rms)) if len(rms) > 0 else 0.1
+    p75_rms = float(np.percentile(rms, 75)) if len(rms) > 0 else median_rms * 1.3
+
+    sections = []
+    n_cuts = len(filtered_cuts)
+
+    for i in range(n_cuts - 1):
+        st_sec = filtered_cuts[i]
+        end_sec = filtered_cuts[i + 1]
+        st_idx = int(st_sec * sr)
+        end_idx = min(total_samples, int(end_sec * sr))
+
+        sec_audio = mono[st_idx:end_idx]
+        sec_rms = float(np.sqrt(np.mean(sec_audio**2))) if len(sec_audio) > 0 else 0.0
+        energy_norm = round(float(sec_rms / max(1e-6, median_rms)), 2)
+
+        # Classify section
+        is_first = (i == 0)
+        is_last = (i == n_cuts - 2)
+
+        if is_first and (st_sec == 0.0) and (sec_rms < median_rms * 0.90):
+            sec_type = "intro"
+            sec_name = "Intro"
+        elif is_last and (sec_rms < median_rms * 0.85):
+            sec_type = "outro"
+            sec_name = "Outro"
+        elif (sec_rms >= p75_rms) or (energy_norm >= 1.25):
+            sec_type = "chorus"
+            chorus_idx = sum(1 for s in sections if s["type"] == "chorus") + 1
+            sec_name = f"Chorus / Drop {chorus_idx}"
+        elif (i > 1) and (len(sections) > 0) and (sections[-1]["type"] == "chorus") and (sec_rms < median_rms):
+            sec_type = "bridge"
+            bridge_idx = sum(1 for s in sections if s["type"] == "bridge") + 1
+            sec_name = f"Bridge / Breakdown {bridge_idx}"
+        else:
+            sec_type = "verse"
+            verse_idx = sum(1 for s in sections if s["type"] == "verse") + 1
+            sec_name = f"Verse {verse_idx}"
+
+        sections.append({
+            "name": sec_name,
+            "type": sec_type,
+            "start_sec": round(st_sec, 2),
+            "end_sec": round(end_sec, 2),
+            "start_idx": st_idx,
+            "end_idx": end_idx,
+            "energy_norm": energy_norm
+        })
+
+    return sections
+
+def generate_section_automation_curves(
+    sections: List[Dict[str, Any]],
+    total_samples: int,
+    sr: int = 44100
+) -> Dict[str, np.ndarray]:
+    """
+    Generates continuous, smooth automation envelope curves across the song:
+    - width_mod: stereo width multiplier (Chorus: 1.15, Verse: 1.0, Intro/Outro: 0.95)
+    - vocal_presence_db: boost in dB (Chorus: +0.8, Verse: 0.0, Intro: -0.5)
+    - space_mod: reverb wet multiplier (Intro/Verse: 1.20, Chorus: 0.85)
+    Crossfades smoothly over 1.2s at section transitions.
+    """
+    targets_width = {"intro": 0.95, "verse": 1.00, "chorus": 1.15, "bridge": 1.05, "outro": 0.95}
+    targets_vox = {"intro": -0.5, "verse": 0.0, "chorus": 0.8, "bridge": 0.2, "outro": -0.4}
+    targets_space = {"intro": 1.25, "verse": 1.15, "chorus": 0.85, "bridge": 1.10, "outro": 1.20}
+
+    curve_width = np.ones(total_samples, dtype=np.float32)
+    curve_vox = np.zeros(total_samples, dtype=np.float32)
+    curve_space = np.ones(total_samples, dtype=np.float32)
+
+    for sec in sections:
+        st = max(0, min(total_samples, sec["start_idx"]))
+        en = max(0, min(total_samples, sec["end_idx"]))
+        if en > st:
+            stype = sec.get("type", "verse")
+            curve_width[st:en] = targets_width.get(stype, 1.0)
+            curve_vox[st:en] = targets_vox.get(stype, 0.0)
+            curve_space[st:en] = targets_space.get(stype, 1.0)
+
+    # Smooth curves using a Hann window moving average filter
+    smooth_len = int(sr * 1.2)
+    if smooth_len > 1 and total_samples > smooth_len:
+        kernel = np.hanning(smooth_len).astype(np.float32)
+        kernel /= np.sum(kernel)
+        curve_width = signal.fftconvolve(curve_width, kernel, mode='same')
+        curve_vox = signal.fftconvolve(curve_vox, kernel, mode='same')
+        curve_space = signal.fftconvolve(curve_space, kernel, mode='same')
+
+    return {
+        "width_mod": curve_width,
+        "vocal_presence_db": curve_vox,
+        "space_mod": curve_space
+    }
+

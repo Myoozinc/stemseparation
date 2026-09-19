@@ -17,7 +17,9 @@ try:
         calculate_crest_factor,
         calculate_spectral_balance,
         detect_resonances,
-        analyze_stem
+        analyze_stem,
+        detect_song_sections,
+        generate_section_automation_curves
     )
 except ImportError:
     from backend.audio_analysis import (
@@ -26,7 +28,9 @@ except ImportError:
         calculate_crest_factor,
         calculate_spectral_balance,
         detect_resonances,
-        analyze_stem
+        analyze_stem,
+        detect_song_sections,
+        generate_section_automation_curves
     )
 
 # ==========================================
@@ -389,8 +393,9 @@ def fast_stereo_pan(audio_stereo, pan_pos=0.0):
     return out
 
 def fast_stereo_width(audio_stereo, width=1.0):
-    if abs(width - 1.0) < 0.05:
-        return audio_stereo
+    if isinstance(width, (int, float)):
+        if abs(width - 1.0) < 0.05:
+            return audio_stereo
     mid = 0.5 * (audio_stereo[:, 0] + audio_stereo[:, 1])
     side = 0.5 * (audio_stereo[:, 0] - audio_stereo[:, 1]) * width
     out = np.zeros_like(audio_stereo)
@@ -408,13 +413,15 @@ _IR_L = (np.random.randn(_IR_LEN).astype(np.float32) * _DECAY) * 0.05
 _IR_R = (np.random.randn(_IR_LEN).astype(np.float32) * _DECAY) * 0.05
 
 def fast_reverb_send(audio, sr=48000, wet=0.18):
-    if wet <= 0.01:
+    if isinstance(wet, (int, float)) and wet <= 0.01:
         return audio
     mono_in = np.mean(audio, axis=1) if audio.ndim == 2 else audio
     wet_l = signal.fftconvolve(mono_in, _IR_L, mode='same')
     wet_r = signal.fftconvolve(mono_in, _IR_R, mode='same')
     wet_stereo = np.column_stack([wet_l, wet_r])
     dry_stereo = audio if (audio.ndim == 2 and audio.shape[1] == 2) else np.column_stack([audio, audio])
+    if isinstance(wet, np.ndarray):
+        return dry_stereo + wet[:, np.newaxis] * wet_stereo
     return dry_stereo + wet * wet_stereo
 
 # Dynamic Resonance Suppression & Unmasking
@@ -602,6 +609,30 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
     elif vocal_data is not None:
         vocal_data = vocal_data[:max_len]
         
+    # Detect musical song structure sections & generate dynamic automation curves
+    preview_sum = np.zeros((max_len, 2), dtype=np.float32)
+    for s in loaded_stems:
+        preview_sum += s["data"]
+
+    try:
+        song_sections = detect_song_sections(preview_sum, sr=sr)
+        auto_curves = generate_section_automation_curves(song_sections, max_len, sr=sr)
+    except Exception as e:
+        song_sections = [{
+            "name": "Full Song",
+            "type": "chorus",
+            "start_sec": 0.0,
+            "end_sec": round(max_len / float(sr), 2),
+            "start_idx": 0,
+            "end_idx": max_len,
+            "energy_norm": 1.0
+        }]
+        auto_curves = {
+            "width_mod": np.ones(max_len, dtype=np.float32),
+            "vocal_presence_db": np.zeros(max_len, dtype=np.float32),
+            "space_mod": np.ones(max_len, dtype=np.float32)
+        }
+
     # 3. Process each channel strip with 2026 Genre Profile & Anti-Resonance
     summing_bus = np.zeros((max_len, 2), dtype=np.float64)
     raw_sum = np.zeros((max_len, 2), dtype=np.float64)
@@ -697,15 +728,16 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
         if vocal_data is not None and t in ["acoustic_strum", "harp_keys", "strings", "other"]:
             data = apply_spectral_unmasking(data, vocal_data, sr)
             
-        # Step J: Vocal Reverb / Space Send
+        # Step J: Vocal Reverb / Space Send with Dynamic Section Modulation
         wet_amount = conf.get("reverb_wet", 0.0)
         if vocal_fx_level is not None and "vocal" in t:
             genre_wet = preset.get("reverb_wet", 0.18)
             wet_amount = (genre_wet * 0.7 + wet_amount * 0.3) * float(vocal_fx_level) * 2.0
         if wet_amount > 0.02:
-            data = fast_reverb_send(data, sr, wet=wet_amount)
+            time_wet = wet_amount * auto_curves["space_mod"]
+            data = fast_reverb_send(data, sr, wet=time_wet)
             
-        # Step K: Stereo Width from Genre
+        # Step K: Stereo Width from Genre & Section Dynamic Expansion
         width_val = conf.get("width", 1.0)
         if t in ["vocal_lead", "vocal_back"]:
             width_val *= preset.get("width_vocals", 1.0)
@@ -716,13 +748,17 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
         else:
             width_val *= preset.get("width_instruments", 1.2)
             
-        if abs(width_val - 1.0) > 0.05:
-            data = fast_stereo_width(data, width_val)
+        if t not in ["kick", "bass"]:
+            time_width = width_val * auto_curves["width_mod"]
+        else:
+            time_width = width_val
+
+        data = fast_stereo_width(data, time_width)
             
         if conf.get("pan", 0.0) != 0.0:
             data = fast_stereo_pan(data, conf["pan"])
             
-        # Step L: Channel Fader Gain calibrated by Genre + Adaptive Loudness Trim
+        # Step L: Channel Fader Gain calibrated by Genre + Adaptive Loudness Trim + Vocal Ride Automation
         gain_db = conf.get("gain_db", 0.0)
         adaptive_trim = stem_recs.get("adaptive_gain_db", 0.0)
         gain_db += adaptive_trim
@@ -739,7 +775,11 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
             gain_db += preset.get("other_gain", 0.0)
             
         gain_lin = 10 ** (gain_db / 20.0)
-        data = data * gain_lin
+        if t in ["vocal_lead", "vocal_back"]:
+            vocal_envelope = 10 ** (auto_curves["vocal_presence_db"] / 20.0)
+            data = data * (gain_lin * vocal_envelope[:, np.newaxis])
+        else:
+            data = data * gain_lin
         
         summing_bus += data
         
@@ -790,6 +830,13 @@ def process_and_mix_stems(stem_paths, output_path=None, mix_style="urbano", subg
         "headroom": "-6.0 dBFS Peak (32-bit Float Calibrated)",
         "resonances_tamed_count": len(all_tamed_resonances),
         "resonances_tamed": all_tamed_resonances[:8],
+        "song_sections": [{
+            "name": sec["name"],
+            "type": sec["type"],
+            "start_sec": sec["start_sec"],
+            "end_sec": sec["end_sec"],
+            "energy_norm": sec.get("energy_norm", 1.0)
+        } for sec in song_sections],
         "stems_analysis": stems_summary,
         "spectral_balance": spectral_mix.get("bands_pct", {}),
         "output_path": output_path,
