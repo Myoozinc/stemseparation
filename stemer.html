@@ -694,6 +694,72 @@
             box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
         }
 
+        /* Stem Selection Toolbar */
+        .stem-selection-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: var(--radius-md, 8px);
+            padding: 8px 16px;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .selection-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .selection-bar-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.85);
+            text-transform: uppercase;
+        }
+        .selection-preset-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .sel-preset-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: rgba(255, 255, 255, 0.75);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sel-preset-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+        .sel-preset-btn.active {
+            background: rgba(0, 245, 255, 0.14);
+            border-color: #00f5ff;
+            color: #00f5ff;
+            box-shadow: 0 0 8px rgba(0, 245, 255, 0.25);
+        }
+        .stem-chk-wrap {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 8px;
+            user-select: none;
+        }
+        .stem-chk-wrap input {
+            accent-color: #00f5ff;
+            width: 17px;
+            height: 17px;
+            cursor: pointer;
+        }
+
         /* Stem Row (DAW Mixer Style) */
         .stem-player {
             background: rgba(255, 255, 255, 0.03);
@@ -1350,6 +1416,22 @@
                     </div>
                 </div>
 
+                <!-- Stem Selection Toolbar -->
+                <div class="stem-selection-bar" id="stemSelectionBar" style="display: none;">
+                    <div class="selection-bar-left">
+                        <span class="selection-bar-title">Selección de Pistas:</span>
+                        <div class="selection-preset-group">
+                            <button type="button" class="sel-preset-btn active" id="btnSelAll" title="Seleccionar todas las pistas">Todas</button>
+                            <button type="button" class="sel-preset-btn" id="btnSelInst" title="Seleccionar instrumental (todas excepto voz)">Solo Instrumental (Sin Voz)</button>
+                            <button type="button" class="sel-preset-btn" id="btnSelDrums" title="Seleccionar únicamente pistas de batería">Solo Batería</button>
+                            <button type="button" class="sel-preset-btn" id="btnSelActive" title="Seleccionar pistas activas (no silenciadas)">Pistas Activas</button>
+                        </div>
+                    </div>
+                    <div id="selectionSummary" style="font-size: 0.72rem; color: #00f5ff; font-weight: 700; letter-spacing: 0.5px;">
+                        7 pistas seleccionadas
+                    </div>
+                </div>
+
                 <div id="stemsList" class="stems-container"></div>
 
                 <div class="glass-card" style="margin-top: 2rem;">
@@ -1393,7 +1475,15 @@
                         </label>
                     </div>
                     <div style="text-align: center; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
-                        <button class="btn" id="downloadAllBtn">DOWNLOAD SELECTED STEMS</button>
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.25rem;">
+                            <button class="btn" id="btnSendMixterSel" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.45) 100%); border: 2px solid #10b981; border-radius: 50px; color: #10b981; font-size: 0.82rem; padding: 14px 28px; min-width: 240px; font-family: 'Righteous', sans-serif; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);">
+                                🎛️ ENVIAR SELECCIÓN A MIXTER
+                            </button>
+                            <button class="btn" id="btnDownloadMixWav" style="background: linear-gradient(135deg, rgba(0, 245, 255, 0.2) 0%, rgba(0, 150, 255, 0.4) 100%); border: 2px solid #00f5ff; border-radius: 50px; color: #00f5ff; font-size: 0.82rem; padding: 14px 28px; min-width: 240px; font-family: 'Righteous', sans-serif; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 0 16px rgba(0, 245, 255, 0.2);">
+                                ⬇️ DESCARGAR MEZCLA WAV
+                            </button>
+                        </div>
+                        <button class="btn" id="downloadAllBtn">DOWNLOAD SELECTED STEMS (ZIP)</button>
                         <div style="margin-top: 1.5rem;">
                             <button class="btn" style="background: transparent; border: 2px solid; border-image: linear-gradient(90deg, var(--accent-magenta) 0%, var(--accent-purple) 100%) 1;"
                                 id="resetBtn">START NEW TRACK</button>
@@ -2219,6 +2309,9 @@
 
                 card.innerHTML = `
                     <div class="stem-left-col">
+                        <label class="stem-chk-wrap" title="Seleccionar para exportar / enviar a Mixter">
+                            <input type="checkbox" class="stem-select-chk" id="stemChk_${itemIndex}" checked>
+                        </label>
                         <div class="stem-pulse-dot" id="stemPulse_${itemIndex}"></div>
                         <div class="stem-label">${currentLabel} ${tagBadge}</div>
                     </div>
@@ -2268,6 +2361,7 @@
 
                 // All stems active by default for full simultaneous playback freedom
                 const shouldBeMutedByDefault = false;
+                const selectChk = card.querySelector(`#stemChk_${itemIndex}`);
 
                 const stemObj = {
                     index: itemIndex,
@@ -2276,6 +2370,8 @@
                     url: stemUrl,
                     audio: audio,
                     card: card,
+                    selectChk: selectChk,
+                    isSelected: true,
                     pulse: card.querySelector(`#stemPulse_${itemIndex}`),
                     soloBtn: card.querySelector(`#soloBtn_${itemIndex}`),
                     muteBtn: card.querySelector(`#muteBtn_${itemIndex}`),
@@ -2289,6 +2385,15 @@
                     volume: 1.0
                 };
 
+                if (selectChk) {
+                    selectChk.addEventListener('change', (e) => {
+                        e.stopPropagation();
+                        stemObj.isSelected = selectChk.checked;
+                        clearActiveSelectionPresets();
+                        updateSelectionSummary();
+                    });
+                }
+
                 audio.addEventListener('loadedmetadata', () => {
                     if (audio.duration && audio.duration > maxTrackDuration) {
                         maxTrackDuration = audio.duration;
@@ -2299,6 +2404,112 @@
 
                 stemsData.push(stemObj);
             }
+
+            // Show stem selection toolbar
+            const stemSelectionBar = document.getElementById('stemSelectionBar');
+            if (stemSelectionBar) {
+                stemSelectionBar.style.display = stemsData.length > 0 ? 'flex' : 'none';
+            }
+
+            function clearActiveSelectionPresets() {
+                const pBtns = [
+                    document.getElementById('btnSelAll'),
+                    document.getElementById('btnSelInst'),
+                    document.getElementById('btnSelDrums'),
+                    document.getElementById('btnSelActive')
+                ];
+                pBtns.forEach(b => { if (b) b.classList.remove('active'); });
+            }
+
+            function updateSelectionSummary() {
+                const selected = stemsData.filter(s => s.isSelected);
+                const summaryEl = document.getElementById('selectionSummary');
+                if (summaryEl) {
+                    if (selected.length === 0) {
+                        summaryEl.innerText = "Ninguna pista seleccionada";
+                        summaryEl.style.color = "rgba(255,255,255,0.4)";
+                    } else if (selected.length === stemsData.length) {
+                        summaryEl.innerText = `Todas las pistas seleccionadas (${selected.length})`;
+                        summaryEl.style.color = "#00f5ff";
+                    } else {
+                        const labels = selected.map(s => s.label.replace(' (RAW)', ''));
+                        const preview = labels.length <= 3 ? labels.join(', ') : `${labels.slice(0, 3).join(', ')} +${labels.length - 3}`;
+                        summaryEl.innerText = `${selected.length} seleccionadas (${preview})`;
+                        summaryEl.style.color = "#00f5ff";
+                    }
+                }
+
+                // Sync the export checkboxes
+                const dlOpts = document.querySelectorAll('.dl-opt');
+                if (dlOpts && dlOpts.length > 0) {
+                    const allDl = Array.from(dlOpts).find(c => c.value === "Download All");
+                    if (allDl && !allDl.checked) {
+                        dlOpts.forEach(c => {
+                            if (c.value === "Download All" || c.value === "WAV") return;
+                            const match = selected.some(s => s.label.toUpperCase().includes(c.value.toUpperCase()));
+                            c.checked = match;
+                        });
+                    }
+                }
+            }
+
+            function setSelectionPreset(preset) {
+                clearActiveSelectionPresets();
+                const btnAll = document.getElementById('btnSelAll');
+                const btnInst = document.getElementById('btnSelInst');
+                const btnDrums = document.getElementById('btnSelDrums');
+                const btnActive = document.getElementById('btnSelActive');
+
+                if (preset === 'all') {
+                    if (btnAll) btnAll.classList.add('active');
+                    stemsData.forEach(s => {
+                        s.isSelected = true;
+                        if (s.selectChk) s.selectChk.checked = true;
+                    });
+                } else if (preset === 'inst') {
+                    if (btnInst) btnInst.classList.add('active');
+                    stemsData.forEach(s => {
+                        const isVocal = s.label.toUpperCase().includes('VOCAL');
+                        const isDrumsRaw = s.label.includes('DRUMS (RAW)');
+                        const isKit = ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k));
+                        let shouldSelect = !isVocal;
+                        if (currentDrumMode === 'kit' && isDrumsRaw) shouldSelect = false;
+                        if (currentDrumMode === 'raw' && isKit) shouldSelect = false;
+                        s.isSelected = shouldSelect;
+                        if (s.selectChk) s.selectChk.checked = shouldSelect;
+                    });
+                } else if (preset === 'drums') {
+                    if (btnDrums) btnDrums.classList.add('active');
+                    stemsData.forEach(s => {
+                        const isDrumsRaw = s.label.includes('DRUMS (RAW)');
+                        const isKit = ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k));
+                        let shouldSelect = isDrumsRaw || isKit;
+                        if (currentDrumMode === 'kit' && isDrumsRaw) shouldSelect = false;
+                        if (currentDrumMode === 'raw' && isKit) shouldSelect = false;
+                        s.isSelected = shouldSelect;
+                        if (s.selectChk) s.selectChk.checked = shouldSelect;
+                    });
+                } else if (preset === 'active') {
+                    if (btnActive) btnActive.classList.add('active');
+                    stemsData.forEach(s => {
+                        s.isSelected = !s.isMuted;
+                        if (s.selectChk) s.selectChk.checked = !s.isMuted;
+                    });
+                }
+                updateSelectionSummary();
+            }
+
+            const btnSelAll = document.getElementById('btnSelAll');
+            const btnSelInst = document.getElementById('btnSelInst');
+            const btnSelDrums = document.getElementById('btnSelDrums');
+            const btnSelActive = document.getElementById('btnSelActive');
+
+            if (btnSelAll) btnSelAll.onclick = (e) => { e.stopPropagation(); setSelectionPreset('all'); };
+            if (btnSelInst) btnSelInst.onclick = (e) => { e.stopPropagation(); setSelectionPreset('inst'); };
+            if (btnSelDrums) btnSelDrums.onclick = (e) => { e.stopPropagation(); setSelectionPreset('drums'); };
+            if (btnSelActive) btnSelActive.onclick = (e) => { e.stopPropagation(); setSelectionPreset('active'); };
+
+            updateSelectionSummary();
 
             // Show drum mode selector if both raw drums and kit stems are present
             const hasKitStems = stemsData.some(s => ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k)));
@@ -2411,12 +2622,14 @@
                     refTrackData.card.classList.toggle('is-muted', !refAudible && !isAbOriginalActive);
 
                     if (refAudible && isGlobalPlaying) {
-                        if (Math.abs(refTrackData.audio.currentTime - masterTime) > 0.8) {
+                        if (refTrackData.audio.readyState >= 3 && Math.abs(refTrackData.audio.currentTime - masterTime) > 0.8) {
                             refTrackData.audio.currentTime = masterTime;
                         }
                         if (refTrackData.audio.paused && !refTrackData.audio.seeking) {
                             refTrackData.audio.play().catch(() => {});
                         }
+                    } else if (!refAudible && !refTrackData.audio.paused) {
+                        refTrackData.audio.pause();
                     }
                 }
 
@@ -2439,13 +2652,20 @@
                     const baseVol = (typeof s.volume === 'number') ? s.volume : 1.0;
                     s.audio.volume = isAudible ? Math.max(0, Math.min(1, baseVol)) : 0.0;
 
-                    // Smooth unmute: only align clock if severely drifted (>0.8s) to avoid buffer flushes
+                    // Smooth unmute: only align clock if severely drifted (>0.8s) and readyState is high enough
                     if (isAudible && isGlobalPlaying) {
-                        if (Math.abs(s.audio.currentTime - masterTime) > 0.8) {
+                        if (s.audio.readyState >= 3 && Math.abs(s.audio.currentTime - masterTime) > 0.8) {
                             s.audio.currentTime = masterTime;
                         }
                         if (s.audio.paused && !s.audio.seeking) {
                             s.audio.play().catch(() => {});
+                        }
+                    } else if (!isAudible && !s.audio.paused && !anySolo) {
+                        // Pause inactive kit/raw tracks to release browser audio decoding sockets
+                        if (currentDrumMode === 'raw' && ['KICK', 'SNARE', 'HI-HAT'].some(k => s.label.includes(k))) {
+                            s.audio.pause();
+                        } else if (currentDrumMode === 'kit' && s.label.includes('DRUMS (RAW)')) {
+                            s.audio.pause();
                         }
                     }
 
@@ -2518,8 +2738,8 @@
                 const refTime = getMasterCurrentTime();
                 applySoloMuteStates();
 
-                // Play Reference Track
-                if (refTrackData && refTrackData.audio) {
+                // Play Reference Track ONLY if audible
+                if (refTrackData && refTrackData.audio && isAbOriginalActive && !refTrackData.isMuted) {
                     if (Math.abs(refTrackData.audio.currentTime - refTime) > 0.04) {
                         refTrackData.audio.currentTime = refTime;
                     }
@@ -2528,14 +2748,17 @@
                     refTrackData.card.classList.add('is-playing');
                 }
 
-                // Play All Stems
+                // Play Stems
                 stemsData.forEach(s => {
-                    if (Math.abs(s.audio.currentTime - refTime) > 0.04) {
-                        s.audio.currentTime = refTime;
+                    const shouldPlay = !isAbOriginalActive && (!s.isMuted || s.isSolo);
+                    if (shouldPlay) {
+                        if (Math.abs(s.audio.currentTime - refTime) > 0.04) {
+                            s.audio.currentTime = refTime;
+                        }
+                        s.audio.playbackRate = 1.0;
+                        s.audio.play().catch(e => console.warn("Stem audio play error", e));
+                        s.card.classList.add('is-playing');
                     }
-                    s.audio.playbackRate = 1.0;
-                    s.audio.play().catch(e => console.warn("Stem audio play error", e));
-                    s.card.classList.add('is-playing');
                 });
 
                 isGlobalPlaying = true;
@@ -2563,6 +2786,16 @@
 
                     allTracks.forEach(t => {
                         if (t === m || !t.audio || t.audio.ended) return;
+
+                        // Never disturb tracks that are still buffering
+                        if (t.audio.readyState < 3) return;
+
+                        // Don't unpause reference track unless in A/B audition
+                        if (t === refTrackData && (!isAbOriginalActive || refTrackData.isMuted)) return;
+
+                        // Don't unpause kit in raw mode or raw in kit mode
+                        if (currentDrumMode === 'raw' && ['KICK', 'SNARE', 'HI-HAT'].some(k => t.label && t.label.includes(k))) return;
+                        if (currentDrumMode === 'kit' && t.label && t.label.includes('DRUMS (RAW)')) return;
 
                         if (t.audio.paused && isGlobalPlaying && !t.audio.seeking) {
                             t.audio.play().catch(() => {});
@@ -2650,8 +2883,180 @@
                 applySoloMuteStates();
             };
 
+            const btnSendMixterSel = document.getElementById('btnSendMixterSel');
+            if (btnSendMixterSel) {
+                btnSendMixterSel.onclick = () => window.sendSelectionToMixter();
+            }
+
+            const btnDownloadMixWav = document.getElementById('btnDownloadMixWav');
+            if (btnDownloadMixWav) {
+                btnDownloadMixWav.onclick = () => window.downloadSelectedMixWav();
+            }
+
             // Set initial muted states on player startup
             applySoloMuteStates();
+        }
+
+        // Send user's selected stems to Mixter
+        window.sendSelectionToMixter = () => {
+            const selectedStems = (stemsData && stemsData.length > 0)
+                ? stemsData.filter(s => s.isSelected)
+                : [];
+
+            if (selectedStems.length === 0) {
+                alert("Por favor selecciona al menos una pista para enviar a Mixter.");
+                return;
+            }
+
+            const stems = selectedStems.map(s => ({
+                label: s.label.replace(' (RAW)', ''),
+                url: s.url
+            }));
+
+            const keyVal = document.getElementById('keyVal') ? document.getElementById('keyVal').innerText : '';
+            const bpmVal = document.getElementById('bpmVal') ? document.getElementById('bpmVal').innerText : '';
+
+            const payload = {
+                stems: stems,
+                key: keyVal,
+                bpm: bpmVal,
+                timestamp: Date.now()
+            };
+
+            localStorage.setItem('stemerStems', JSON.stringify(payload));
+            console.log(`[TRANSFER] Enviaremos ${stems.length} stems seleccionados a Mixter:`, stems.map(s => s.label));
+            window.location.href = 'mixter.html';
+        };
+
+        // Download selected stems mixed into a single 16-bit PCM WAV file
+        window.downloadSelectedMixWav = async () => {
+            const btn = document.getElementById('btnDownloadMixWav');
+            const selectedStems = (stemsData && stemsData.length > 0)
+                ? stemsData.filter(s => s.isSelected)
+                : [];
+
+            if (selectedStems.length === 0) {
+                alert("Por favor selecciona al menos una pista para descargar la mezcla WAV.");
+                return;
+            }
+
+            const origBtnText = btn.innerHTML;
+            btn.innerHTML = `<span class="spinner" style="display:inline-block; width:12px; height:12px; border:2px solid #00f5ff; border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-right:6px;"></span> Mezclando...`;
+            btn.disabled = true;
+
+            try {
+                const actx = new (window.AudioContext || window.webkitAudioContext)();
+                const audioBuffers = [];
+
+                for (let s of selectedStems) {
+                    btn.innerHTML = `Cargando ${s.label}...`;
+                    const res = await fetch(s.url);
+                    if (!res.ok) throw new Error(`No se pudo descargar el stem ${s.label}`);
+                    const arrayBuf = await res.arrayBuffer();
+                    const decoded = await actx.decodeAudioData(arrayBuf);
+                    audioBuffers.push({ buffer: decoded, volume: (typeof s.volume === 'number') ? s.volume : 1.0 });
+                }
+
+                btn.innerHTML = `Renderizando Mezcla...`;
+                let maxDuration = 0;
+                let sampleRate = 44100;
+                audioBuffers.forEach(item => {
+                    if (item.buffer.duration > maxDuration) maxDuration = item.buffer.duration;
+                    if (item.buffer.sampleRate) sampleRate = item.buffer.sampleRate;
+                });
+
+                const totalFrames = Math.max(1, Math.ceil(maxDuration * sampleRate));
+                const offlineCtx = new OfflineAudioContext(2, totalFrames, sampleRate);
+
+                audioBuffers.forEach(item => {
+                    const source = offlineCtx.createBufferSource();
+                    source.buffer = item.buffer;
+                    const gain = offlineCtx.createGain();
+                    gain.gain.value = item.volume;
+                    source.connect(gain);
+                    gain.connect(offlineCtx.destination);
+                    source.start(0);
+                });
+
+                const renderedBuffer = await offlineCtx.startRendering();
+                await actx.close();
+
+                const wavBlob = audioBufferToWavBlob(renderedBuffer);
+
+                const songTitle = selectedFile ? selectedFile.name.replace(/\.[^/.]+$/, "") : "mezcla";
+                const isInstrumental = !selectedStems.some(s => s.label.toUpperCase().includes('VOCAL'));
+                const suffix = isInstrumental ? "_instrumental" : "_seleccion";
+                const filename = `${songTitle}${suffix}.wav`;
+
+                const downloadUrl = URL.createObjectURL(wavBlob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(downloadUrl), 5000);
+
+                btn.innerHTML = `✓ WAV Descargado`;
+                setTimeout(() => {
+                    btn.innerHTML = origBtnText;
+                    btn.disabled = false;
+                }, 2500);
+            } catch (err) {
+                console.error("Error al renderizar mezcla WAV:", err);
+                alert("Hubo un error al generar la mezcla WAV: " + err.message);
+                btn.innerHTML = origBtnText;
+                btn.disabled = false;
+            }
+        };
+
+        function audioBufferToWavBlob(buffer) {
+            const numChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const bitDepth = 16;
+            const bytesPerSample = bitDepth / 8;
+            const blockAlign = numChannels * bytesPerSample;
+            const length = buffer.length * numChannels * bytesPerSample;
+            const bufferData = new ArrayBuffer(44 + length);
+            const view = new DataView(bufferData);
+
+            function writeString(v, offset, str) {
+                for (let i = 0; i < str.length; i++) {
+                    v.setUint8(offset + i, str.charCodeAt(i));
+                }
+            }
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + length, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true); // SubChunk1Size (16 for PCM)
+            view.setUint16(20, 1, true);  // AudioFormat (1 for PCM)
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitDepth, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, length, true);
+
+            let offset = 44;
+            const channels = [];
+            for (let i = 0; i < numChannels; i++) {
+                channels.push(buffer.getChannelData(i));
+            }
+
+            for (let i = 0; i < buffer.length; i++) {
+                for (let ch = 0; ch < numChannels; ch++) {
+                    let sample = channels[ch][i];
+                    sample = Math.max(-1, Math.min(1, sample));
+                    let s = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+                    view.setInt16(offset, s, true);
+                    offset += 2;
+                }
+            }
+
+            return new Blob([view], { type: 'audio/wav' });
         }
 
         // Quick Send original reference track to Master Studio
@@ -2694,6 +3099,11 @@
 
         // Navigation to Midifier / Sampler / Mixter / Master
         window.sendToTool = (tool) => {
+            if (tool === 'mixter' && stemsData && stemsData.length > 0) {
+                window.sendSelectionToMixter();
+                return;
+            }
+
             const stems = [];
             const labels = ["ORIGINAL SONG", "VOCALS", "BASS", "OTHER", "DRUMS", "KICK", "SNARE", "HI-HAT"];
 
