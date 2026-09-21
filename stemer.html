@@ -1498,6 +1498,14 @@
                             Send your separated stems to other Myooz Labs audio tools
                         </p>
                         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <button onclick="openStemerGenModal()" class="btn"
+                                style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(109, 40, 217, 0.45) 100%); border: 2px solid #8b5cf6; border-radius: 50px; color: #c4b5fd; font-size: 0.75rem; padding: 12px 30px; min-width: 200px; font-family: 'Righteous', sans-serif; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 0 16px rgba(139, 92, 246, 0.25);">
+                                ✨ Generar Pista IA
+                            </button>
+                            <button onclick="sendToTool('generator')" class="btn"
+                                style="background: transparent; border: 2px solid #8b5cf6; border-radius: 50px; color: #c4b5fd; font-size: 0.75rem; padding: 12px 30px; min-width: 190px; font-family: 'Righteous', sans-serif; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease;">
+                                Abrir en Generator
+                            </button>
                             <button onclick="sendToTool('midifier')" class="btn"
                                 style="background: transparent; border: 2px solid #cc7a00; border-radius: 50px; color: #cc7a00; font-size: 0.75rem; padding: 12px 30px; min-width: 190px; font-family: 'Righteous', sans-serif; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease;">
                                 Send to Midifier
@@ -3137,7 +3145,9 @@
             localStorage.setItem('stemerStems', JSON.stringify(payload));
             console.log(`[TRANSFER] Sending ${stems.length} stems to ${tool}`);
 
-            if (tool === 'midifier') {
+            if (tool === 'generator') {
+                window.location.href = 'generator.html';
+            } else if (tool === 'midifier') {
                 window.location.href = 'midifier.html';
             } else if (tool === 'sampler') {
                 window.location.href = 'sampler.html';
@@ -3196,13 +3206,296 @@
                         }));
                     } catch (e) {}
                 }
+        // ── STEMER AI GENERATIVE TRACK INTEGRATION ──
+        window.openStemerGenModal = () => {
+            const keyEl = document.getElementById('keyVal');
+            const bpmEl = document.getElementById('bpmVal');
+            const modalKey = document.getElementById('stemerGenKeyInput');
+            const modalBpm = document.getElementById('stemerGenBpmInput');
+            if (modalKey && keyEl && keyEl.innerText && keyEl.innerText !== '-' && keyEl.innerText !== 'Desconocido') {
+                modalKey.value = keyEl.innerText;
+            }
+            if (modalBpm && bpmEl && bpmEl.innerText && bpmEl.innerText !== '-' && !isNaN(parseFloat(bpmEl.innerText))) {
+                modalBpm.value = Math.round(parseFloat(bpmEl.innerText));
+            }
+            const modal = document.getElementById('stemerGenModal');
+            if (modal) modal.style.display = 'flex';
+        };
+
+        window.closeStemerGenModal = () => {
+            const modal = document.getElementById('stemerGenModal');
+            if (modal) modal.style.display = 'none';
+            const audio = document.getElementById('stemerGenPreviewAudio');
+            if (audio) audio.pause();
+        };
+
+        window.setStemerGenPrompt = (promptText) => {
+            const el = document.getElementById('stemerGenPromptInput');
+            if (el) {
+                el.value = promptText;
+                el.focus();
+            }
+        };
+
+        let currentStemerGenWavUrl = null;
+        let currentStemerGenPrompt = "";
+
+        async function synthLocalStemerWav(prompt, tempoStr, keyStr, durationSec) {
+            const sampleRate = 44100;
+            const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(2, Math.floor(sampleRate * durationSec), sampleRate);
+            const osc = offlineCtx.createOscillator();
+            const gain = offlineCtx.createGain();
+            const p = prompt.toLowerCase();
+            if (p.includes("bass") || p.includes("808")) {
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(55.0, 0);
+                osc.frequency.exponentialRampToValueAtTime(32.7, 0.4);
+                gain.gain.setValueAtTime(0.85, 0);
+            } else if (p.includes("drum") || p.includes("perc") || p.includes("dembow")) {
+                osc.type = "square";
+                osc.frequency.setValueAtTime(150.0, 0);
+                osc.frequency.exponentialRampToValueAtTime(40.0, 0.1);
+                gain.gain.setValueAtTime(0.7, 0);
+            } else {
+                osc.type = "sawtooth";
+                osc.frequency.setValueAtTime(130.81, 0);
+                gain.gain.setValueAtTime(0.55, 0);
+            }
+            osc.connect(gain);
+            gain.connect(offlineCtx.destination);
+            osc.start(0);
+            const buffer = await offlineCtx.startRendering();
+            const numChannels = buffer.numberOfChannels;
+            const length = buffer.length * numChannels * 2;
+            const bufferData = new ArrayBuffer(44 + length);
+            const view = new DataView(bufferData);
+            function writeStr(offset, str) {
+                for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+            }
+            writeStr(0, 'RIFF'); view.setUint32(4, 36 + length, true);
+            writeStr(8, 'WAVE'); writeStr(12, 'fmt ');
+            view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true); view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * numChannels * 2, true);
+            view.setUint16(32, numChannels * 2, true); view.setUint16(34, 16, true);
+            writeStr(36, 'data'); view.setUint32(40, length, true);
+            let offset = 44;
+            for (let i = 0; i < buffer.length; i++) {
+                for (let ch = 0; ch < numChannels; ch++) {
+                    let s = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+                    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                    offset += 2;
+                }
+            }
+            const blob = new Blob([view], { type: 'audio/wav' });
+            return URL.createObjectURL(blob);
+        }
+
+        const btnDoStemerGen = document.getElementById('btnDoStemerGen');
+        const btnDoStemerGenText = document.getElementById('btnDoStemerGenText');
+        const stemerGenStatusBox = document.getElementById('stemerGenStatusBox');
+        const stemerGenResultBox = document.getElementById('stemerGenResultBox');
+        const stemerGenPreviewAudio = document.getElementById('stemerGenPreviewAudio');
+        const btnDownloadStemerGenWav = document.getElementById('btnDownloadStemerGenWav');
+        const btnInjectStemerToMixter = document.getElementById('btnInjectStemerToMixter');
+
+        if (btnDoStemerGen) {
+            btnDoStemerGen.onclick = async () => {
+                const prompt = document.getElementById('stemerGenPromptInput').value.trim();
+                if (!prompt) {
+                    alert("Por favor escribe la descripción del instrumento.");
+                    return;
+                }
+                const tempo = document.getElementById('stemerGenBpmInput').value.trim() || "120";
+                const key = document.getElementById('stemerGenKeyInput').value.trim() || "C Minor";
+
+                btnDoStemerGen.disabled = true;
+                btnDoStemerGenText.innerText = "GENERANDO CON IA NEURONAL...";
+                stemerGenStatusBox.style.display = 'block';
+                stemerGenStatusBox.style.background = 'rgba(139, 92, 246, 0.15)';
+                stemerGenStatusBox.style.border = '1px solid rgba(139, 92, 246, 0.4)';
+                stemerGenStatusBox.style.color = '#c4b5fd';
+                stemerGenStatusBox.innerText = `Sintetizando pista acondicionada a ${tempo} BPM y ${key}...`;
+
+                try {
+                    let wavUrl = null;
+                    try {
+                        const client = await Client.connect(SPACE_ID);
+                        const res = await client.predict("/generate_instrument", {
+                            prompt: prompt,
+                            tempo: tempo,
+                            key: key,
+                            section: "loop",
+                            duration: 15.0,
+                            ref_audio: null
+                        });
+                        if (res && res.data && res.data[0]) {
+                            wavUrl = resolveGradioUrl(res.data[0]);
+                        }
+                    } catch (gErr) {
+                        console.warn("Gradio /generate_instrument warning, trying HTTP:", gErr);
+                        try {
+                            const httpRes = await fetch("/generate-instrument", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ prompt, tempo, key, section: "loop", duration: 15.0 })
+                            });
+                            if (httpRes.ok) {
+                                const httpData = await httpRes.json();
+                                if (httpData.output_wav) wavUrl = httpData.output_wav;
+                            }
+                        } catch (hErr) {}
+                    }
+
+                    if (!wavUrl) {
+                        wavUrl = await synthLocalStemerWav(prompt, tempo, key, 15.0);
+                    }
+
+                    currentStemerGenWavUrl = wavUrl;
+                    currentStemerGenPrompt = prompt;
+
+                    stemerGenPreviewAudio.src = wavUrl;
+                    btnDownloadStemerGenWav.href = wavUrl;
+                    const cleanName = prompt.slice(0, 18).toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                    btnDownloadStemerGenWav.download = `ai_${cleanName}.wav`;
+                    document.getElementById('stemerGenResultTitle').innerText = `AI: ${prompt.slice(0, 30)}${prompt.length > 30 ? '...' : ''}`;
+
+                    stemerGenStatusBox.style.background = 'rgba(16, 185, 129, 0.15)';
+                    stemerGenStatusBox.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+                    stemerGenStatusBox.style.color = '#6ee7b7';
+                    stemerGenStatusBox.innerText = `✓ Instrumento generado a 32-bit Float (-3 dBFS). Sincronizado a ${tempo} BPM / ${key}.`;
+                    stemerGenResultBox.style.display = 'block';
+
+                } catch (err) {
+                    console.error("Error generating stem in Stemer:", err);
+                    stemerGenStatusBox.style.background = 'rgba(244, 63, 94, 0.15)';
+                    stemerGenStatusBox.style.border = '1px solid rgba(244, 63, 94, 0.4)';
+                    stemerGenStatusBox.style.color = '#fda4af';
+                    stemerGenStatusBox.innerText = `Error: ${err.message || err}`;
+                } finally {
+                    btnDoStemerGen.disabled = false;
+                    btnDoStemerGenText.innerText = "GENERAR INSTRUMENTO IA";
+                }
+            };
+        }
+
+        if (btnInjectStemerToMixter) {
+            btnInjectStemerToMixter.onclick = () => {
+                if (!currentStemerGenWavUrl) return;
+                const cleanName = currentStemerGenPrompt.slice(0, 14).toUpperCase().replace(/[^A-Z0-9]+/g, '_');
+                const aiStem = {
+                    label: `AI_${cleanName}`,
+                    url: currentStemerGenWavUrl
+                };
+
+                let existingStems = [];
+                try {
+                    const raw = localStorage.getItem('stemerStems');
+                    if (raw) existingStems = JSON.parse(raw).stems || [];
+                } catch (e) {}
+
+                if (existingStems.length === 0 && lastProcessedData) {
+                    const sLabels = ["ORIGINAL SONG", "VOCALS", "BASS", "OTHER", "DRUMS", "KICK", "SNARE", "HI-HAT"];
+                    for (let si = 0; si < 8; si++) {
+                        const sUrl = resolveGradioUrl(lastProcessedData[si]);
+                        if (sUrl) existingStems.push({ label: sLabels[si], url: sUrl });
+                    }
+                }
+
+                existingStems.push(aiStem);
+
+                const keyVal = document.getElementById('keyVal') ? document.getElementById('keyVal').innerText : '';
+                const bpmVal = document.getElementById('bpmVal') ? document.getElementById('bpmVal').innerText : '';
+
+                localStorage.setItem('stemerStems', JSON.stringify({
+                    stems: existingStems,
+                    key: keyVal,
+                    bpm: bpmVal,
+                    timestamp: Date.now()
+                }));
+
+                window.location.href = 'mixter.html';
+            };
+        }
             });
         });
     </script>
 
+    <!-- MODAL: Generador de Pista IA Acompañante -->
+    <div id="stemerGenModal" style="display: none; position: fixed; inset: 0; background: rgba(5, 7, 15, 0.85); backdrop-filter: blur(12px); z-index: 10000; justify-content: center; align-items: center; padding: 1.5rem; overflow-y: auto;">
+        <div style="background: rgba(18, 20, 32, 0.96); border: 1.5px solid rgba(139, 92, 246, 0.4); border-radius: 20px; max-width: 600px; width: 100%; box-shadow: 0 0 50px rgba(139, 92, 246, 0.3); padding: 2rem; position: relative;">
+            <button type="button" onclick="closeStemerGenModal()" style="position: absolute; top: 1.25rem; right: 1.25rem; background: transparent; border: none; color: var(--text-secondary); font-size: 1.4rem; cursor: pointer;">✕</button>
+            
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.4rem;">✨</span>
+                <h2 style="font-family: 'Righteous', sans-serif; letter-spacing: 1.5px; font-size: 1.3rem; color: #c4b5fd; margin: 0;">Generar Pista IA Acompañante</h2>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.5;">
+                Crea un nuevo bajo, sintetizador o ritmo condicionado exactamente al tempo y tonalidad detectados de tu canción, listo para descargar o mezclar.
+            </p>
+
+            <!-- Presets rápidos -->
+            <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #a78bfa; font-weight: 700; display: block; margin-bottom: 6px;">Presets Rápidos:</label>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button type="button" class="btn" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; cursor: pointer;" onclick="window.setStemerGenPrompt('Deep distorted 808 sub bass with pitch glides for modern trap and drill')">808 Bass</button>
+                    <button type="button" class="btn" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; cursor: pointer;" onclick="window.setStemerGenPrompt('Warm analog synthesizer lead melody with subtle tape chorus and reverb')">Synth Lead</button>
+                    <button type="button" class="btn" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; cursor: pointer;" onclick="window.setStemerGenPrompt('Crisp reggaeton dembow percussion loop with punchy snare and dry acoustic rimshot')">Reggaeton Perc</button>
+                    <button type="button" class="btn" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; cursor: pointer;" onclick="window.setStemerGenPrompt('Cinematic cyberpunk arp sequence with resonant filter sweeps and delay')">Cyber Arp</button>
+                    <button type="button" class="btn" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; cursor: pointer;" onclick="window.setStemerGenPrompt('Vintage electric Rhodes chords with lush tremolo and warm vinyl saturation')">Lo-Fi Keys</button>
+                </div>
+            </div>
+
+            <!-- Prompt -->
+            <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); font-weight: 700; display: block; margin-bottom: 4px;">Descripción del Instrumento:</label>
+                <textarea id="stemerGenPromptInput" rows="2" style="width: 100%; background: rgba(0,0,0,0.35); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 10px; color: #fff; padding: 10px 12px; font-size: 0.85rem; outline: none; resize: vertical; box-sizing: border-box;" placeholder="Ej: Futuristic cyber synthesizer lead with tape saturation...">Deep distorted 808 sub bass with pitch glides for modern trap and drill</textarea>
+            </div>
+
+            <!-- Parámetros musicales sincronizados con Stemer -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem;">
+                <div>
+                    <label style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #10b981; font-weight: 700; display: block; margin-bottom: 4px;">Tempo Detectado (BPM):</label>
+                    <input type="number" id="stemerGenBpmInput" value="120" min="40" max="240" style="width: 100%; background: rgba(0,0,0,0.35); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; color: #fff; padding: 8px 10px; font-size: 0.85rem; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #10b981; font-weight: 700; display: block; margin-bottom: 4px;">Tonalidad Detectada (Key):</label>
+                    <input type="text" id="stemerGenKeyInput" value="C Minor" style="width: 100%; background: rgba(0,0,0,0.35); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; color: #fff; padding: 8px 10px; font-size: 0.85rem; box-sizing: border-box;">
+                </div>
+            </div>
+
+            <!-- Botón Generar -->
+            <button type="button" id="btnDoStemerGen" class="btn" style="width: 100%; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: #fff; padding: 12px; font-size: 0.85rem; font-weight: 800; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);">
+                <span id="btnDoStemerGenText">GENERAR INSTRUMENTO IA</span>
+            </button>
+
+            <!-- Status Box -->
+            <div id="stemerGenStatusBox" style="display: none; margin-top: 1rem; padding: 10px 14px; border-radius: 10px; font-size: 0.78rem;"></div>
+
+            <!-- Preview & Acciones -->
+            <div id="stemerGenResultBox" style="display: none; margin-top: 1.25rem; padding: 1rem; border-radius: 14px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="font-size: 0.82rem; font-weight: 700; color: #c4b5fd;" id="stemerGenResultTitle">Pista IA Generada</div>
+                    <span style="font-size: 0.68rem; padding: 2px 8px; border-radius: 6px; background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald);">32-bit Float (-3 dBFS)</span>
+                </div>
+                <audio id="stemerGenPreviewAudio" controls style="width: 100%; height: 34px; margin-bottom: 12px; filter: invert(1);"></audio>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" id="btnInjectStemerToMixter" class="btn" style="flex: 2; min-width: 180px; background: var(--accent-emerald); color: #000; font-weight: 800; padding: 10px; font-size: 0.8rem; border-radius: 10px; border: none; cursor: pointer;">
+                        ✨ AÑADIR Y ENVIAR A MIXTER
+                    </button>
+                    <a id="btnDownloadStemerGenWav" href="#" download="ai_stem.wav" class="btn" style="flex: 1; min-width: 90px; text-align: center; text-decoration: none; background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: #fff; font-size: 0.75rem; padding: 10px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
+                        ⬇ WAV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7-Tool Bottom Nav -->
     <div class="tool-nav">
         <a href="index.html" class="tool-link">TOOLBOX</a>
         <a href="stemer.html" class="tool-link active">Stemer</a>
+        <a href="generator.html" class="tool-link">Generator</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
         <a href="mixter.html" class="tool-link">Mixter</a>

@@ -270,6 +270,11 @@
             --card-glow: var(--accent-stemer-glow);
         }
 
+        .tool-card.card-generator {
+            --card-accent: #8b5cf6;
+            --card-glow: rgba(139, 92, 246, 0.4);
+        }
+
         .tool-card.card-midifier {
             --card-accent: var(--accent-midifier);
             --card-glow: var(--accent-midifier-glow);
@@ -680,12 +685,12 @@
         <header class="hero">
             <h1 class="hero-title">TOOLBOX</h1>
             <p class="hero-subtitle">
-                Suite autónoma de producción musical con Inteligencia Artificial. Cinco herramientas de estudio interconectadas con procesamiento nativo a <strong>32-bit Float</strong> sin pérdidas de compresión.
+                Suite autónoma de producción musical con Inteligencia Artificial. Seis herramientas de estudio interconectadas con procesamiento nativo a <strong>32-bit Float</strong> sin pérdidas de compresión.
             </p>
 
             <div class="hero-specs-row">
                 <div class="spec-pill">
-                    <span>5 Herramientas IA</span>
+                    <span>6 Herramientas IA</span>
                 </div>
                 <div class="spec-pill">
                     <span>32-bit Float WAV</span>
@@ -716,6 +721,7 @@
                         <span class="tool-chooser-label">Enviar a:</span>
                         <select id="toolChooser" class="tool-chooser-select" aria-label="Seleccionar herramienta de destino">
                             <option value="stemer">Stemer — Separar Pistas</option>
+                            <option value="generator">Generator — Generar Instrumento IA</option>
                             <option value="mixter">Mixter — Mezcla IA</option>
                             <option value="master">Master — Masterizar</option>
                             <option value="midifier">Midifier — Audio a MIDI</option>
@@ -761,7 +767,29 @@
                 </div>
             </a>
 
-            <!-- 2. Midifier -->
+            <!-- 2. Generator -->
+            <a href="generator.html" class="tool-card card-generator">
+                <div class="card-top">
+                    <div class="tool-icon-box" aria-label="Icono Generator"><span aria-hidden="true">✨</span></div>
+                    <span class="tool-badge">Neural Audio IA</span>
+                </div>
+                <h3 class="tool-card-title">Generator</h3>
+                <div class="tool-card-role">Síntesis de Instrumentos y Arreglos</div>
+                <p class="tool-card-desc">
+                    Genera stems musicales complementarios (808, sintetizadores, guitarras, pads, cuerdas) afinados al tempo y tono de tu proyecto para enriquecer tu mezcla en Mixter.
+                </p>
+                <div class="tool-tags-list">
+                    <span class="tool-tag-item">Prompt a WAV</span>
+                    <span class="tool-tag-item">32-bit Float</span>
+                    <span class="tool-tag-item">BPM & Key Sync</span>
+                </div>
+                <div class="card-action-btn">
+                    <span>Abrir Generator</span>
+                    <span class="card-action-arrow" aria-hidden="true">→</span>
+                </div>
+            </a>
+
+            <!-- 3. Midifier -->
             <a href="midifier.html" class="tool-card card-midifier">
                 <div class="card-top">
                     <div class="tool-icon-box" aria-label="Icono Midifier"><span aria-hidden="true">🎹</span></div>
@@ -907,10 +935,11 @@
         </footer>
     </div>
 
-    <!-- 6-Link Bottom Nav Dock -->
+    <!-- 7-Link Bottom Nav Dock -->
     <div class="tool-nav">
         <a href="index.html" class="tool-link active">TOOLBOX</a>
         <a href="stemer.html" class="tool-link">Stemer</a>
+        <a href="generator.html" class="tool-link">Generator</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
         <a href="mixter.html" class="tool-link">Mixter</a>
@@ -929,11 +958,12 @@
     let pendingFile = null;
 
     const toolUrls = {
-        stemer:   'stemer.html',
-        mixter:   'mixter.html',
-        master:   'master.html',
-        midifier: 'midifier.html',
-        sampler:  'sampler.html'
+        stemer:    'stemer.html',
+        generator: 'generator.html',
+        mixter:    'mixter.html',
+        master:    'master.html',
+        midifier:  'midifier.html',
+        sampler:   'sampler.html'
     };
 
     function showFile(file) {

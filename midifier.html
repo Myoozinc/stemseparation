@@ -133,12 +133,15 @@
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 50px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
-            gap: 20px;
+            gap: 12px;
             z-index: 1000;
+            max-width: 95vw;
+            overflow-x: auto;
+            scrollbar-width: none;
         }
 
         .tool-link {
@@ -319,6 +322,7 @@
     <div class="tool-nav">
         <a href="index.html" class="tool-link">TOOLBOX</a>
         <a href="stemer.html" class="tool-link">Stemer</a>
+        <a href="generator.html" class="tool-link">Generator</a>
         <a href="midifier.html" class="tool-link active">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
         <a href="mixter.html" class="tool-link">Mixter</a>
