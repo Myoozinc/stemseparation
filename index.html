@@ -721,11 +721,11 @@
                         <span class="tool-chooser-label">Enviar a:</span>
                         <select id="toolChooser" class="tool-chooser-select" aria-label="Seleccionar herramienta de destino">
                             <option value="stemer">Stemer — Separar Pistas</option>
-                            <option value="generator">Generator — Generar Instrumento IA</option>
-                            <option value="mixter">Mixter — Mezcla IA</option>
-                            <option value="master">Master — Masterizar</option>
                             <option value="midifier">Midifier — Audio a MIDI</option>
                             <option value="sampler">Sampler — Slicear Samples</option>
+                            <option value="mixter">Mixter — Mezcla IA</option>
+                            <option value="master">Master — Masterizar</option>
+                            <option value="generator">🧪 Generator — Generar IA (Beta / En Desarrollo)</option>
                         </select>
                         <button class="launch-tool-btn" id="launchToolBtn">Abrir herramienta →</button>
                     </div>
@@ -767,29 +767,7 @@
                 </div>
             </a>
 
-            <!-- 2. Generator -->
-            <a href="generator.html" class="tool-card card-generator">
-                <div class="card-top">
-                    <div class="tool-icon-box" aria-label="Icono Generator"><span aria-hidden="true">✨</span></div>
-                    <span class="tool-badge">Neural Audio IA</span>
-                </div>
-                <h3 class="tool-card-title">Generator</h3>
-                <div class="tool-card-role">Síntesis de Instrumentos y Arreglos</div>
-                <p class="tool-card-desc">
-                    Genera stems musicales complementarios (808, sintetizadores, guitarras, pads, cuerdas) afinados al tempo y tono de tu proyecto para enriquecer tu mezcla en Mixter.
-                </p>
-                <div class="tool-tags-list">
-                    <span class="tool-tag-item">Prompt a WAV</span>
-                    <span class="tool-tag-item">32-bit Float</span>
-                    <span class="tool-tag-item">BPM & Key Sync</span>
-                </div>
-                <div class="card-action-btn">
-                    <span>Abrir Generator</span>
-                    <span class="card-action-arrow" aria-hidden="true">→</span>
-                </div>
-            </a>
-
-            <!-- 3. Midifier -->
+            <!-- 2. Midifier -->
             <a href="midifier.html" class="tool-card card-midifier">
                 <div class="card-top">
                     <div class="tool-icon-box" aria-label="Icono Midifier"><span aria-hidden="true">🎹</span></div>
@@ -876,6 +854,28 @@
                     <span class="card-action-arrow" aria-hidden="true">→</span>
                 </div>
             </a>
+
+            <!-- 6. Generator (Beta / Labs) -->
+            <a href="generator.html" class="tool-card card-generator" style="border-style: dashed; border-color: rgba(139, 92, 246, 0.35);">
+                <div class="card-top">
+                    <div class="tool-icon-box" aria-label="Icono Generator"><span aria-hidden="true">🧪</span></div>
+                    <span class="tool-badge" style="background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.45); color: #c4b5fd;">LABS · BETA</span>
+                </div>
+                <h3 class="tool-card-title">Generator <span style="font-size: 0.68rem; background: rgba(139, 92, 246, 0.25); border: 1px solid rgba(139, 92, 246, 0.45); padding: 2px 6px; border-radius: 4px; vertical-align: middle; color: #c4b5fd;">BETA</span></h3>
+                <div class="tool-card-role">Síntesis Musical en la Nube (En Desarrollo)</div>
+                <p class="tool-card-desc">
+                    Generación experimental de instrumentos y arreglos musicales con Meta MusicGen en GPU. Módulo en progreso para complementar tus pistas.
+                </p>
+                <div class="tool-tags-list">
+                    <span class="tool-tag-item">Meta MusicGen GPU</span>
+                    <span class="tool-tag-item">En Progreso</span>
+                    <span class="tool-tag-item">Online Cloud</span>
+                </div>
+                <div class="card-action-btn">
+                    <span>Probar Generator (Beta)</span>
+                    <span class="card-action-arrow" aria-hidden="true">→</span>
+                </div>
+            </a>
         </div>
 
         <!-- Ecosystem Flow Diagram -->
@@ -939,11 +939,11 @@
     <div class="tool-nav">
         <a href="index.html" class="tool-link active">TOOLBOX</a>
         <a href="stemer.html" class="tool-link">Stemer</a>
-        <a href="generator.html" class="tool-link">Generator</a>
         <a href="midifier.html" class="tool-link">Midifier</a>
         <a href="sampler.html" class="tool-link">Sampler</a>
         <a href="mixter.html" class="tool-link">Mixter</a>
         <a href="master.html" class="tool-link">Master</a>
+        <a href="generator.html" class="tool-link" style="opacity: 0.75; font-size: 0.75rem;" title="Módulo Experimental en Desarrollo">🧪 Generator (Beta)</a>
     </div>
 
 <script>
