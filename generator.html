@@ -374,9 +374,15 @@
 
         <!-- Generation Studio Form -->
         <div class="glass-card">
-            <div class="section-label">
-                <span aria-hidden="true">🪄</span>
-                <span>1. Describe el Sonido o Instrumento</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 8px;">
+                <div class="section-label" style="margin-bottom: 0;">
+                    <span aria-hidden="true">🪄</span>
+                    <span>1. Describe el Sonido o Instrumento</span>
+                </div>
+                <div id="engineBadge" style="font-size: 0.72rem; padding: 5px 12px; border-radius: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); color: #c4b5fd; transition: all 0.3s ease;">
+                    <span id="engineDot" style="width: 8px; height: 8px; border-radius: 50%; background: #a855f7; display: inline-block;"></span>
+                    <span id="engineText">Detectando motor...</span>
+                </div>
             </div>
 
             <input type="text" id="genPrompt" class="gen-prompt-input"
@@ -526,9 +532,69 @@
     <script type="module">
         import { Client, handle_file } from "https://esm.sh/@gradio/client";
 
-        // Generation uses facebook/MusicGen for real AI music
+        // Engine Endpoints (Hybrid Zero-API Architecture)
+        const LOCAL_ENGINE_URL = "http://localhost:7860";
         const MUSICGEN_SPACE = "facebook/MusicGen";
         const STEMS_SPACE = "tinahmbuz/audiostems";
+
+        let isLocalEngineOnline = false;
+        let localEngineInfo = null;
+
+        // Auto-detect local engine heartbeat on Mac
+        async function checkLocalEngine() {
+            const badge = document.getElementById('engineBadge');
+            const dot = document.getElementById('engineDot');
+            const text = document.getElementById('engineText');
+            const durRange = document.getElementById('genDuration');
+            if (!badge || !dot || !text) return;
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 1200);
+                const res = await fetch(`${LOCAL_ENGINE_URL}/status`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === "online") {
+                        isLocalEngineOnline = true;
+                        localEngineInfo = data;
+
+                        badge.style.background = "rgba(16, 185, 129, 0.15)";
+                        badge.style.borderColor = "rgba(16, 185, 129, 0.4)";
+                        badge.style.color = "#6ee7b7";
+                        dot.style.background = "#10b981";
+                        dot.style.boxShadow = "0 0 8px #10b981";
+                        const dev = data.apple_silicon_mps ? "Apple Silicon MPS" : (data.device || "Local");
+                        text.innerText = `🟢 Motor Local (${dev})`;
+
+                        // Unlock extended duration for local Mac hardware
+                        if (durRange) durRange.max = "60";
+                        return;
+                    }
+                }
+            } catch (e) {
+                // Local engine offline, perfectly normal for web visitors
+            }
+
+            isLocalEngineOnline = false;
+            localEngineInfo = null;
+            badge.style.background = "rgba(139, 92, 246, 0.15)";
+            badge.style.borderColor = "rgba(139, 92, 246, 0.35)";
+            badge.style.color = "#c4b5fd";
+            dot.style.background = "#a855f7";
+            dot.style.boxShadow = "none";
+            text.innerText = "🟣 Motor Nube (Meta MusicGen GPU)";
+            if (durRange && parseFloat(durRange.value) > 30) {
+                durRange.value = "15";
+                const dVal = document.getElementById('durVal');
+                if (dVal) dVal.innerText = "15s";
+            }
+            if (durRange) durRange.max = "30";
+        }
+
+        checkLocalEngine();
+        setInterval(checkLocalEngine, 10000);
 
         let currentGeneratedWavUrl = null;
         let currentMetadata = null;
@@ -597,78 +663,118 @@
             const duration = parseFloat(document.getElementById('genDuration').value) || 15.0;
 
             btnGenerate.disabled = true;
-            btnGenText.innerHTML = `<span class="spinner"></span> Generando con Meta MusicGen IA...`;
+            btnGenText.innerHTML = `<span class="spinner"></span> Generando música IA...`;
             statusBox.style.display = 'block';
             statusBox.style.background = 'rgba(139, 92, 246, 0.15)';
             statusBox.style.border = '1px solid rgba(139, 92, 246, 0.4)';
             statusBox.style.color = '#c4b5fd';
-            statusBox.innerText = `Conectando con Meta MusicGen (IA Generativa)...`;
 
             try {
                 let wavUrl = null;
                 let meta = null;
 
                 // Build enriched prompt — MusicGen understands natural language descriptions
-                // Include BPM and key as part of the musical description
                 const enrichedPrompt = `${prompt}, ${tempo} bpm, ${key}, perfect for a ${section} section`;
 
-                // ── Try Meta MusicGen Space (real AI generative music) ──
-                try {
-                    statusBox.innerText = `Conectando con facebook/MusicGen GPU... puede tardar unos segundos en el primer intento.`;
-                    const musicgenClient = await Client.connect(MUSICGEN_SPACE);
-
-                    const melodyInput = selectedRefFile ? handle_file(selectedRefFile) : null;
-                    statusBox.innerText = `🎵 Generando música IA con MusicGen: "${enrichedPrompt.slice(0, 70)}..."`;
-
-                    let res;
+                // ── TIER 1: Local Engine on Mac (Apple Silicon MPS / Local GPU) ──
+                if (isLocalEngineOnline) {
                     try {
-                        // Batched endpoint: inputs are arrays [texts[], melodies[]]
-                        res = await musicgenClient.predict("/predict_batched", [
-                            [enrichedPrompt],
-                            [melodyInput]
-                        ]);
-                        if (res && res.data) {
-                            const audioResult = Array.isArray(res.data[0]) ? res.data[0][0] : res.data[0];
-                            wavUrl = audioResult?.url || audioResult;
-                        }
-                    } catch (_batchErr) {
-                        console.warn("[MUSICGEN] /predict_batched failed, trying /predict:", _batchErr);
-                        res = await musicgenClient.predict("/predict", [enrichedPrompt, melodyInput]);
-                        if (res && res.data && res.data[0]) {
-                            wavUrl = res.data[0]?.url || res.data[0];
-                        }
-                    }
-
-                    if (wavUrl) {
-                        meta = {
-                            prompt: enrichedPrompt,
-                            tempo: tempo,
-                            key: key,
-                            duration_sec: 15.0,
-                            integrated_lufs: -14.0,
-                            true_peak_dbfs: -1.0,
-                            dynamic_range_db: 12.0,
-                            model: "Meta MusicGen stereo-melody"
-                        };
-                        statusBox.innerText = `✓ ¡Música generada con Meta MusicGen!`;
-                    }
-                } catch (musicGenErr) {
-                    console.warn("[GENERATOR] MusicGen Space error:", musicGenErr);
-                    statusBox.innerText = "MusicGen en cola o cold-start, intentando alternativa...";
-                    // Backend fallback (tinahmbuz/audiostems /generate_instrument)
-                    try {
-                        const stemsClient = await Client.connect(STEMS_SPACE);
-                        const fbRes = await stemsClient.predict("/generate_instrument", {
-                            prompt: enrichedPrompt, tempo, key, section, duration,
-                            ref_audio: selectedRefFile ? handle_file(selectedRefFile) : null
+                        const devName = localEngineInfo?.apple_silicon_mps ? "Apple Silicon MPS" : "Local GPU";
+                        statusBox.innerText = `⚡ Generando en tu Mac (${devName}) a máxima fidelidad...`;
+                        const locRes = await fetch(`${LOCAL_ENGINE_URL}/generate`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                prompt: prompt,
+                                tempo: tempo,
+                                key: key,
+                                section: section,
+                                duration: duration
+                            })
                         });
-                        if (fbRes && fbRes.data && fbRes.data[0]) {
-                            wavUrl = fbRes.data[0]?.url || fbRes.data[0];
-                            meta = { prompt: enrichedPrompt, tempo, key, duration_sec: duration,
-                                     integrated_lufs: -14.0, true_peak_dbfs: -3.0, dynamic_range_db: 10.5 };
+
+                        if (locRes.ok) {
+                            const locData = await locRes.json();
+                            if (locData.success && locData.audio_data_url) {
+                                wavUrl = locData.audio_data_url;
+                                meta = locData.metadata || {
+                                    prompt: prompt,
+                                    tempo: tempo,
+                                    key: key,
+                                    duration_sec: duration,
+                                    integrated_lufs: -14.0,
+                                    true_peak_dbfs: -1.0,
+                                    dynamic_range_db: 12.5,
+                                    model: `Local Apple Silicon (${devName})`
+                                };
+                                statusBox.innerText = `✓ ¡Generado con tu Mac en ${locData.elapsed_sec}s!`;
+                            }
                         }
-                    } catch (httpErr) {
-                        console.warn("[GENERATOR] Backend fallback also failed:", httpErr);
+                    } catch (locErr) {
+                        console.warn("[GENERATOR] Local engine call failed, failing over to Cloud:", locErr);
+                    }
+                }
+
+                // ── TIER 2: Public Cloud (Meta MusicGen Space on GPU) ──
+                if (!wavUrl) {
+                    statusBox.innerText = `Conectando con Meta MusicGen (IA Generativa)...`;
+                    try {
+                        statusBox.innerText = `Conectando con facebook/MusicGen GPU... puede tardar unos segundos en el primer intento.`;
+                        const musicgenClient = await Client.connect(MUSICGEN_SPACE);
+
+                        const melodyInput = selectedRefFile ? handle_file(selectedRefFile) : null;
+                        statusBox.innerText = `🎵 Generando música IA con MusicGen: "${enrichedPrompt.slice(0, 70)}..."`;
+
+                        let res;
+                        try {
+                            // Batched endpoint: inputs are arrays [texts[], melodies[]]
+                            res = await musicgenClient.predict("/predict_batched", [
+                                [enrichedPrompt],
+                                [melodyInput]
+                            ]);
+                            if (res && res.data) {
+                                const audioResult = Array.isArray(res.data[0]) ? res.data[0][0] : res.data[0];
+                                wavUrl = audioResult?.url || audioResult;
+                            }
+                        } catch (_batchErr) {
+                            console.warn("[MUSICGEN] /predict_batched failed, trying /predict:", _batchErr);
+                            res = await musicgenClient.predict("/predict", [enrichedPrompt, melodyInput]);
+                            if (res && res.data && res.data[0]) {
+                                wavUrl = res.data[0]?.url || res.data[0];
+                            }
+                        }
+
+                        if (wavUrl) {
+                            meta = {
+                                prompt: enrichedPrompt,
+                                tempo: tempo,
+                                key: key,
+                                duration_sec: 15.0,
+                                integrated_lufs: -14.0,
+                                true_peak_dbfs: -1.0,
+                                dynamic_range_db: 12.0,
+                                model: "Meta MusicGen stereo-melody"
+                            };
+                            statusBox.innerText = `✓ ¡Música generada con Meta MusicGen!`;
+                        }
+                    } catch (musicGenErr) {
+                        console.warn("[GENERATOR] MusicGen Space error:", musicGenErr);
+                        statusBox.innerText = "MusicGen en cola o cold-start, intentando alternativa...";
+                        // Backend fallback (tinahmbuz/audiostems /generate_instrument)
+                        try {
+                            const stemsClient = await Client.connect(STEMS_SPACE);
+                            const fbRes = await stemsClient.predict("/generate_instrument", {
+                                prompt: enrichedPrompt, tempo, key, section, duration,
+                                ref_audio: selectedRefFile ? handle_file(selectedRefFile) : null
+                            });
+                            if (fbRes && fbRes.data && fbRes.data[0]) {
+                                wavUrl = fbRes.data[0]?.url || fbRes.data[0];
+                                meta = { prompt: enrichedPrompt, tempo, key, duration_sec: duration,
+                                         integrated_lufs: -14.0, true_peak_dbfs: -3.0, dynamic_range_db: 10.5 };
+                            }
+                        } catch (httpErr) {
+                            console.warn("[GENERATOR] Backend fallback also failed:", httpErr);
+                        }
                     }
                 }
 
