@@ -376,7 +376,7 @@
         <div class="glass-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 8px;">
                 <div class="section-label" style="margin-bottom: 0;">
-                    <span aria-hidden="true">🪄</span>
+                    
                     <span>1. Describe el Sonido o Instrumento</span>
                 </div>
                 <div style="font-size: 0.72rem; padding: 5px 12px; border-radius: 20px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.35); color: #c4b5fd;">
@@ -391,12 +391,12 @@
 
             <div class="prompt-presets-wrap">
                 <span style="font-size: 0.72rem; color: rgba(255,255,255,0.5); align-self: center; margin-right: 4px;">Sugerencias:</span>
-                <button type="button" class="preset-pill" onclick="applyPreset('808 sub bass with warm analogue distortion and punchy beater click')">🔥 808 Sub Bass</button>
-                <button type="button" class="preset-pill" onclick="applyPreset('Lush ambient string pad with slow attack and stereo chorus shimmer')">🌌 Ambient Pad</button>
-                <button type="button" class="preset-pill" onclick="applyPreset('Soulful vintage Fender Rhodes electric piano chords with gentle vibrato')">🎹 Vintage Rhodes</button>
-                <button type="button" class="preset-pill" onclick="applyPreset('Retro 80s synthwave arpeggio with high resonance lowpass filter')">🕹️ Synthwave Arp</button>
-                <button type="button" class="preset-pill" onclick="applyPreset('Crisp brass horns section with tight stabs and commercial reverb')">🎺 Trap Brass</button>
-                <button type="button" class="preset-pill" onclick="applyPreset('Emotional lo-fi acoustic guitar fingerpicking with vinyl warmth')">🎸 Lo-Fi Guitar</button>
+                <button type="button" class="preset-pill" onclick="applyPreset('808 sub bass with warm analogue distortion and punchy beater click')">808 Sub Bass</button>
+                <button type="button" class="preset-pill" onclick="applyPreset('Lush ambient string pad with slow attack and stereo chorus shimmer')">Ambient Pad</button>
+                <button type="button" class="preset-pill" onclick="applyPreset('Soulful vintage Fender Rhodes electric piano chords with gentle vibrato')">Vintage Rhodes</button>
+                <button type="button" class="preset-pill" onclick="applyPreset('Retro 80s synthwave arpeggio with high resonance lowpass filter')">Synthwave Arp</button>
+                <button type="button" class="preset-pill" onclick="applyPreset('Crisp brass horns section with tight stabs and commercial reverb')">Trap Brass</button>
+                <button type="button" class="preset-pill" onclick="applyPreset('Emotional lo-fi acoustic guitar fingerpicking with vinyl warmth')">Lo-Fi Guitar</button>
             </div>
 
             <!-- Conditioning Parameters -->
@@ -439,7 +439,7 @@
                 <div id="refDropBox" onclick="document.getElementById('genRefAudio').click()"
                     style="border: 1px dashed rgba(139, 92, 246, 0.35); border-radius: 12px; padding: 12px 20px; text-align: center; cursor: pointer; background: rgba(139, 92, 246, 0.03); transition: all 0.2s ease;">
                     <span id="refAudioLabel" style="font-size: 0.8rem; color: rgba(255,255,255,0.65);">
-                        📁 Clic para seleccionar archivo de melodía (WAV o MP3)
+                        Clic para seleccionar archivo de melodía (WAV o MP3)
                     </span>
                 </div>
             </div>
@@ -457,7 +457,7 @@
         <!-- Result Panel -->
         <div class="glass-card result-panel" id="resultPanel">
             <div class="section-label">
-                <span aria-hidden="true">🎧</span>
+                
                 <span>2. Stem Generado (32-bit Float WAV)</span>
             </div>
 
@@ -505,13 +505,13 @@
                         <span>⬇️</span> Descargar WAV 32-bit
                     </a>
                     <button type="button" class="route-btn route-btn-mixter" onclick="sendToMixter()">
-                        <span>🎛️</span> Enviar a Mixter
+                        Enviar a Mixter
                     </button>
                     <button type="button" class="route-btn route-btn-midifier" onclick="sendToMidifier()">
-                        <span>🎹</span> Enviar a Midifier
+                        Enviar a Midifier
                     </button>
                     <button type="button" class="route-btn route-btn-sampler" onclick="sendToSampler()">
-                        <span>🥁</span> Enviar a Sampler
+                        Enviar a Sampler
                     </button>
                 </div>
             </div>
@@ -623,7 +623,7 @@
                     const musicgenClient = await Client.connect(MUSICGEN_SPACE);
 
                     const melodyInput = selectedRefFile ? handle_file(selectedRefFile) : null;
-                    statusBox.innerText = `🎵 Generando música con Meta MusicGen: "${enrichedPrompt.slice(0, 70)}..."`;
+                    statusBox.innerText = `Generando música con Meta MusicGen: "${enrichedPrompt.slice(0, 70)}..."`;
 
                     let res;
                     try {

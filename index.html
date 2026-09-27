@@ -88,43 +88,57 @@
             z-index: 0;
         }
 
-        /* Container */
+        /* Centered Workspace */
         .home-container {
             width: 100%;
-            max-width: 1180px;
-            padding: 0 1.5rem 60px;
-            margin-top: 72px;
+            max-width: 880px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin: 0 auto;
+            padding: 120px 1.5rem 85px;
+            box-sizing: border-box;
             z-index: 1;
             position: relative;
+        }
+
+        .home-content-wrap {
+            margin: auto 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         /* Hero Section */
         .hero {
             text-align: center;
-            margin-bottom: 0.85rem;
+            margin-bottom: 1.6rem;
             position: relative;
         }
 
         .hero-title {
             font-family: 'Righteous', sans-serif;
-            font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+            font-size: clamp(2.8rem, 6.5vw, 4.2rem);
             line-height: 1.05;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
             text-transform: uppercase;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.6rem;
             background: linear-gradient(135deg, #ffffff 40%, rgba(255, 255, 255, 0.4) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            text-shadow: 0 10px 35px rgba(0, 0, 0, 0.75);
         }
 
         .hero-subtitle {
-            font-size: 0.88rem;
+            font-size: 0.92rem;
             color: var(--text-secondary);
-            max-width: 640px;
-            margin: 0 auto 0.65rem;
-            line-height: 1.45;
+            max-width: 620px;
+            margin: 0 auto 1.1rem;
+            line-height: 1.55;
             font-weight: 400;
         }
 
@@ -133,7 +147,7 @@
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
-            gap: 0.45rem;
+            gap: 0.5rem;
             margin-bottom: 0;
         }
 
@@ -141,432 +155,221 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 3.5px 11px;
+            padding: 5px 14px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
-            font-size: 0.64rem;
+            font-size: 0.68rem;
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.75);
         }
 
-        /* Quick Upload Zone (Pro Audio Bar) */
+        /* Central Studio Drop Zone */
         .upload-zone-section {
-            max-width: 780px;
-            margin: 1.15rem auto 1.6rem auto;
-            padding: 0 0.5rem;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto 1.25rem auto;
+            padding: 0;
         }
 
         .quick-upload-card {
-            border: 1.5px dashed rgba(139, 92, 246, 0.45);
-            border-radius: 14px;
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(255, 255, 255, 0.015) 100%);
-            padding: 0.85rem 1.4rem;
+            border: 1.5px dashed rgba(139, 92, 246, 0.35);
+            border-radius: 20px;
+            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.08) 0%, rgba(18, 14, 30, 0.55) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 2.2rem 2rem;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
+            justify-content: center;
+            gap: 0.75rem;
             cursor: pointer;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
-            flex-wrap: wrap;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
         }
 
         .quick-upload-card:hover,
         .quick-upload-card.drag-over {
             border-color: rgba(139, 92, 246, 0.85);
-            background: rgba(139, 92, 246, 0.12);
+            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.16) 0%, rgba(22, 18, 38, 0.65) 100%);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.22);
-        }
-
-        .quick-upload-left {
-            display: flex;
-            align-items: center;
-            gap: 0.9rem;
-            text-align: left;
+            box-shadow: 0 16px 50px rgba(139, 92, 246, 0.25);
         }
 
         .quick-upload-icon-box {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
             background: rgba(139, 92, 246, 0.15);
             border: 1px solid rgba(139, 92, 246, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
             color: #c4b5fd;
-            flex-shrink: 0;
-            transition: transform 0.2s ease;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         .quick-upload-card:hover .quick-upload-icon-box {
-            transform: scale(1.06);
+            transform: scale(1.08);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.45);
             color: #fff;
-        }
-
-        .quick-upload-text-group {
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
         }
 
         .quick-upload-title {
-            font-size: 0.88rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            color: #f1f5f9;
-            letter-spacing: 0.2px;
+            color: #f8fafc;
+            letter-spacing: 0.3px;
         }
 
         .quick-upload-sub {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.45);
-            letter-spacing: 0.2px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.3px;
+            line-height: 1.4;
         }
 
         .quick-upload-browse-btn {
-            font-size: 0.68rem;
+            font-size: 0.72rem;
             font-weight: 700;
             letter-spacing: 1px;
             text-transform: uppercase;
-            padding: 5px 13px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #e2e8f0;
-            white-space: nowrap;
+            padding: 8px 22px;
+            border-radius: 20px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.45);
+            color: #e2d9f3;
             transition: all 0.2s;
+            margin-top: 0.2rem;
         }
 
         .quick-upload-card:hover .quick-upload-browse-btn {
-            background: rgba(139, 92, 246, 0.25);
-            border-color: rgba(139, 92, 246, 0.5);
+            background: #8b5cf6;
+            border-color: #8b5cf6;
             color: #fff;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
         }
 
+        .quick-upload-hint {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.38);
+            letter-spacing: 0.4px;
+            margin-top: 0.2rem;
+        }
+
+        /* File Selected State */
         .quick-upload-actions {
-            margin-top: 0.8rem;
+            margin-top: 0.6rem;
             width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .selected-file-info {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            background: rgba(139, 92, 246, 0.15);
-            border-radius: 8px;
-            padding: 0.45rem 0.9rem;
-            margin-bottom: 0.75rem;
-            font-size: 0.8rem;
+            background: rgba(139, 92, 246, 0.18);
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            border-radius: 10px;
+            padding: 0.5rem 1.2rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: #d8b4fe;
-            max-width: 440px;
-            margin-left: auto;
-            margin-right: auto;
+            max-width: 100%;
             word-break: break-all;
         }
 
-        .tool-chooser {
+        .file-action-buttons {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.65rem;
             flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
         }
 
-        .tool-chooser-label {
-            font-size: 0.78rem;
-            color: rgba(255, 255, 255, 0.55);
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .tool-chooser-select {
-            background: rgba(30, 20, 50, 0.9);
-            border: 1px solid rgba(139, 92, 246, 0.5);
-            color: #e2d9f3;
-            border-radius: 8px;
-            padding: 0.4rem 0.75rem;
-            font-size: 0.78rem;
-            font-family: inherit;
-            cursor: pointer;
-            outline: none;
-        }
-
-        .launch-tool-btn {
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 0.45rem 1.1rem;
-            font-size: 0.8rem;
+        .file-action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f1f5f9;
+            padding: 7px 15px;
+            border-radius: 10px;
+            font-size: 0.75rem;
             font-weight: 700;
+            letter-spacing: 0.5px;
             font-family: inherit;
             cursor: pointer;
-            transition: opacity 0.2s, transform 0.15s;
-            white-space: nowrap;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
         }
 
-        .launch-tool-btn:hover {
-            opacity: 0.88;
+        .file-action-btn:hover {
             transform: translateY(-1px);
         }
 
-        /* 5 Tools Section Header */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.85rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            padding-bottom: 0.45rem;
-            flex-wrap: wrap;
-            gap: 0.5rem;
+        .file-action-btn[data-tool="stemer"]:hover {
+            background: rgba(0, 245, 255, 0.2);
+            border-color: var(--accent-stemer);
+            color: var(--accent-stemer);
+            box-shadow: 0 0 15px var(--accent-stemer-glow);
         }
 
-        .section-title {
-            font-family: 'Righteous', sans-serif;
-            font-size: 1.1rem;
-            letter-spacing: 2px;
-            color: #fff;
-            text-transform: uppercase;
+        .file-action-btn[data-tool="midifier"]:hover {
+            background: rgba(244, 63, 94, 0.2);
+            border-color: var(--accent-midifier);
+            color: var(--accent-midifier);
+            box-shadow: 0 0 15px var(--accent-midifier-glow);
         }
 
-        .section-sub {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
+        .file-action-btn[data-tool="sampler"]:hover {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: var(--accent-sampler);
+            color: var(--accent-sampler);
+            box-shadow: 0 0 15px var(--accent-sampler-glow);
         }
 
-        /* Tool Cards Grid - Compact Pro Modules */
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.85rem;
-            margin-bottom: 1.5rem;
+        .file-action-btn[data-tool="mixter"]:hover {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: var(--accent-mixter);
+            color: var(--accent-mixter);
+            box-shadow: 0 0 15px var(--accent-mixter-glow);
         }
 
-        @media (max-width: 980px) {
-            .tools-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .file-action-btn[data-tool="master"]:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--accent-master);
+            color: var(--accent-master);
+            box-shadow: 0 0 15px var(--accent-master-glow);
         }
 
-        @media (max-width: 600px) {
-            .tools-grid {
-                grid-template-columns: 1fr;
-            }
-            .upload-zone-section { padding: 0.75rem 0.25rem 0; }
-            .tool-chooser { flex-direction: column; }
-        }
-
-        /* Compact Pro Card */
-        .tool-card {
-            background: rgba(18, 20, 30, 0.65);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
-            padding: 0.95rem 1.15rem;
-            display: flex;
-            flex-direction: column;
-            text-decoration: none;
-            color: inherit;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
-        }
-
-        .tool-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at top right, var(--card-glow, rgba(255, 255, 255, 0.05)), transparent 70%);
-            opacity: 0;
-            transition: opacity 0.25s ease;
-            pointer-events: none;
-        }
-
-        .tool-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--card-accent, rgba(255, 255, 255, 0.35));
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 20px var(--card-glow, transparent);
-        }
-
-        .tool-card:hover::before {
-            opacity: 1;
-        }
-
-        /* Card Specific Colors */
-        .tool-card.card-stemer {
-            --card-accent: var(--accent-stemer);
-            --card-glow: var(--accent-stemer-glow);
-        }
-
-        .tool-card.card-generator {
-            --card-accent: #8b5cf6;
-            --card-glow: rgba(139, 92, 246, 0.35);
-        }
-
-        .tool-card.card-midifier {
-            --card-accent: var(--accent-midifier);
-            --card-glow: var(--accent-midifier-glow);
-        }
-
-        .tool-card.card-sampler {
-            --card-accent: var(--accent-sampler);
-            --card-glow: var(--accent-sampler-glow);
-        }
-
-        .tool-card.card-mixter {
-            --card-accent: var(--accent-mixter);
-            --card-glow: var(--accent-mixter-glow);
-        }
-
-        .tool-card.card-master {
-            --card-accent: var(--accent-master);
-            --card-glow: var(--accent-master-glow);
-        }
-
-        /* Card Header */
-        .card-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-
-        .card-left-header {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-        }
-
-        .tool-icon-box {
-            width: 32px;
-            height: 32px;
-            border-radius: 9px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--card-accent);
-            flex-shrink: 0;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-
-        .tool-card:hover .tool-icon-box {
-            transform: scale(1.06);
-            border-color: var(--card-accent);
-            box-shadow: 0 0 12px var(--card-glow);
-        }
-
-        .tool-card-title {
-            font-family: 'Righteous', sans-serif;
-            font-size: 1.05rem;
-            letter-spacing: 1.5px;
-            color: #fff;
-            margin-bottom: 0;
-            text-transform: uppercase;
-            line-height: 1.2;
-        }
-
-        .tool-badge {
-            font-size: 0.58rem;
-            font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            padding: 2.5px 7px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: var(--card-accent);
-            white-space: nowrap;
-        }
-
-        .tool-card-role {
-            font-size: 0.66rem;
-            font-weight: 700;
-            letter-spacing: 0.6px;
-            text-transform: uppercase;
-            color: var(--card-accent);
-            margin-bottom: 0.35rem;
-            line-height: 1.3;
-        }
-
-        .tool-card-desc {
-            font-size: 0.74rem;
-            line-height: 1.4;
-            color: var(--text-secondary);
-            margin-bottom: 0.55rem;
-            flex-grow: 1;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .card-bottom-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-top: 0.45rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
-            margin-top: auto;
-        }
-
-        .tool-tags-list {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
-        .tool-tag-item {
-            font-size: 0.6rem;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .card-action-link {
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: var(--card-accent);
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            letter-spacing: 0.5px;
-            transition: transform 0.2s ease;
-        }
-
-        .tool-card:hover .card-action-link {
-            transform: translateX(3px);
+        .file-action-btn[data-tool="generator"]:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #a78bfa;
+            color: #c4b5fd;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.35);
         }
 
         /* Footer */
         .home-footer {
             text-align: center;
-            padding-top: 1.25rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 0.72rem;
+            padding-top: 1rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             letter-spacing: 1px;
+            opacity: 0.65;
         }
 
         .home-footer strong {
-            color: rgba(255, 255, 255, 0.75);
+            color: rgba(255, 255, 255, 0.8);
         }
     </style>
 </head>
@@ -589,264 +392,77 @@
 
     <!-- Main Container -->
     <div class="home-container">
-        <!-- Hero Section -->
-        <header class="hero">
-            <h1 class="hero-title">TOOLBOX</h1>
-            <p class="hero-subtitle">
-                Suite autónoma de producción musical con Inteligencia Artificial. Seis herramientas de estudio interconectadas con procesamiento nativo a <strong>32-bit Float</strong> sin pérdidas de compresión.
-            </p>
+        <div class="home-content-wrap">
+            <!-- Hero Section -->
+            <header class="hero">
+                <h1 class="hero-title">TOOLBOX</h1>
+                <p class="hero-subtitle">
+                    Suite autónoma de producción musical con Inteligencia Artificial. Seis herramientas de estudio interconectadas con procesamiento nativo a <strong>32-bit Float</strong> sin pérdidas de compresión.
+                </p>
 
-            <div class="hero-specs-row">
-                <div class="spec-pill">
-                    <span>6 Herramientas IA</span>
+                <div class="hero-specs-row">
+                    <div class="spec-pill">
+                        <span>6 Herramientas IA</span>
+                    </div>
+                    <div class="spec-pill">
+                        <span>32-bit Float WAV</span>
+                    </div>
+                    <div class="spec-pill">
+                        <span>Flujo Interconectado</span>
+                    </div>
+                    <div class="spec-pill">
+                        <span>Free Cloud Engine</span>
+                    </div>
                 </div>
-                <div class="spec-pill">
-                    <span>32-bit Float WAV</span>
-                </div>
-                <div class="spec-pill">
-                    <span>Sin Re-subir Archivos</span>
-                </div>
-                <div class="spec-pill">
-                    <span>$0 Free Cloud</span>
-                </div>
-            </div>
-        </header>
+            </header>
 
-        <!-- Quick Upload Zone (Sleek Horizontal Pro Bar) -->
+                <!-- Central Studio Drop Hub -->
         <div class="upload-zone-section">
             <div class="quick-upload-card" id="homeDropZone" tabindex="0" role="button" aria-label="Zona para arrastrar audio o hacer clic para buscar archivo">
                 <input type="file" id="homeFileInput" accept="audio/*,.wav,.mp3,.flac,.aiff,.ogg,.m4a" style="display:none">
-                <div class="quick-upload-left">
-                    <div class="quick-upload-icon-box" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                    </div>
-                    <div class="quick-upload-text-group">
-                        <div class="quick-upload-title">Arrastra tu audio aquí para procesamiento instantáneo</div>
-                        <div class="quick-upload-sub">WAV · MP3 · FLAC · M4A (máx. 150 MB) — Detección y enrutamiento inteligente</div>
-                    </div>
+                
+                <div class="quick-upload-icon-box" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
                 </div>
+
+                <div class="quick-upload-title">Arrastra tu audio aquí para comenzar</div>
+                <div class="quick-upload-sub">WAV · MP3 · FLAC · M4A · AIFF (máx. 150 MB) — Calibración y enrutamiento inteligente</div>
                 <div class="quick-upload-browse-btn">Examinar archivo</div>
+                <div class="quick-upload-hint">O selecciona una herramienta en el menú inferior para entrar directamente</div>
 
                 <div id="homeUploadError" style="display:none; width: 100%; margin-top: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); color: #fda4af; font-size: 0.75rem; font-weight: 600;"></div>
 
-                <div class="quick-upload-actions" id="homeFileSelected" style="display:none; width: 100%; margin-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.8rem;">
+                <div class="quick-upload-actions" id="homeFileSelected" style="display:none;">
                     <div class="selected-file-info">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
                         <span class="selected-file-name" id="homeFileName"></span>
+                        <span class="selected-file-size" id="homeFileSize" style="opacity: 0.7; font-size: 0.75rem; margin-left: 6px;"></span>
                     </div>
-                    <div class="tool-chooser">
-                        <span class="tool-chooser-label">Enviar a:</span>
-                        <select id="toolChooser" class="tool-chooser-select" aria-label="Seleccionar herramienta de destino">
-                            <option value="stemer">Stemer — Separar Pistas</option>
-                            <option value="midifier">Midifier — Audio a MIDI</option>
-                            <option value="sampler">Sampler — Slicear Samples</option>
-                            <option value="mixter">Mixter — Mezcla IA</option>
-                            <option value="master">Master — Masterizar</option>
-                            <option value="generator">Generator — Generar IA (Beta)</option>
-                        </select>
-                        <button class="launch-tool-btn" id="launchToolBtn">Abrir herramienta →</button>
+                    <div style="font-size: 0.72rem; color: rgba(255, 255, 255, 0.6); font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                        Selecciona a qué herramienta enviar el audio:
+                    </div>
+                    <div class="file-action-buttons">
+                        <button type="button" class="file-action-btn" data-tool="stemer">Stemer</button>
+                        <button type="button" class="file-action-btn" data-tool="midifier">Midifier</button>
+                        <button type="button" class="file-action-btn" data-tool="sampler">Sampler</button>
+                        <button type="button" class="file-action-btn" data-tool="mixter">Mixter</button>
+                        <button type="button" class="file-action-btn" data-tool="master">Master</button>
+                        <button type="button" class="file-action-btn" data-tool="generator" style="opacity: 0.85;">Generator (Beta)</button>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Tools Grid Section -->
-        <div class="section-header">
-            <div>
-                <h2 class="section-title">Herramientas de Estudio</h2>
-                <div class="section-sub">Selecciona un módulo para procesar o editar tu proyecto</div>
-            </div>
-            <div style="font-size: 0.7rem; color: var(--accent-stemer); font-weight: 700; letter-spacing: 1px;">
-                FLUJO INTEGRADO CON 1 CLIC
-            </div>
-        </div>
-
-        <div class="tools-grid">
-            <!-- 1. Stemer -->
-            <a href="stemer.html" class="tool-card card-stemer">
-                <div class="card-top">
-                    <div class="card-left-header">
-                        <div class="tool-icon-box" aria-label="Icono Stemer">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M4 6h16M4 12h16M4 18h16"></path>
-                                <circle cx="8" cy="6" r="2" fill="currentColor"></circle>
-                                <circle cx="16" cy="12" r="2" fill="currentColor"></circle>
-                                <circle cx="10" cy="18" r="2" fill="currentColor"></circle>
-                            </svg>
-                        </div>
-                        <h3 class="tool-card-title">Stemer</h3>
-                    </div>
-                    <span class="tool-badge">Demucs v4</span>
-                </div>
-                <div class="tool-card-role">Separación de Pistas en Alta Fidelidad</div>
-                <p class="tool-card-desc">
-                    Aísla tu canción en 8 canales de estudio (Vocales, Bajo, Batería y Kit desglosado) sin distorsión ni artefactos.
-                </p>
-                <div class="card-bottom-row">
-                    <div class="tool-tags-list">
-                        <span class="tool-tag-item">8 Canales</span>
-                        <span class="tool-tag-item">32-bit Float</span>
-                    </div>
-                    <span class="card-action-link">Abrir →</span>
-                </div>
-            </a>
-
-            <!-- 2. Midifier -->
-            <a href="midifier.html" class="tool-card card-midifier">
-                <div class="card-top">
-                    <div class="card-left-header">
-                        <div class="tool-icon-box" aria-label="Icono Midifier">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                                <line x1="6" y1="5" x2="6" y2="19"></line>
-                                <line x1="10" y1="5" x2="10" y2="19"></line>
-                                <line x1="14" y1="5" x2="14" y2="19"></line>
-                                <line x1="18" y1="5" x2="18" y2="19"></line>
-                                <rect x="5" y="5" width="2" height="7" fill="currentColor"></rect>
-                                <rect x="9" y="5" width="2" height="7" fill="currentColor"></rect>
-                                <rect x="17" y="5" width="2" height="7" fill="currentColor"></rect>
-                            </svg>
-                        </div>
-                        <h3 class="tool-card-title">Midifier</h3>
-                    </div>
-                    <span class="tool-badge">Neural Pitch</span>
-                </div>
-                <div class="tool-card-role">Audio a MIDI Polifónico</div>
-                <p class="tool-card-desc">
-                    Convierte pistas de voz, bajo, sintetizador o guitarra en secuencias MIDI editables para Ableton, FL Studio y Logic.
-                </p>
-                <div class="card-bottom-row">
-                    <div class="tool-tags-list">
-                        <span class="tool-tag-item">.MID Export</span>
-                        <span class="tool-tag-item">Polifónico</span>
-                    </div>
-                    <span class="card-action-link">Abrir →</span>
-                </div>
-            </a>
-
-            <!-- 3. Sampler -->
-            <a href="sampler.html" class="tool-card card-sampler">
-                <div class="card-top">
-                    <div class="card-left-header">
-                        <div class="tool-icon-box" aria-label="Icono Sampler">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-                                <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-                                <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-                                <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-                            </svg>
-                        </div>
-                        <h3 class="tool-card-title">Sampler</h3>
-                    </div>
-                    <span class="tool-badge">MPC Slicer</span>
-                </div>
-                <div class="tool-card-role">Recorte Inteligente & Kit Creator</div>
-                <p class="tool-card-desc">
-                    Trocea automáticamente loops o pistas por transitorios rítmicos. 8 pads interactivos en vivo y descarga en ZIP.
-                </p>
-                <div class="card-bottom-row">
-                    <div class="tool-tags-list">
-                        <span class="tool-tag-item">Transitorios</span>
-                        <span class="tool-tag-item">ZIP Kit</span>
-                    </div>
-                    <span class="card-action-link">Abrir →</span>
-                </div>
-            </a>
-
-            <!-- 4. Mixter -->
-            <a href="mixter.html" class="tool-card card-mixter">
-                <div class="card-top">
-                    <div class="card-left-header">
-                        <div class="tool-icon-box" aria-label="Icono Mixter">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="6" y1="3" x2="6" y2="21"></line>
-                                <line x1="12" y1="3" x2="12" y2="21"></line>
-                                <line x1="18" y1="3" x2="18" y2="21"></line>
-                                <circle cx="6" cy="14" r="2.5" fill="currentColor"></circle>
-                                <circle cx="12" cy="8" r="2.5" fill="currentColor"></circle>
-                                <circle cx="18" cy="16" r="2.5" fill="currentColor"></circle>
-                            </svg>
-                        </div>
-                        <h3 class="tool-card-title">Mixter</h3>
-                    </div>
-                    <span class="tool-badge">AI Mixing Studio</span>
-                </div>
-                <div class="tool-card-role">Mezcla Multi-Pista +20 Géneros</div>
-                <p class="tool-card-desc">
-                    Balance frecuencial quirúrgico, supresión de resonancias y headroom analógico calibrado a -6.0 dBFS para tu mezcla.
-                </p>
-                <div class="card-bottom-row">
-                    <div class="tool-tags-list">
-                        <span class="tool-tag-item">+20 Géneros</span>
-                        <span class="tool-tag-item">-6 dBFS</span>
-                    </div>
-                    <span class="card-action-link">Abrir →</span>
-                </div>
-            </a>
-
-            <!-- 5. Master -->
-            <a href="master.html" class="tool-card card-master">
-                <div class="card-top">
-                    <div class="card-left-header">
-                        <div class="tool-icon-box" aria-label="Icono Master">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="tool-card-title">Master</h3>
-                    </div>
-                    <span class="tool-badge">ITU-R BS.1770</span>
-                </div>
-                <div class="tool-card-role">Mastering Comercial Analógico</div>
-                <p class="tool-card-desc">
-                    Cadena de 5 etapas para sonoridad comercial competitiva con limitador True-Peak 4x sobremuestreado a 32-bit Float.
-                </p>
-                <div class="card-bottom-row">
-                    <div class="tool-tags-list">
-                        <span class="tool-tag-item">True-Peak 4x</span>
-                        <span class="tool-tag-item">Sonoridad Pro</span>
-                    </div>
-                    <span class="card-action-link">Abrir →</span>
-                </div>
-            </a>
-
-            <!-- 6. Generator (Beta / Labs) -->
-            <a href="generator.html" class="tool-card card-generator" style="border-style: dashed; border-color: rgba(139, 92, 246, 0.35);">
-                <div class="card-top">
-                    <div class="card-left-header">
-                        <div class="tool-icon-box" aria-label="Icono Generator">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M2 12c3-7 6-7 9 0s6 7 9 0 2-2 2-2"></path>
-                                <circle cx="11" cy="12" r="2" fill="currentColor"></circle>
-                            </svg>
-                        </div>
-                        <h3 class="tool-card-title">Generator</h3>
-                    </div>
-                    <span class="tool-badge" style="background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.45); color: #c4b5fd;">LABS · BETA</span>
-                </div>
-                <div class="tool-card-role">Síntesis Musical en la Nube</div>
-                <p class="tool-card-desc">
-                    Generación experimental de instrumentos y arreglos musicales con Meta MusicGen en GPU. En desarrollo continuo.
-                </p>
-                <div class="card-bottom-row">
-                    <div class="tool-tags-list">
-                        <span class="tool-tag-item">MusicGen GPU</span>
-                        <span class="tool-tag-item">Online Cloud</span>
-                    </div>
-                    <span class="card-action-link">Abrir →</span>
-                </div>
-            </a>
         </div>
 
         <!-- Footer -->
         <footer class="home-footer">
-            <p><strong>TOOLBOX</strong> BY MYOOZ LABS &bull; SUITE DE INTELIGENCIA DE AUDIO 2026 &bull; 32-BIT FLOAT PIPELINE</p>
+            <p><strong>TOOLBOX</strong> BY MYOOZ LABS &bull; SUITE DE AUDIO IA &bull; 32-BIT FLOAT PIPELINE</p>
         </footer>
     </div>
+</div>
 
     <!-- 7-Link Bottom Nav Dock -->
     <div class="tool-nav">
@@ -861,12 +477,11 @@
 
 <script>
 (function() {
-    const dropZone   = document.getElementById('homeDropZone');
-    const fileInput  = document.getElementById('homeFileInput');
-    const fileSelected = document.getElementById('homeFileSelected');
-    const fileNameEl = document.getElementById('homeFileName');
-    const toolChooser = document.getElementById('toolChooser');
-    const launchBtn  = document.getElementById('launchToolBtn');
+    const dropZone      = document.getElementById('homeDropZone');
+    const fileInput     = document.getElementById('homeFileInput');
+    const fileSelected  = document.getElementById('homeFileSelected');
+    const fileNameEl    = document.getElementById('homeFileName');
+    const fileSizeEl    = document.getElementById('homeFileSize');
 
     let pendingFile = null;
 
@@ -882,7 +497,10 @@
     function showFile(file) {
         pendingFile = file;
         fileNameEl.textContent = file.name;
-        fileSelected.style.display = 'block';
+        if (fileSizeEl) {
+            fileSizeEl.textContent = '· ' + (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        fileSelected.style.display = 'flex';
     }
 
     const MAX_FILE_SIZE_BYTES = 150 * 1024 * 1024; // 150 MB
@@ -996,22 +614,28 @@
         };
     }
 
-    // Launch tool with file via button
-    launchBtn.addEventListener('click', function() {
-        if (!pendingFile) return;
-        navigateWithFile(toolChooser.value);
+    // Direct action buttons in the dropzone card
+    document.querySelectorAll('.file-action-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const tool = btn.getAttribute('data-tool');
+            if (tool) navigateWithFile(tool);
+        });
     });
 
-    // Also enable clicking any tool card to forward the selected audio
-    document.querySelectorAll('.tool-card').forEach(card => {
-        card.addEventListener('click', function(e) {
+    // Bottom horizontal dock links - forward pending file or open tool
+    document.querySelectorAll('.tool-nav .tool-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const href = link.getAttribute('href');
+            if (!href || href === 'index.html') return;
             if (pendingFile) {
                 e.preventDefault();
                 let tool = 'stemer';
-                if (card.classList.contains('card-midifier')) tool = 'midifier';
-                else if (card.classList.contains('card-sampler')) tool = 'sampler';
-                else if (card.classList.contains('card-mixter')) tool = 'mixter';
-                else if (card.classList.contains('card-master')) tool = 'master';
+                if (href.includes('midifier')) tool = 'midifier';
+                else if (href.includes('sampler')) tool = 'sampler';
+                else if (href.includes('mixter')) tool = 'mixter';
+                else if (href.includes('master')) tool = 'master';
+                else if (href.includes('generator')) tool = 'generator';
                 navigateWithFile(tool);
             }
         });
