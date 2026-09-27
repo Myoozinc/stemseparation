@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | Myooz Labs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Righteous&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="header.css">
+    <link rel="stylesheet" href="shared.css">
+    <style>
+        :root {
+            --bg-black: #08080a;
+            --panel-bg: rgba(18, 18, 24, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --accent-blue: #3b82f6;
+            --accent-emerald: #10b981;
+            --accent-pink: #ec4899;
+            --accent-red: #ef4444;
+            --text-main: #ffffff;
+            --text-dim: rgba(255, 255, 255, 0.65);
+            --text-muted: rgba(255, 255, 255, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-black);
+            background-image:
+                radial-gradient(circle at 15% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(249, 115, 22, 0.06) 0%, transparent 45%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ── Login Overlay ── */
+        #loginGate {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(5, 5, 8, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .login-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            border-radius: 28px;
+            padding: 3rem 2.5rem;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 50px rgba(139, 92, 246, 0.1);
+        }
+
+        .login-logo {
+            width: 55px;
+            height: 55px;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.3));
+        }
+
+        .login-title {
+            font-family: 'Righteous', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .login-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+
+        .login-input-group {
+            text-align: left;
+            margin-bottom: 1.25rem;
+        }
+
+        .login-input-group label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .login-input-group input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 13px 16px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .login-input-group input:focus {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .login-btn {
+            width: 100%;
+            background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+            color: #fff;
+            border: none;
+            padding: 15px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.35);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(139, 92, 246, 0.5);
+        }
+
+        .login-error {
+            color: #f87171;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            display: none;
+            font-weight: 600;
+        }
+
+        /* ── Main Admin Container ── */
+        .admin-container {
+            width: 100%;
+            max-width: 1300px;
+            padding: 2rem;
+            margin-top: 80px;
+            margin-bottom: 4rem;
+        }
+
+        .admin-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .admin-title-area h1 {
+            font-family: 'Righteous', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            letter-spacing: -1px;
+            line-height: 1;
+            background: linear-gradient(180deg, #fff 30%, rgba(255, 255, 255, 0.4) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .admin-title-area p {
+            color: var(--text-dim);
+            font-size: 0.82rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        .admin-status-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            padding: 8px 18px;
+            border-radius: 50px;
+        }
+
+        .live-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .admin-logout-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 7px 16px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .admin-logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fff;
+        }
+
+        /* ── KPI Cards ── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .kpi-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.75rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .kpi-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kpi-value {
+            font-family: 'Righteous', sans-serif;
+            font-size: 2.5rem;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .kpi-subtext {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* ── Tabs Navigation ── */
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .admin-tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-dim);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .admin-tab-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .admin-tab-btn.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ── Panel Cards ── */
+        .admin-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-card-title {
+            font-family: 'Righteous', sans-serif;
+            font-size: 1.25rem;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+
+        .admin-card-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ── Tool Bars Chart ── */
+        .tool-bar-item {
+            margin-bottom: 1.25rem;
+        }
+
+        .tool-bar-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .tool-bar-track {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tool-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ── Tables ── */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        table.admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.82rem;
+        }
+
+        table.admin-table th {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 14px 18px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            font-weight: 700;
+            border-bottom: 1px solid var(--panel-border);
+            white-space: nowrap;
+        }
+
+        table.admin-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.85);
+            white-space: nowrap;
+        }
+
+        table.admin-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* ── Filter / Search Inputs ── */
+        .search-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--panel-border);
+            border-radius: 50px;
+            padding: 8px 18px;
+            color: #fff;
+            font-size: 0.8rem;
+            outline: none;
+            min-width: 220px;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-purple);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--panel-border);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-action-primary {
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+            color: #000;
+            font-weight: 800;
+            border: none;
+        }
+
+        .btn-action-primary:hover {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* ── Badges ── */
+        .pill-tool {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .pill-stemer { background: rgba(139, 92, 246, 0.15); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.4); }
+        .pill-midifier { background: rgba(249, 115, 22, 0.15); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.4); }
+        .pill-sampler { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .pill-mixter { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .pill-master { background: rgba(236, 72, 153, 0.15); color: #f9a8d4; border: 1px solid rgba(236, 72, 153, 0.4); }
+        .pill-generator { background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .pill-home { background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); }
+
+        .ip-mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #93c5fd;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ── 1. LOGIN GATE MODAL ── -->
+    <div id="loginGate">
+        <div class="login-box">
+            <img src="logo-white.png" alt="Myooz Logo" class="login-logo">
+            <h2 class="login-title">Admin Portal</h2>
+            <p class="login-subtitle">Control de Acceso y Métricas</p>
+            <form id="adminLoginForm" onsubmit="return false;">
+                <div class="login-input-group">
+                    <label for="adminUserInput">Usuario</label>
+                    <input type="text" id="adminUserInput" placeholder="Usuario de administrador" required autocomplete="username" autofocus>
+                </div>
+                <div class="login-input-group">
+                    <label for="adminPassInput">Contraseña</label>
+                    <input type="password" id="adminPassInput" placeholder="Contraseña de acceso" required autocomplete="current-password">
+                </div>
+                <div id="loginErrorMsg" class="login-error">Credenciales incorrectas. Acceso denegado.</div>
+                <button type="submit" id="adminSubmitBtn" class="login-btn">INGRESAR AL PANEL</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── 2. PROTECTED ADMIN DASHBOARD ── -->
+    <nav class="custom-header">
+        <a href="index.html" class="logo-container" style="text-decoration: none; cursor: pointer;" title="Volver a la App">
+            <img src="logo-white.png" alt="Myooz Logo" class="logo-img">
+            <div class="logo-text">MYOOZ LABS</div>
+        </a>
+        <div class="header-right">
+            <div class="admin-status-badge">
+                <span class="live-dot"></span>
+                <span style="font-size: 0.72rem; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase;">ADMIN: <strong style="color: #fff;">Gingerboy</strong></span>
+            </div>
+            <button id="adminLogoutBtn" class="admin-logout-btn">Salir</button>
+        </div>
+    </nav>
+
+    <div class="admin-container" id="adminDashboard" style="display: none;">
+        <header class="admin-header-row">
+            <div class="admin-title-area">
+                <h1>Command Center</h1>
+                <p>Métricas Globales · Registro de IPs · Base de Datos de Leads</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button id="refreshDataBtn" class="btn-action">
+                    Actualizar Datos
+                </button>
+                <button id="exportCsvBtnTop" class="btn-action btn-action-primary">
+                    Exportar Leads (CSV)
+                </button>
+            </div>
+        </header>
+
+        <!-- 4 KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">
+                    <span>Total Conexiones</span>
+                    <span style="color: var(--accent-purple);">Visitas</span>
+                </div>
+                <div class="kpi-value" id="kpiTotalVisits">0</div>
+                <div class="kpi-subtext" id="kpiVisitsTrend">Registros de navegación</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-label">
+                    <span>Conexiones Únicas</span>
+                    <span style="color: var(--accent-blue);">IPs</span>
+                </div>
+                <div class="kpi-value" id="kpiUniqueIps">0</div>
+                <div class="kpi-subtext">Direcciones IP distintas</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-label">
+                    <span>Leads Capturados</span>
+                    <span style="color: var(--accent-emerald);">Correos</span>
+                </div>
+                <div class="kpi-value" id="kpiTotalLeads">0</div>
+                <div class="kpi-subtext">Usuarios con descarga autorizada</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-label">
+                    <span>Tiempo Promedio</span>
+                    <span style="color: var(--accent-orange);">Uso</span>
+                </div>
+                <div class="kpi-value" id="kpiAvgDuration">0s</div>
+                <div class="kpi-subtext">Permanencia por sesión</div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="admin-tabs">
+            <button class="admin-tab-btn active" data-tab="tabOverview">Resumen & Métricas</button>
+            <button class="admin-tab-btn" data-tab="tabLeads">Base de Datos de Leads</button>
+            <button class="admin-tab-btn" data-tab="tabConnections">Registro de IPs & Conexiones</button>
+            <button class="admin-tab-btn" data-tab="tabProcesses">Resguardo de Procesos</button>
+        </div>
+
+        <!-- ── TAB 1: OVERVIEW & TOOL USAGE ── -->
+        <div class="tab-content" id="tabOverview">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                <!-- Tool Usage Breakdown -->
+                <div class="admin-card" style="margin-bottom: 0;">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">Distribución de Uso por Herramienta</h3>
+                    </div>
+                    <div id="toolBarsContainer">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Recent Activity Feed -->
+                <div class="admin-card" style="margin-bottom: 0;">
+                    <div class="admin-card-header">
+                        <h3 class="admin-card-title">Actividad Reciente en Vivo</h3>
+                    </div>
+                    <div id="activityFeedList" style="display: flex; flex-direction: column; gap: 12px; max-height: 380px; overflow-y: auto;">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB 2: LEADS & EMAILS ── -->
+        <div class="tab-content" id="tabLeads" style="display: none;">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Base de Datos de Leads (Email Marketing)</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">Usuarios que autorizaron descarga y recibirán actualizaciones</p>
+                    </div>
+                    <div class="admin-card-actions">
+                        <input type="text" id="searchLeadsInput" class="search-input" placeholder="Buscar por nombre, email o IP...">
+                        <button id="exportCsvBtn" class="btn-action btn-action-primary">
+                            Descargar CSV (Excel)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Correo Electrónico</th>
+                                <th>Herramienta</th>
+                                <th>Archivo Descargado</th>
+                                <th>Dirección IP</th>
+                                <th>Ubicación</th>
+                                <th>Fecha y Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leadsTableBody">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB 3: IP ACCESS LOGS ── -->
+        <div class="tab-content" id="tabConnections" style="display: none;">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Auditoría de IPs y Conexiones</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">Historial de navegación y tiempos de sesión</p>
+                    </div>
+                    <div class="admin-card-actions">
+                        <input type="text" id="searchConnectionsInput" class="search-input" placeholder="Buscar por IP o país...">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Dirección IP</th>
+                                <th>Ubicación</th>
+                                <th>Herramienta Visitada</th>
+                                <th>Tiempo de Sesión</th>
+                                <th>Dispositivo / Navegador</th>
+                                <th>Fecha y Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="connectionsTableBody">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── TAB 4: PROCESS RESGUARD & AUDIT ── -->
+        <div class="tab-content" id="tabProcesses" style="display: none;">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <div>
+                        <h3 class="admin-card-title">Resguardo de Procesos y Operaciones</h3>
+                        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">Registro de separaciones, conversiones MIDI, mezclas y masters</p>
+                    </div>
+                    <div class="admin-card-actions">
+                        <input type="text" id="searchProcessesInput" class="search-input" placeholder="Buscar en procesos...">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Herramienta</th>
+                                <th>Acción</th>
+                                <th>Detalles de la Operación</th>
+                                <th>IP</th>
+                                <th>Estado</th>
+                                <th>Fecha y Hora</th>
+                            </tr>
+                        </thead>
+                        <tbody id="processesTableBody">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 3. ADMIN APPLICATION SCRIPT ── -->
+    <script>
+        (function () {
+            'use strict';
+
+            const AUTH_KEY = "myooz_admin_session";
+            const BACKEND_BASE = "https://tinahmbuz-audiostems.hf.space";
+            const STORAGE_KEY_ANALYTICS = "myooz_analytics_local";
+
+            // Credentials check
+            const loginGate = document.getElementById("loginGate");
+            const adminDashboard = document.getElementById("adminDashboard");
+            const adminLoginForm = document.getElementById("adminLoginForm");
+            const adminUserInput = document.getElementById("adminUserInput");
+            const adminPassInput = document.getElementById("adminPassInput");
+            const loginErrorMsg = document.getElementById("loginErrorMsg");
+            const adminLogoutBtn = document.getElementById("adminLogoutBtn");
+
+            function checkAuthentication() {
+                const session = sessionStorage.getItem(AUTH_KEY);
+                if (session === "authorized_gingerboy") {
+                    loginGate.style.display = "none";
+                    adminDashboard.style.display = "block";
+                    loadAllAdminData();
+                } else {
+                    loginGate.style.display = "flex";
+                    adminDashboard.style.display = "none";
+                }
+            }
+
+            adminLoginForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const user = (adminUserInput.value || "").trim();
+                const pass = (adminPassInput.value || "").trim();
+
+                if (user === "Gingerboy" && pass === "Rona12345") {
+                    sessionStorage.setItem(AUTH_KEY, "authorized_gingerboy");
+                    loginErrorMsg.style.display = "none";
+                    loginGate.style.display = "none";
+                    adminDashboard.style.display = "block";
+                    loadAllAdminData();
+                } else {
+                    loginErrorMsg.style.display = "block";
+                    adminPassInput.value = "";
+                    adminPassInput.focus();
+                }
+            });
+
+            adminLogoutBtn.addEventListener("click", function () {
+                sessionStorage.removeItem(AUTH_KEY);
+                checkAuthentication();
+            });
+
+            // Tab Switching
+            const tabButtons = document.querySelectorAll(".admin-tab-btn");
+            const tabContents = document.querySelectorAll(".tab-content");
+
+            tabButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    tabButtons.forEach(b => b.classList.remove("active"));
+                    tabContents.forEach(c => c.style.display = "none");
+
+                    btn.classList.add("active");
+                    const targetId = btn.getAttribute("data-tab");
+                    const targetEl = document.getElementById(targetId);
+                    if (targetEl) targetEl.style.display = "block";
+                });
+            });
+
+            // ── Data Management & Rendering ──
+            let currentData = {
+                visits: [],
+                leads: [],
+                processes: []
+            };
+
+            function getPillClass(tool) {
+                const t = (tool || "").toLowerCase();
+                if (t === "stemer") return "pill-stemer";
+                if (t === "midifier") return "pill-midifier";
+                if (t === "sampler") return "pill-sampler";
+                if (t === "mixter") return "pill-mixter";
+                if (t === "master") return "pill-master";
+                if (t === "generator") return "pill-generator";
+                return "pill-home";
+            }
+
+            function formatDuration(sec) {
+                if (!sec || sec <= 0) return "10s";
+                const m = Math.floor(sec / 60);
+                const s = sec % 60;
+                if (m === 0) return `${s}s`;
+                return `${m}m ${s}s`;
+            }
+
+            function formatDate(isoStr) {
+                if (!isoStr) return "-";
+                try {
+                    const d = new Date(isoStr);
+                    return d.toLocaleString("es-ES", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit"
+                    });
+                } catch (e) {
+                    return isoStr;
+                }
+            }
+
+            // Seed demo data if storage is completely empty
+            function ensureDemoData(store) {
+                if (!store.visits || store.visits.length === 0) {
+                    store.visits = [
+                        { ip: "177.181.236.97", country: "Brazil", city: "Campinas", tool: "midifier", device: "Chrome (macOS)", duration: 245, timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString() },
+                        { ip: "186.84.90.12", country: "Colombia", city: "Medellín", tool: "stemer", device: "Chrome (Windows)", duration: 410, timestamp: new Date(Date.now() - 1000 * 60 * 35).toISOString() },
+                        { ip: "189.217.44.80", country: "Mexico", city: "Ciudad de México", tool: "master", device: "Safari (macOS)", duration: 180, timestamp: new Date(Date.now() - 1000 * 60 * 70).toISOString() },
+                        { ip: "88.12.140.23", country: "Spain", city: "Madrid", tool: "mixter", device: "Firefox (Windows)", duration: 320, timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString() },
+                        { ip: "190.237.18.55", country: "Peru", city: "Lima", tool: "sampler", device: "Chrome (Android)", duration: 150, timestamp: new Date(Date.now() - 1000 * 60 * 180).toISOString() }
+                    ];
+                }
+                if (!store.leads || store.leads.length === 0) {
+                    store.leads = [
+                        { name: "Carlos Beatmaker", email: "carlosbeats@gmail.com", tool: "midifier", file: "bajo_808_Acoustic_Piano.mid", ip: "177.181.236.97", country: "Brazil", city: "Campinas", timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString() },
+                        { name: "DJ Neo", email: "prod.neo@outlook.com", tool: "stemer", file: "cancion_stems_pack.zip", ip: "186.84.90.12", country: "Colombia", city: "Medellín", timestamp: new Date(Date.now() - 1000 * 60 * 40).toISOString() },
+                        { name: "Valentina M.", email: "valen.audio@icloud.com", tool: "master", file: "master_urbano_club.wav", ip: "189.217.44.80", country: "Mexico", city: "Ciudad de México", timestamp: new Date(Date.now() - 1000 * 60 * 75).toISOString() }
+                    ];
+                }
+                if (!store.processes || store.processes.length === 0) {
+                    store.processes = [
+                        { tool: "midifier", action: "audio_to_midi", details: "Piano Triad CQT · Key: A Minor · Chords: [Am]", ip: "177.181.236.97", status: "completed", timestamp: new Date(Date.now() - 1000 * 60 * 18).toISOString() },
+                        { tool: "stemer", action: "demucs_separate", details: "4 Stems + Drums Refined (Kick, Snare, Hihat)", ip: "186.84.90.12", status: "completed", timestamp: new Date(Date.now() - 1000 * 60 * 42).toISOString() },
+                        { tool: "master", action: "ai_mastering", details: "Profile: Urbano Club · Target: -9.0 LUFS", ip: "189.217.44.80", status: "completed", timestamp: new Date(Date.now() - 1000 * 60 * 78).toISOString() }
+                    ];
+                }
+                return store;
+            }
+
+            async function loadAllAdminData() {
+                // 1. Load LocalStorage Store
+                let localStore = { visits: [], leads: [], processes: [] };
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY_ANALYTICS);
+                    if (raw) localStore = JSON.parse(raw);
+                } catch (e) {}
+
+                localStore = ensureDemoData(localStore);
+
+                // 2. Attempt fetching from Backend API
+                try {
+                    const resp = await fetch(`${BACKEND_BASE}/api/admin_stats?user=Gingerboy&password=Rona12345`, {
+                        signal: AbortSignal.timeout(3500)
+                    });
+                    if (resp.ok) {
+                        const serverData = await resp.json();
+                        if (serverData && serverData.status === "ok") {
+                            // Merge server and local uniquely
+                            if (serverData.leads && serverData.leads.length > 0) {
+                                localStore.leads = serverData.leads;
+                            }
+                            if (serverData.visits && serverData.visits.length > 0) {
+                                localStore.visits = serverData.visits;
+                            }
+                            if (serverData.processes && serverData.processes.length > 0) {
+                                localStore.processes = serverData.processes;
+                            }
+                        }
+                    }
+                } catch (netErr) {
+                    // Backend offline or warming up; smoothly continues with local storage data
+                }
+
+                currentData = localStore;
+                renderDashboard(currentData);
+            }
+
+            function renderDashboard(data) {
+                const visits = data.visits || [];
+                const leads = data.leads || [];
+                const processes = data.processes || [];
+
+                // ── Render KPIs ──
+                document.getElementById("kpiTotalVisits").innerText = visits.length;
+
+                const uniqueIps = new Set(visits.map(v => v.ip).filter(Boolean));
+                document.getElementById("kpiUniqueIps").innerText = uniqueIps.size;
+
+                document.getElementById("kpiTotalLeads").innerText = leads.length;
+
+                const durations = visits.map(v => v.duration || 0).filter(d => d > 0);
+                const avgSec = durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 120;
+                document.getElementById("kpiAvgDuration").innerText = formatDuration(avgSec);
+
+                // ── Render Tool Bars ──
+                renderToolBars(visits);
+
+                // ── Render Activity Feed ──
+                renderActivityFeed(visits, leads, processes);
+
+                // ── Render Leads Table ──
+                renderLeadsTable(leads);
+
+                // ── Render Connections Table ──
+                renderConnectionsTable(visits);
+
+                // ── Render Processes Table ──
+                renderProcessesTable(processes);
+            }
+
+            function renderToolBars(visits) {
+                const tools = [
+                    { name: "Stemer", key: "stemer", color: "var(--accent-purple)" },
+                    { name: "Midifier", key: "midifier", color: "var(--accent-orange)" },
+                    { name: "Sampler", key: "sampler", color: "var(--accent-blue)" },
+                    { name: "Mixter", key: "mixter", color: "var(--accent-emerald)" },
+                    { name: "Master", key: "master", color: "var(--accent-pink)" },
+                    { name: "Generator (Beta)", key: "generator", color: "var(--accent-red)" }
+                ];
+
+                const counts = {};
+                tools.forEach(t => counts[t.key] = 0);
+
+                visits.forEach(v => {
+                    const tk = (v.tool || "").toLowerCase();
+                    if (counts[tk] !== undefined) counts[tk]++;
+                });
+
+                const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+                const container = document.getElementById("toolBarsContainer");
+                container.innerHTML = "";
+
+                tools.forEach(t => {
+                    const count = counts[t.key] || 0;
+                    const pct = Math.round((count / total) * 100);
+
+                    const item = document.createElement("div");
+                    item.className = "tool-bar-item";
+                    item.innerHTML = `
+                        <div class="tool-bar-header">
+                            <span><span class="pill-tool ${getPillClass(t.key)}" style="margin-right: 6px;">${t.name}</span></span>
+                            <span><strong>${count}</strong> usos (${pct}%)</span>
+                        </div>
+                        <div class="tool-bar-track">
+                            <div class="tool-bar-fill" style="width: ${pct}%; background: ${t.color};"></div>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+
+            function renderActivityFeed(visits, leads, processes) {
+                const container = document.getElementById("activityFeedList");
+                container.innerHTML = "";
+
+                const allEvents = [];
+                visits.forEach(v => allEvents.push({ type: "visit", text: `Visita a ${v.tool.toUpperCase()}`, sub: `${v.city || v.country || "Ubicación"} · ${v.ip}`, time: v.timestamp }));
+                leads.forEach(l => allEvents.push({ type: "lead", text: `Lead Capturado: ${l.name}`, sub: `${l.email} · Archivo: ${l.file}`, time: l.timestamp }));
+                processes.forEach(p => allEvents.push({ type: "process", text: `Proceso ${p.tool.toUpperCase()}: ${p.action}`, sub: `${p.details}`, time: p.timestamp }));
+
+                allEvents.sort((a, b) => new Date(b.time) - new Date(a.time));
+                const topEvents = allEvents.slice(0, 10);
+
+                if (topEvents.length === 0) {
+                    container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 2rem;">Sin eventos recientes</div>`;
+                    return;
+                }
+
+                topEvents.forEach(ev => {
+                    const div = document.createElement("div");
+                    div.style.cssText = "padding: 10px 14px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;";
+                    
+                    let tagColor = "var(--accent-purple)";
+                    if (ev.type === "lead") tagColor = "var(--accent-emerald)";
+                    if (ev.type === "process") tagColor = "var(--accent-orange)";
+
+                    div.innerHTML = `
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.82rem; color: #fff;">
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${tagColor}; margin-right: 8px;"></span>
+                                ${ev.text}
+                            </div>
+                            <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 3px; margin-left: 16px;">${ev.sub}</div>
+                        </div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">${formatDate(ev.time)}</div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            function renderLeadsTable(leads) {
+                const tbody = document.getElementById("leadsTableBody");
+                tbody.innerHTML = "";
+
+                if (!leads || leads.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay leads registrados aún</td></tr>`;
+                    return;
+                }
+
+                leads.forEach(l => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>${escapeHtml(l.name)}</strong></td>
+                        <td><a href="mailto:${escapeHtml(l.email)}" style="color: var(--accent-orange); text-decoration: none;">${escapeHtml(l.email)}</a></td>
+                        <td><span class="pill-tool ${getPillClass(l.tool)}">${escapeHtml(l.tool || "app")}</span></td>
+                        <td><span style="font-size: 0.75rem; color: rgba(255,255,255,0.7);">${escapeHtml(l.file || "Descarga")}</span></td>
+                        <td><span class="ip-mono">${escapeHtml(l.ip || "-")}</span></td>
+                        <td>${escapeHtml((l.city ? l.city + ", " : "") + (l.country || "Global"))}</td>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">${formatDate(l.timestamp)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function renderConnectionsTable(visits) {
+                const tbody = document.getElementById("connectionsTableBody");
+                tbody.innerHTML = "";
+
+                if (!visits || visits.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay conexiones registradas aún</td></tr>`;
+                    return;
+                }
+
+                visits.forEach(v => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><span class="ip-mono">${escapeHtml(v.ip || "-")}</span></td>
+                        <td>${escapeHtml((v.city ? v.city + ", " : "") + (v.country || "Global"))}</td>
+                        <td><span class="pill-tool ${getPillClass(v.tool)}">${escapeHtml(v.tool || "home")}</span></td>
+                        <td>${formatDuration(v.duration)}</td>
+                        <td style="font-size: 0.75rem; color: var(--text-dim);">${escapeHtml(v.device || "Navegador")}</td>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">${formatDate(v.timestamp)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function renderProcessesTable(processes) {
+                const tbody = document.getElementById("processesTableBody");
+                tbody.innerHTML = "";
+
+                if (!processes || processes.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay procesos registrados aún</td></tr>`;
+                    return;
+                }
+
+                processes.forEach(p => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><span class="pill-tool ${getPillClass(p.tool)}">${escapeHtml(p.tool || "app")}</span></td>
+                        <td><strong>${escapeHtml(p.action || "operación")}</strong></td>
+                        <td><span style="font-size: 0.75rem; color: var(--text-dim); max-width: 380px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(p.details || "-")}</span></td>
+                        <td><span class="ip-mono">${escapeHtml(p.ip || "-")}</span></td>
+                        <td><span style="color: #10b981; font-weight: 700; font-size: 0.72rem; text-transform: uppercase;">${escapeHtml(p.status || "completado")}</span></td>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">${formatDate(p.timestamp)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Export Leads to CSV
+            function exportLeadsToCsv() {
+                const leads = currentData.leads || [];
+                if (leads.length === 0) {
+                    alert("No hay leads registrados para exportar.");
+                    return;
+                }
+
+                let csv = "\uFEFFNombre,Email,Herramienta,Archivo,IP,Pais,Ciudad,Fecha y Hora\n";
+                leads.forEach(l => {
+                    const row = [
+                        `"${(l.name || "").replace(/"/g, '""')}"`,
+                        `"${(l.email || "").replace(/"/g, '""')}"`,
+                        `"${(l.tool || "").replace(/"/g, '""')}"`,
+                        `"${(l.file || "").replace(/"/g, '""')}"`,
+                        `"${(l.ip || "").replace(/"/g, '""')}"`,
+                        `"${(l.country || "").replace(/"/g, '""')}"`,
+                        `"${(l.city || "").replace(/"/g, '""')}"`,
+                        `"${formatDate(l.timestamp)}"`
+                    ];
+                    csv += row.join(",") + "\n";
+                });
+
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                const today = new Date().toISOString().slice(0, 10);
+                a.href = url;
+                a.download = `leads_myooz_labs_${today}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            document.getElementById("exportCsvBtn").addEventListener("click", exportLeadsToCsv);
+            document.getElementById("exportCsvBtnTop").addEventListener("click", exportLeadsToCsv);
+            document.getElementById("refreshDataBtn").addEventListener("click", loadAllAdminData);
+
+            // Filtering
+            document.getElementById("searchLeadsInput").addEventListener("input", function (e) {
+                const query = e.target.value.toLowerCase();
+                const filtered = (currentData.leads || []).filter(l =>
+                    (l.name && l.name.toLowerCase().includes(query)) ||
+                    (l.email && l.email.toLowerCase().includes(query)) ||
+                    (l.tool && l.tool.toLowerCase().includes(query)) ||
+                    (l.ip && l.ip.toLowerCase().includes(query))
+                );
+                renderLeadsTable(filtered);
+            });
+
+            document.getElementById("searchConnectionsInput").addEventListener("input", function (e) {
+                const query = e.target.value.toLowerCase();
+                const filtered = (currentData.visits || []).filter(v =>
+                    (v.ip && v.ip.toLowerCase().includes(query)) ||
+                    (v.country && v.country.toLowerCase().includes(query)) ||
+                    (v.city && v.city.toLowerCase().includes(query)) ||
+                    (v.tool && v.tool.toLowerCase().includes(query))
+                );
+                renderConnectionsTable(filtered);
+            });
+
+            document.getElementById("searchProcessesInput").addEventListener("input", function (e) {
+                const query = e.target.value.toLowerCase();
+                const filtered = (currentData.processes || []).filter(p =>
+                    (p.tool && p.tool.toLowerCase().includes(query)) ||
+                    (p.action && p.action.toLowerCase().includes(query)) ||
+                    (p.details && p.details.toLowerCase().includes(query)) ||
+                    (p.ip && p.ip.toLowerCase().includes(query))
+                );
+                renderProcessesTable(filtered);
+            });
+
+            function escapeHtml(str) {
+                if (!str) return "";
+                return String(str)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            // Init check
+            checkAuthentication();
+
+        })();
+    </script>
+</body>
+
+</html>

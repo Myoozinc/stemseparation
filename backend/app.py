@@ -449,6 +449,164 @@ try:
             if not out_wav or not meta.get("success"):
                 return JSONResponse(status_code=400, content={"status": "error", "error": meta.get("error")})
             return JSONResponse(status_code=200, content={"status": "success", "output_wav": out_wav, "metadata": meta})
+
+        # ── SQLite Analytics & Admin Portal Endpoints ──
+        import sqlite3
+        DB_PATH = "/tmp/myooz_analytics.db"
+
+        def _init_analytics_db():
+            try:
+                conn = sqlite3.connect(DB_PATH)
+                c = conn.cursor()
+                c.execute('''CREATE TABLE IF NOT EXISTS visits (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    visit_id TEXT,
+                    ip TEXT,
+                    country TEXT,
+                    city TEXT,
+                    tool TEXT,
+                    device TEXT,
+                    duration_sec INTEGER DEFAULT 0,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )''')
+                c.execute('''CREATE TABLE IF NOT EXISTS leads (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT,
+                    email TEXT,
+                    tool TEXT,
+                    file_downloaded TEXT,
+                    ip TEXT,
+                    country TEXT,
+                    city TEXT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )''')
+                c.execute('''CREATE TABLE IF NOT EXISTS processes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    tool TEXT,
+                    action TEXT,
+                    details TEXT,
+                    ip TEXT,
+                    status TEXT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )''')
+                conn.commit()
+                conn.close()
+            except Exception as dbe:
+                print(f"[ANALYTICS] DB init error: {dbe}")
+
+        _init_analytics_db()
+
+        @app.app.post("/api/track_visit")
+        async def api_track_visit(request: Request):
+            try:
+                body = await request.json()
+                visit_id = body.get("visitId", "")
+                ip = body.get("ip") or (request.client.host if request.client else "unknown")
+                country = body.get("country", "")
+                city = body.get("city", "")
+                tool = body.get("tool", "home")
+                device = body.get("device", "")
+                duration = int(body.get("duration", 0))
+
+                conn = sqlite3.connect(DB_PATH)
+                c = conn.cursor()
+                # Check if this visit_id exists, update duration if so
+                if visit_id:
+                    c.execute("SELECT id FROM visits WHERE visit_id = ?", (visit_id,))
+                    row = c.fetchone()
+                    if row:
+                        c.execute("UPDATE visits SET duration_sec = ? WHERE id = ?", (duration, row[0]))
+                        conn.commit()
+                        conn.close()
+                        return JSONResponse(content={"status": "ok", "updated": True}, headers={"Access-Control-Allow-Origin": "*"})
+
+                c.execute(
+                    "INSERT INTO visits (visit_id, ip, country, city, tool, device, duration_sec) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (visit_id, ip, country, city, tool, device, duration)
+                )
+                conn.commit()
+                conn.close()
+                return JSONResponse(content={"status": "ok"}, headers={"Access-Control-Allow-Origin": "*"})
+            except Exception as e:
+                return JSONResponse(content={"status": "error", "error": str(e)}, status_code=500, headers={"Access-Control-Allow-Origin": "*"})
+
+        @app.app.post("/api/capture_lead")
+        async def api_capture_lead(request: Request):
+            try:
+                body = await request.json()
+                name = body.get("name", "").strip()
+                email = body.get("email", "").strip()
+                tool = body.get("tool", "").strip()
+                file_downloaded = body.get("file", "").strip()
+                ip = body.get("ip") or (request.client.host if request.client else "unknown")
+                country = body.get("country", "")
+                city = body.get("city", "")
+
+                if not email or "@" not in email:
+                    return JSONResponse(content={"status": "error", "error": "Invalid email"}, status_code=400, headers={"Access-Control-Allow-Origin": "*"})
+
+                conn = sqlite3.connect(DB_PATH)
+                c = conn.cursor()
+                c.execute(
+                    "INSERT INTO leads (name, email, tool, file_downloaded, ip, country, city) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (name, email, tool, file_downloaded, ip, country, city)
+                )
+                conn.commit()
+                conn.close()
+                return JSONResponse(content={"status": "ok", "message": "Lead registered"}, headers={"Access-Control-Allow-Origin": "*"})
+            except Exception as e:
+                return JSONResponse(content={"status": "error", "error": str(e)}, status_code=500, headers={"Access-Control-Allow-Origin": "*"})
+
+        @app.app.post("/api/log_process")
+        async def api_log_process(request: Request):
+            try:
+                body = await request.json()
+                tool = body.get("tool", "")
+                action = body.get("action", "")
+                details = body.get("details", "")
+                ip = body.get("ip") or (request.client.host if request.client else "unknown")
+                status = body.get("status", "completed")
+
+                conn = sqlite3.connect(DB_PATH)
+                c = conn.cursor()
+                c.execute(
+                    "INSERT INTO processes (tool, action, details, ip, status) VALUES (?, ?, ?, ?, ?)",
+                    (tool, action, str(details), ip, status)
+                )
+                conn.commit()
+                conn.close()
+                return JSONResponse(content={"status": "ok"}, headers={"Access-Control-Allow-Origin": "*"})
+            except Exception as e:
+                return JSONResponse(content={"status": "error", "error": str(e)}, status_code=500, headers={"Access-Control-Allow-Origin": "*"})
+
+        @app.app.get("/api/admin_stats")
+        async def api_admin_stats(user: str = "", password: str = ""):
+            if user != "Gingerboy" or password != "Rona12345":
+                return JSONResponse(content={"status": "unauthorized"}, status_code=401, headers={"Access-Control-Allow-Origin": "*"})
+
+            try:
+                conn = sqlite3.connect(DB_PATH)
+                conn.row_factory = sqlite3.Row
+                c = conn.cursor()
+
+                c.execute("SELECT name, email, tool, file_downloaded, ip, country, city, timestamp FROM leads ORDER BY id DESC LIMIT 500")
+                leads = [dict(row) for row in c.fetchall()]
+
+                c.execute("SELECT ip, country, city, tool, device, duration_sec, timestamp FROM visits ORDER BY id DESC LIMIT 500")
+                visits = [dict(row) for row in c.fetchall()]
+
+                c.execute("SELECT tool, action, details, ip, status, timestamp FROM processes ORDER BY id DESC LIMIT 500")
+                processes = [dict(row) for row in c.fetchall()]
+
+                conn.close()
+                return JSONResponse(content={
+                    "status": "ok",
+                    "leads": leads,
+                    "visits": visits,
+                    "processes": processes
+                }, headers={"Access-Control-Allow-Origin": "*"})
+            except Exception as e:
+                return JSONResponse(content={"status": "error", "error": str(e)}, status_code=500, headers={"Access-Control-Allow-Origin": "*"})
 except Exception:
     pass
 
