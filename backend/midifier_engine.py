@@ -688,7 +688,7 @@ def convert_audio_to_midi(audio_path, output_midi_path=None, note_sensitivity=0.
 
     # 3. Note Transcription (Try Spotify basic-pitch, fallback to CQT)
     notes = []
-    engine_name = "Spotify basic-pitch Neural"
+    engine_name = "Studio CQT Polyphonic"
 
     try:
         notes = transcribe_with_basic_pitch(
@@ -696,8 +696,10 @@ def convert_audio_to_midi(audio_path, output_midi_path=None, note_sensitivity=0.
             note_sensitivity=note_sensitivity,
             min_note_length=min_note_length
         )
+        if notes:
+            engine_name = "Spotify basic-pitch Neural"
     except Exception as bp_err:
-        print(f"[MIDIFIER] Notice: basic-pitch ({bp_err}), switching to studio CQT harmonic engine...")
+        print(f"[MIDIFIER] Notice: basic-pitch not available ({bp_err}), using studio CQT engine...")
         notes = []
 
     if not notes:
