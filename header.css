@@ -53,7 +53,8 @@ nav.custom-header {
     height: 45px;
     object-fit: contain;
     border-radius: 50%;
-    filter: drop-shadow(0 0 10px rgba(38, 1, 75, 0.5));
+    filter: drop-shadow(0 0 12px var(--header-accent, rgba(255, 255, 255, 0.4)));
+    transition: filter 0.3s ease, transform 0.25s ease;
 }
 
 .logo-text {

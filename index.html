@@ -20,17 +20,21 @@
             --text-secondary: rgba(255, 255, 255, 0.72);
             --text-muted: rgba(255, 255, 255, 0.68);
 
-            /* Tool Accents */
-            --accent-stemer: #00f5ff;
-            --accent-stemer-glow: rgba(0, 245, 255, 0.28);
-            --accent-midifier: #a855f7;
-            --accent-midifier-glow: rgba(168, 85, 247, 0.28);
-            --accent-sampler: #f43f5e;
-            --accent-sampler-glow: rgba(244, 63, 94, 0.28);
-            --accent-mixter: #f59e0b;
-            --accent-mixter-glow: rgba(245, 158, 11, 0.28);
-            --accent-master: #10b981;
-            --accent-master-glow: rgba(16, 185, 129, 0.28);
+            /* Tool Accents - Color Coded */
+            --header-accent: #ffffff;
+            --header-accent-purple: #ffffff;
+            --accent-stemer: #a855f7;
+            --accent-stemer-glow: rgba(168, 85, 247, 0.35);
+            --accent-midifier: #f97316;
+            --accent-midifier-glow: rgba(249, 115, 22, 0.35);
+            --accent-sampler: #00a8ff;
+            --accent-sampler-glow: rgba(0, 168, 255, 0.35);
+            --accent-mixter: #10b981;
+            --accent-mixter-glow: rgba(16, 185, 129, 0.35);
+            --accent-master: #ec4899;
+            --accent-master-glow: rgba(236, 72, 153, 0.35);
+            --accent-generator: #ef4444;
+            --accent-generator-glow: rgba(239, 68, 68, 0.35);
         }
 
         * {
@@ -317,45 +321,45 @@
         }
 
         .file-action-btn[data-tool="stemer"]:hover {
-            background: rgba(0, 245, 255, 0.2);
+            background: rgba(168, 85, 247, 0.2);
             border-color: var(--accent-stemer);
             color: var(--accent-stemer);
             box-shadow: 0 0 15px var(--accent-stemer-glow);
         }
 
         .file-action-btn[data-tool="midifier"]:hover {
-            background: rgba(244, 63, 94, 0.2);
+            background: rgba(249, 115, 22, 0.2);
             border-color: var(--accent-midifier);
             color: var(--accent-midifier);
             box-shadow: 0 0 15px var(--accent-midifier-glow);
         }
 
         .file-action-btn[data-tool="sampler"]:hover {
-            background: rgba(168, 85, 247, 0.2);
+            background: rgba(0, 168, 255, 0.2);
             border-color: var(--accent-sampler);
             color: var(--accent-sampler);
             box-shadow: 0 0 15px var(--accent-sampler-glow);
         }
 
         .file-action-btn[data-tool="mixter"]:hover {
-            background: rgba(245, 158, 11, 0.2);
+            background: rgba(16, 185, 129, 0.2);
             border-color: var(--accent-mixter);
             color: var(--accent-mixter);
             box-shadow: 0 0 15px var(--accent-mixter-glow);
         }
 
         .file-action-btn[data-tool="master"]:hover {
-            background: rgba(16, 185, 129, 0.2);
+            background: rgba(236, 72, 153, 0.2);
             border-color: var(--accent-master);
             color: var(--accent-master);
             box-shadow: 0 0 15px var(--accent-master-glow);
         }
 
         .file-action-btn[data-tool="generator"]:hover {
-            background: rgba(139, 92, 246, 0.2);
-            border-color: #a78bfa;
-            color: #c4b5fd;
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.35);
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--accent-generator);
+            color: var(--accent-generator);
+            box-shadow: 0 0 15px var(--accent-generator-glow);
         }
 
         /* Footer */
