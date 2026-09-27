@@ -163,13 +163,22 @@ def process_midi(audio_file, note_sensitivity=0.5, min_note_length=58):
     if not audio_file:
         return None, "No audio file provided."
     try:
+        path, orig_name = extract_file_info(audio_file)
+        if not path or not os.path.exists(path):
+            return None, f"ERROR: Audio file not accessible on server: {audio_file}"
         midi_path, info = convert_audio_to_midi(
-            audio_file,
-            note_sensitivity=note_sensitivity,
-            min_note_length=min_note_length
+            path,
+            note_sensitivity=float(note_sensitivity),
+            min_note_length=float(min_note_length)
         )
-        return midi_path, f"SUCCESS: {info}"
+        if isinstance(info, dict):
+            report_str = f"SUCCESS:{json.dumps(info)}"
+        else:
+            report_str = f"SUCCESS:{info}"
+        return midi_path, report_str
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return None, f"ERROR: {e}"
 
 # --- Sampler Endpoint ---

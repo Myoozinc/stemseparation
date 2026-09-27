@@ -13,3 +13,5 @@ pyloudnorm
 mido
 requests
 huggingface_hub
+basic-pitch
+onnxruntime

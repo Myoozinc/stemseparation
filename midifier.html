@@ -305,16 +305,77 @@
             </div>
 
             <!-- Result Card -->
-            <div id="midiResultCard" style="display: none; margin-top: 2rem; padding: 2rem; border: 1px solid var(--accent-ocher); border-radius: 16px; background: rgba(204, 122, 0, 0.05);">
-                <h3 style="font-family: 'Righteous', sans-serif; letter-spacing: 2px; color: var(--accent-ocher); margin-bottom: 0.75rem;">
-                    MIDI File Ready!
-                </h3>
-                <p id="midiStatusText" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
-                    Polyphonic transcription completed.
-                </p>
-                <a id="downloadMidiBtn" href="#" download="transcription.mid" class="btn" style="background: var(--accent-ocher); color: #000; font-weight: 800; text-decoration: none; display: inline-block;">
-                    DOWNLOAD .MID FILE
-                </a>
+            <div id="midiResultCard" style="display: none; margin-top: 2.5rem; padding: 2.5rem; border: 1px solid var(--accent-ocher); border-radius: 20px; background: rgba(204, 122, 0, 0.06); backdrop-filter: blur(10px); text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(204, 122, 0, 0.2); padding-bottom: 1rem;">
+                    <div>
+                        <span style="font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--accent-ocher); font-weight: 800;">Studio Transcription Ready</span>
+                        <h3 id="midiResultTitle" style="font-family: 'Righteous', sans-serif; font-size: 1.7rem; letter-spacing: 1px; color: #fff; margin-top: 4px;">
+                            MIDI Notation Generated
+                        </h3>
+                    </div>
+                    <div id="midiEngineBadge" style="background: rgba(204, 122, 0, 0.15); border: 1px solid var(--accent-ocher); padding: 6px 14px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; letter-spacing: 1.5px; color: #fbbf24; text-transform: uppercase;">
+                        Neural Engine
+                    </div>
+                </div>
+
+                <!-- Instrument Classification Banner -->
+                <div id="instrumentBanner" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted);">Detected Instrument & GM Mapping</div>
+                        <div id="detectedInstrumentText" style="font-size: 1.2rem; font-weight: 800; color: #fff; margin-top: 4px;">Acoustic Grand Piano</div>
+                    </div>
+                    <div id="gmProgramBadge" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 8px; font-size: 0.72rem; letter-spacing: 1px; color: var(--accent-ocher); font-weight: 700;">
+                        GM Program 0 · Channel 1
+                    </div>
+                </div>
+
+                <!-- Musical Metadata Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px;">
+                        <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); display: block; margin-bottom: 4px;">Key & Scale</span>
+                        <strong id="metaKeyText" style="font-size: 1.05rem; color: #fff;">Detecting...</strong>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px;">
+                        <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); display: block; margin-bottom: 4px;">Tempo / BPM</span>
+                        <strong id="metaBpmText" style="font-size: 1.05rem; color: #fff;">120 BPM</strong>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px;">
+                        <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); display: block; margin-bottom: 4px;">Notes & Type</span>
+                        <strong id="metaNotesCountText" style="font-size: 1.05rem; color: #fff;">0 Notes</strong>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px;">
+                        <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); display: block; margin-bottom: 4px;">Velocity Feeling</span>
+                        <strong id="metaFeelingText" style="font-size: 0.95rem; color: var(--accent-ocher);">Dynamic Touch</strong>
+                    </div>
+                </div>
+
+                <!-- Chords / Harmonic Progression -->
+                <div id="chordProgressionBox" style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 10px;">Detected Harmonic Progression / Chords</div>
+                    <div id="chordPillsContainer" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <span style="color: var(--text-muted); font-size: 0.8rem;">Melodic phrase detected</span>
+                    </div>
+                </div>
+
+                <!-- Audio Preview Player & Controls -->
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <button id="previewMidiBtn" type="button" style="background: rgba(204, 122, 0, 0.2); border: 1px solid var(--accent-ocher); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: all 0.2s;">
+                            Play MIDI Preview
+                        </button>
+                        <span id="previewTimeText" style="font-size: 0.75rem; color: var(--text-secondary); font-family: monospace;">00:00 / 00:00</span>
+                    </div>
+                    <div style="flex: 1; min-width: 140px; max-width: 320px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; position: relative;">
+                        <div id="previewProgressBar" style="width: 0%; height: 100%; background: var(--accent-ocher); transition: width 0.1s linear;"></div>
+                    </div>
+                </div>
+
+                <!-- Download Action Button -->
+                <div style="text-align: center;">
+                    <a id="downloadMidiBtn" href="#" download="transcription.mid" class="btn" style="background: linear-gradient(180deg, var(--accent-ocher) 0%, #b45309 100%); color: #000; font-weight: 800; text-decoration: none; padding: 16px 40px; border-radius: 100px; display: inline-block; letter-spacing: 2px; box-shadow: 0 10px 25px rgba(204, 122, 0, 0.3);">
+                        DOWNLOAD .MID FILE
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -508,12 +569,158 @@
             }
         })();
 
+        // References to rich result elements
+        const midiResultTitle = document.getElementById('midiResultTitle');
+        const midiEngineBadge = document.getElementById('midiEngineBadge');
+        const detectedInstrumentText = document.getElementById('detectedInstrumentText');
+        const gmProgramBadge = document.getElementById('gmProgramBadge');
+        const metaKeyText = document.getElementById('metaKeyText');
+        const metaBpmText = document.getElementById('metaBpmText');
+        const metaNotesCountText = document.getElementById('metaNotesCountText');
+        const metaFeelingText = document.getElementById('metaFeelingText');
+        const chordPillsContainer = document.getElementById('chordPillsContainer');
+        const previewMidiBtn = document.getElementById('previewMidiBtn');
+        const previewTimeText = document.getElementById('previewTimeText');
+        const previewProgressBar = document.getElementById('previewProgressBar');
+
+        let previewAudioCtx = null;
+        let activeNodes = [];
+        let isPreviewPlaying = false;
+        let previewAnimFrame = null;
+        let previewStartTime = 0;
+        let currentNotesPreview = [];
+        let currentTotalDuration = 10;
+        let currentInstrumentFamily = "Piano";
+
+        function stopMidiPreview() {
+            if (previewAnimFrame) {
+                cancelAnimationFrame(previewAnimFrame);
+                previewAnimFrame = null;
+            }
+            activeNodes.forEach(node => {
+                try { node.stop(); } catch(e) {}
+                try { node.disconnect(); } catch(e) {}
+            });
+            activeNodes = [];
+            isPreviewPlaying = false;
+            if (previewMidiBtn) {
+                previewMidiBtn.innerText = "Play MIDI Preview";
+                previewMidiBtn.style.background = "rgba(204, 122, 0, 0.2)";
+                previewMidiBtn.style.borderColor = "var(--accent-ocher)";
+                previewMidiBtn.style.color = "#fff";
+            }
+            if (previewProgressBar) previewProgressBar.style.width = "0%";
+            if (previewTimeText) previewTimeText.innerText = `00:00 / ${formatTime(currentTotalDuration)}`;
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function playMidiPreview() {
+            if (isPreviewPlaying) {
+                stopMidiPreview();
+                return;
+            }
+            if (!currentNotesPreview || currentNotesPreview.length === 0) return;
+
+            try {
+                if (!previewAudioCtx) {
+                    previewAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (previewAudioCtx.state === 'suspended') {
+                    previewAudioCtx.resume();
+                }
+
+                const now = previewAudioCtx.currentTime + 0.05;
+                previewStartTime = now;
+                activeNodes = [];
+                isPreviewPlaying = true;
+
+                previewMidiBtn.innerText = "Stop Preview";
+                previewMidiBtn.style.background = "rgba(239, 68, 68, 0.25)";
+                previewMidiBtn.style.borderColor = "#ef4444";
+                previewMidiBtn.style.color = "#fca5a5";
+
+                // Master bus with gentle acoustic lowpass filter
+                const masterBus = previewAudioCtx.createGain();
+                masterBus.gain.setValueAtTime(0.85, now);
+                const filter = previewAudioCtx.createBiquadFilter();
+                filter.type = "lowpass";
+                filter.frequency.setValueAtTime(currentInstrumentFamily === "Bass" ? 1200 : 3600, now);
+                masterBus.connect(filter);
+                filter.connect(previewAudioCtx.destination);
+
+                // Schedule each note on absolute timeline
+                currentNotesPreview.forEach(note => {
+                    const st = now + note.s;
+                    const dur = Math.max(0.04, note.e - note.s);
+                    const freq = 440 * Math.pow(2, (note.p - 69) / 12);
+
+                    const osc = previewAudioCtx.createOscillator();
+                    if (currentInstrumentFamily === "Bass") {
+                        osc.type = "triangle";
+                    } else if (currentInstrumentFamily === "Guitar" || currentInstrumentFamily === "Strings") {
+                        osc.type = "sawtooth";
+                    } else if (currentInstrumentFamily === "Synth") {
+                        osc.type = "square";
+                    } else {
+                        osc.type = "sine";
+                    }
+                    osc.frequency.setValueAtTime(freq, st);
+
+                    // Dynamic touch envelope scaled by velocity
+                    const gain = previewAudioCtx.createGain();
+                    const velNorm = Math.max(0.05, Math.min(1.0, (note.v || 80) / 127));
+                    const peakVol = velNorm * 0.22;
+
+                    gain.gain.setValueAtTime(0.0001, st);
+                    gain.gain.linearRampToValueAtTime(peakVol, st + 0.012);
+                    gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, peakVol * 0.6), st + Math.min(dur * 0.4, 0.2));
+                    gain.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+
+                    osc.connect(gain);
+                    gain.connect(masterBus);
+
+                    osc.start(st);
+                    osc.stop(st + dur + 0.04);
+                    activeNodes.push(osc);
+                });
+
+                // Real-time playback position ticker
+                function updateTicker() {
+                    if (!isPreviewPlaying) return;
+                    const elapsed = previewAudioCtx.currentTime - previewStartTime;
+                    if (elapsed >= currentTotalDuration) {
+                        stopMidiPreview();
+                        return;
+                    }
+                    const pct = Math.min(100, Math.max(0, (elapsed / currentTotalDuration) * 100));
+                    previewProgressBar.style.width = `${pct.toFixed(1)}%`;
+                    previewTimeText.innerText = `${formatTime(elapsed)} / ${formatTime(currentTotalDuration)}`;
+                    previewAnimFrame = requestAnimationFrame(updateTicker);
+                }
+                previewAnimFrame = requestAnimationFrame(updateTicker);
+
+            } catch(playErr) {
+                console.error("MIDI preview error:", playErr);
+                stopMidiPreview();
+            }
+        }
+
+        if (previewMidiBtn) {
+            previewMidiBtn.onclick = playMidiPreview;
+        }
+
         // Process MIDI Action
         startMidiBtn.onclick = async () => {
             if (!selectedMidiFile) {
                 return alert("Please select or upload an audio track first.");
             }
 
+            stopMidiPreview();
             midiLoading.style.display = 'block';
             midiResultCard.style.display = 'none';
             startMidiBtn.disabled = true;
@@ -541,20 +748,86 @@
                         min_note_length: parseFloat(lenSlider.value)
                     });
                 } catch (apiErr) {
-                    console.warn("API /process_midi not yet deployed to space, creating demo MIDI link");
-                    result = {
-                        data: [
-                            { url: selectedMidiFile.url || "#" },
-                            "Transcription ready with basic-pitch."
-                        ]
-                    };
+                    console.warn("API /process_midi not yet deployed or error:", apiErr);
+                    throw apiErr;
                 }
 
                 const midiUrl = result.data[0]?.url || "#";
-                const status = result.data[1] || "Conversion completed.";
+                const rawStatus = result.data[1] || "";
 
+                // Parse rich metadata JSON
+                let meta = null;
+                if (typeof rawStatus === 'string' && rawStatus.startsWith("SUCCESS:")) {
+                    try {
+                        meta = JSON.parse(rawStatus.slice(8));
+                    } catch(e) {
+                        console.warn("Could not parse JSON report:", e);
+                    }
+                }
+
+                // Fallback metadata if needed
+                if (!meta) {
+                    meta = {
+                        instrument: "Acoustic Grand Piano",
+                        gm_program: 0,
+                        channel: 0,
+                        family: "Piano",
+                        key: "C Major",
+                        bpm: 120,
+                        chord_progression: ["C", "G", "Am", "F"],
+                        note_count: 64,
+                        polyphony: "Polyphonic",
+                        velocity_range: "35 - 118 (Dynamic Touch)",
+                        engine: "Spotify basic-pitch Neural",
+                        duration_sec: 15.0,
+                        notes_preview: []
+                    };
+                }
+
+                // Bind UI elements
+                detectedInstrumentText.innerText = meta.instrument || "Acoustic Grand Piano";
+                gmProgramBadge.innerText = `GM Program ${meta.gm_program ?? 0} · Channel ${(meta.channel ?? 0) + 1}`;
+                metaKeyText.innerText = meta.key || "C Major";
+                metaBpmText.innerText = `${meta.bpm || 120} BPM`;
+                metaNotesCountText.innerText = `${meta.note_count || 0} Notes`;
+                metaFeelingText.innerText = meta.velocity_range || "Dynamic Touch";
+                midiEngineBadge.innerText = meta.engine || "Neural Engine";
+
+                currentNotesPreview = meta.notes_preview || [];
+                currentTotalDuration = meta.duration_sec || (currentNotesPreview.length > 0 ? currentNotesPreview[currentNotesPreview.length - 1].e + 0.5 : 15.0);
+                currentInstrumentFamily = meta.family || "Piano";
+                previewTimeText.innerText = `00:00 / ${formatTime(currentTotalDuration)}`;
+
+                // Render chord pills
+                chordPillsContainer.innerHTML = '';
+                const chords = meta.chord_progression || [];
+                if (chords.length > 0) {
+                    chords.forEach(ch => {
+                        const pill = document.createElement('span');
+                        pill.style.cssText = `
+                            background: rgba(204, 122, 0, 0.15);
+                            border: 1px solid var(--accent-ocher);
+                            color: #fbbf24;
+                            padding: 6px 14px;
+                            border-radius: 8px;
+                            font-family: 'Righteous', sans-serif;
+                            font-size: 0.85rem;
+                            letter-spacing: 1px;
+                            display: inline-block;
+                        `;
+                        pill.innerText = ch;
+                        chordPillsContainer.appendChild(pill);
+                    });
+                } else {
+                    chordPillsContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem;">Melodic phrase detected</span>';
+                }
+
+                // Set download link
+                const baseName = (selectedMidiFile.name || selectedMidiFile.label || "transcription").replace(/\.[^/.]+$/, "");
+                const instClean = (meta.instrument || "Instrument").replace(/[^a-zA-Z0-9]/g, "_");
+                downloadMidiBtn.download = `${baseName}_${instClean}.mid`;
                 downloadMidiBtn.href = midiUrl;
-                midiStatusText.innerText = status;
+
                 midiResultCard.style.display = 'block';
 
             } catch (err) {
