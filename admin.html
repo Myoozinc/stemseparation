@@ -12,6 +12,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="header.css">
     <link rel="stylesheet" href="shared.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-black: #08080a;
@@ -165,7 +166,7 @@
         /* ── Main Admin Container ── */
         .admin-container {
             width: 100%;
-            max-width: 1300px;
+            max-width: 1350px;
             padding: 2rem;
             margin-top: 80px;
             margin-bottom: 4rem;
@@ -358,33 +359,38 @@
             flex-wrap: wrap;
         }
 
-        /* ── Tool Bars Chart ── */
-        .tool-bar-item {
-            margin-bottom: 1.25rem;
+        /* ── Charts Grid ── */
+        .charts-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 1.75rem;
+            margin-bottom: 1.75rem;
         }
 
-        .tool-bar-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 6px;
-            font-weight: 700;
-        }
-
-        .tool-bar-track {
-            height: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 5px;
-            overflow: hidden;
+        .chart-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 1.5rem;
             position: relative;
         }
 
-        .tool-bar-fill {
-            height: 100%;
-            border-radius: 5px;
-            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        .chart-box-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-canvas-wrap {
+            position: relative;
+            height: 260px;
+            width: 100%;
         }
 
         /* ── Tables ── */
@@ -477,6 +483,17 @@
             transform: translateY(-1px);
         }
 
+        .btn-action-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .btn-action-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+            color: #fff;
+        }
+
         /* ── Badges ── */
         .pill-tool {
             display: inline-block;
@@ -500,6 +517,13 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.8rem;
             color: #93c5fd;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }
     </style>
 </head>
@@ -545,33 +569,36 @@
         <header class="admin-header-row">
             <div class="admin-title-area">
                 <h1>Command Center</h1>
-                <p>Métricas Globales · Registro de IPs · Base de Datos de Leads</p>
+                <p>Métricas Reales · Registro de IPs · Base de Datos de Leads</p>
             </div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button id="refreshDataBtn" class="btn-action">
                     Actualizar Datos
                 </button>
                 <button id="exportCsvBtnTop" class="btn-action btn-action-primary">
                     Exportar Leads (CSV)
                 </button>
+                <button id="clearDataBtn" class="btn-action btn-action-danger" title="Limpiar registros">
+                    Limpiar Historial
+                </button>
             </div>
         </header>
 
-        <!-- 4 KPI Cards -->
+        <!-- 4 KPI Cards (100% Real Data) -->
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-label">
                     <span>Total Conexiones</span>
-                    <span style="color: var(--accent-purple);">Visitas</span>
+                    <span style="color: var(--accent-purple);">Visitas Reales</span>
                 </div>
                 <div class="kpi-value" id="kpiTotalVisits">0</div>
-                <div class="kpi-subtext" id="kpiVisitsTrend">Registros de navegación</div>
+                <div class="kpi-subtext" id="kpiVisitsTrend">Conexiones registradas</div>
             </div>
 
             <div class="kpi-card">
                 <div class="kpi-label">
                     <span>Conexiones Únicas</span>
-                    <span style="color: var(--accent-blue);">IPs</span>
+                    <span style="color: var(--accent-blue);">IPs Reales</span>
                 </div>
                 <div class="kpi-value" id="kpiUniqueIps">0</div>
                 <div class="kpi-subtext">Direcciones IP distintas</div>
@@ -580,7 +607,7 @@
             <div class="kpi-card">
                 <div class="kpi-label">
                     <span>Leads Capturados</span>
-                    <span style="color: var(--accent-emerald);">Correos</span>
+                    <span style="color: var(--accent-emerald);">Correos Reales</span>
                 </div>
                 <div class="kpi-value" id="kpiTotalLeads">0</div>
                 <div class="kpi-subtext">Usuarios con descarga autorizada</div>
@@ -589,7 +616,7 @@
             <div class="kpi-card">
                 <div class="kpi-label">
                     <span>Tiempo Promedio</span>
-                    <span style="color: var(--accent-orange);">Uso</span>
+                    <span style="color: var(--accent-orange);">Uso Real</span>
                 </div>
                 <div class="kpi-value" id="kpiAvgDuration">0s</div>
                 <div class="kpi-subtext">Permanencia por sesión</div>
@@ -598,32 +625,79 @@
 
         <!-- Navigation Tabs -->
         <div class="admin-tabs">
-            <button class="admin-tab-btn active" data-tab="tabOverview">Resumen & Métricas</button>
+            <button class="admin-tab-btn active" data-tab="tabCharts">Gráficos & Métricas</button>
             <button class="admin-tab-btn" data-tab="tabLeads">Base de Datos de Leads</button>
             <button class="admin-tab-btn" data-tab="tabConnections">Registro de IPs & Conexiones</button>
             <button class="admin-tab-btn" data-tab="tabProcesses">Resguardo de Procesos</button>
         </div>
 
-        <!-- ── TAB 1: OVERVIEW & TOOL USAGE ── -->
-        <div class="tab-content" id="tabOverview">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
-                <!-- Tool Usage Breakdown -->
-                <div class="admin-card" style="margin-bottom: 0;">
-                    <div class="admin-card-header">
-                        <h3 class="admin-card-title">Distribución de Uso por Herramienta</h3>
+        <!-- ── TAB 1: CHARTS & VISUAL ANALYTICS (GRAFICOS DE TODO) ── -->
+        <div class="tab-content" id="tabCharts">
+            <!-- Row 1: Timeline & Tool Share -->
+            <div class="charts-grid-2">
+                <div class="chart-box">
+                    <div class="chart-box-title">
+                        <span>Conexiones & Actividad en el Tiempo</span>
+                        <span style="color: var(--accent-purple); font-size: 0.7rem;">Timeline</span>
                     </div>
-                    <div id="toolBarsContainer">
-                        <!-- Rendered by JS -->
+                    <div class="chart-canvas-wrap">
+                        <canvas id="timelineChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Recent Activity Feed -->
-                <div class="admin-card" style="margin-bottom: 0;">
-                    <div class="admin-card-header">
-                        <h3 class="admin-card-title">Actividad Reciente en Vivo</h3>
+                <div class="chart-box">
+                    <div class="chart-box-title">
+                        <span>Distribución de Uso por Herramienta</span>
+                        <span style="color: var(--accent-orange); font-size: 0.7rem;">Herramientas</span>
                     </div>
-                    <div id="activityFeedList" style="display: flex; flex-direction: column; gap: 12px; max-height: 380px; overflow-y: auto;">
-                        <!-- Rendered by JS -->
+                    <div class="chart-canvas-wrap">
+                        <canvas id="toolDoughnutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Conversion Funnel & Top Countries -->
+            <div class="charts-grid-2">
+                <div class="chart-box">
+                    <div class="chart-box-title">
+                        <span>Embudo de Conversión (Visitas vs Leads)</span>
+                        <span style="color: var(--accent-emerald); font-size: 0.7rem;">Conversión</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="conversionFunnelChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-box">
+                    <div class="chart-box-title">
+                        <span>Top Países de Procedencia</span>
+                        <span style="color: var(--accent-blue); font-size: 0.7rem;">Geografía</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="countriesBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: Devices & Tool Average Time -->
+            <div class="charts-grid-2">
+                <div class="chart-box">
+                    <div class="chart-box-title">
+                        <span>Dispositivos & Navegadores</span>
+                        <span style="color: var(--accent-pink); font-size: 0.7rem;">Plataformas</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="devicesPieChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-box">
+                    <div class="chart-box-title">
+                        <span>Tiempo Promedio de Uso por Herramienta</span>
+                        <span style="color: var(--accent-red); font-size: 0.7rem;">Segundos</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="durationBarChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -635,7 +709,7 @@
                 <div class="admin-card-header">
                     <div>
                         <h3 class="admin-card-title">Base de Datos de Leads (Email Marketing)</h3>
-                        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">Usuarios que autorizaron descarga y recibirán actualizaciones</p>
+                        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">Registros reales de usuarios que autorizaron la descarga</p>
                     </div>
                     <div class="admin-card-actions">
                         <input type="text" id="searchLeadsInput" class="search-input" placeholder="Buscar por nombre, email o IP...">
@@ -672,7 +746,7 @@
                 <div class="admin-card-header">
                     <div>
                         <h3 class="admin-card-title">Auditoría de IPs y Conexiones</h3>
-                        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">Historial de navegación y tiempos de sesión</p>
+                        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">Historial real de navegación, IPs y tiempos de sesión</p>
                     </div>
                     <div class="admin-card-actions">
                         <input type="text" id="searchConnectionsInput" class="search-input" placeholder="Buscar por IP o país...">
@@ -705,7 +779,7 @@
                 <div class="admin-card-header">
                     <div>
                         <h3 class="admin-card-title">Resguardo de Procesos y Operaciones</h3>
-                        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">Registro de separaciones, conversiones MIDI, mezclas y masters</p>
+                        <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">Operaciones reales ejecutadas en Stemer, Midifier, Sampler, Mixter y Master</p>
                     </div>
                     <div class="admin-card-actions">
                         <input type="text" id="searchProcessesInput" class="search-input" placeholder="Buscar en procesos...">
@@ -750,6 +824,9 @@
             const adminPassInput = document.getElementById("adminPassInput");
             const loginErrorMsg = document.getElementById("loginErrorMsg");
             const adminLogoutBtn = document.getElementById("adminLogoutBtn");
+
+            // Chart instances dictionary
+            let chartInstances = {};
 
             function checkAuthentication() {
                 const session = sessionStorage.getItem(AUTH_KEY);
@@ -799,8 +876,48 @@
                     const targetId = btn.getAttribute("data-tab");
                     const targetEl = document.getElementById(targetId);
                     if (targetEl) targetEl.style.display = "block";
+
+                    // Trigger chart resize if charts tab opened
+                    if (targetId === "tabCharts") {
+                        Object.values(chartInstances).forEach(ch => {
+                            if (ch && typeof ch.resize === "function") ch.resize();
+                        });
+                    }
                 });
             });
+
+            // ── Purge Any Legacy Simulated Demo Data ──
+            function sanitizeRealData(store) {
+                if (!store) return { visits: [], leads: [], processes: [] };
+
+                // Strip any mock entries
+                const fakeEmails = ["carlosbeats@gmail.com", "prod.neo@outlook.com", "valen.audio@icloud.com"];
+                const fakeIps = ["186.84.90.12", "189.217.44.80", "88.12.140.23", "190.237.18.55"];
+
+                if (Array.isArray(store.leads)) {
+                    store.leads = store.leads.filter(l => !fakeEmails.includes(l.email));
+                } else {
+                    store.leads = [];
+                }
+
+                if (Array.isArray(store.visits)) {
+                    store.visits = store.visits.filter(v => !fakeIps.includes(v.ip));
+                } else {
+                    store.visits = [];
+                }
+
+                if (Array.isArray(store.processes)) {
+                    store.processes = store.processes.filter(p => !fakeIps.includes(p.ip));
+                } else {
+                    store.processes = [];
+                }
+
+                try {
+                    localStorage.setItem(STORAGE_KEY_ANALYTICS, JSON.stringify(store));
+                } catch (e) {}
+
+                return store;
+            }
 
             // ── Data Management & Rendering ──
             let currentData = {
@@ -821,7 +938,7 @@
             }
 
             function formatDuration(sec) {
-                if (!sec || sec <= 0) return "10s";
+                if (!sec || sec <= 0) return "0s";
                 const m = Math.floor(sec / 60);
                 const s = sec % 60;
                 if (m === 0) return `${s}s`;
@@ -845,43 +962,15 @@
                 }
             }
 
-            // Seed demo data if storage is completely empty
-            function ensureDemoData(store) {
-                if (!store.visits || store.visits.length === 0) {
-                    store.visits = [
-                        { ip: "177.181.236.97", country: "Brazil", city: "Campinas", tool: "midifier", device: "Chrome (macOS)", duration: 245, timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString() },
-                        { ip: "186.84.90.12", country: "Colombia", city: "Medellín", tool: "stemer", device: "Chrome (Windows)", duration: 410, timestamp: new Date(Date.now() - 1000 * 60 * 35).toISOString() },
-                        { ip: "189.217.44.80", country: "Mexico", city: "Ciudad de México", tool: "master", device: "Safari (macOS)", duration: 180, timestamp: new Date(Date.now() - 1000 * 60 * 70).toISOString() },
-                        { ip: "88.12.140.23", country: "Spain", city: "Madrid", tool: "mixter", device: "Firefox (Windows)", duration: 320, timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString() },
-                        { ip: "190.237.18.55", country: "Peru", city: "Lima", tool: "sampler", device: "Chrome (Android)", duration: 150, timestamp: new Date(Date.now() - 1000 * 60 * 180).toISOString() }
-                    ];
-                }
-                if (!store.leads || store.leads.length === 0) {
-                    store.leads = [
-                        { name: "Carlos Beatmaker", email: "carlosbeats@gmail.com", tool: "midifier", file: "bajo_808_Acoustic_Piano.mid", ip: "177.181.236.97", country: "Brazil", city: "Campinas", timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString() },
-                        { name: "DJ Neo", email: "prod.neo@outlook.com", tool: "stemer", file: "cancion_stems_pack.zip", ip: "186.84.90.12", country: "Colombia", city: "Medellín", timestamp: new Date(Date.now() - 1000 * 60 * 40).toISOString() },
-                        { name: "Valentina M.", email: "valen.audio@icloud.com", tool: "master", file: "master_urbano_club.wav", ip: "189.217.44.80", country: "Mexico", city: "Ciudad de México", timestamp: new Date(Date.now() - 1000 * 60 * 75).toISOString() }
-                    ];
-                }
-                if (!store.processes || store.processes.length === 0) {
-                    store.processes = [
-                        { tool: "midifier", action: "audio_to_midi", details: "Piano Triad CQT · Key: A Minor · Chords: [Am]", ip: "177.181.236.97", status: "completed", timestamp: new Date(Date.now() - 1000 * 60 * 18).toISOString() },
-                        { tool: "stemer", action: "demucs_separate", details: "4 Stems + Drums Refined (Kick, Snare, Hihat)", ip: "186.84.90.12", status: "completed", timestamp: new Date(Date.now() - 1000 * 60 * 42).toISOString() },
-                        { tool: "master", action: "ai_mastering", details: "Profile: Urbano Club · Target: -9.0 LUFS", ip: "189.217.44.80", status: "completed", timestamp: new Date(Date.now() - 1000 * 60 * 78).toISOString() }
-                    ];
-                }
-                return store;
-            }
-
             async function loadAllAdminData() {
-                // 1. Load LocalStorage Store
+                // 1. Load LocalStorage Store and sanitize
                 let localStore = { visits: [], leads: [], processes: [] };
                 try {
                     const raw = localStorage.getItem(STORAGE_KEY_ANALYTICS);
                     if (raw) localStore = JSON.parse(raw);
                 } catch (e) {}
 
-                localStore = ensureDemoData(localStore);
+                localStore = sanitizeRealData(localStore);
 
                 // 2. Attempt fetching from Backend API
                 try {
@@ -891,7 +980,6 @@
                     if (resp.ok) {
                         const serverData = await resp.json();
                         if (serverData && serverData.status === "ok") {
-                            // Merge server and local uniquely
                             if (serverData.leads && serverData.leads.length > 0) {
                                 localStore.leads = serverData.leads;
                             }
@@ -903,9 +991,7 @@
                             }
                         }
                     }
-                } catch (netErr) {
-                    // Backend offline or warming up; smoothly continues with local storage data
-                }
+                } catch (netErr) {}
 
                 currentData = localStore;
                 renderDashboard(currentData);
@@ -916,7 +1002,7 @@
                 const leads = data.leads || [];
                 const processes = data.processes || [];
 
-                // ── Render KPIs ──
+                // ── Render Real KPIs ──
                 document.getElementById("kpiTotalVisits").innerText = visits.length;
 
                 const uniqueIps = new Set(visits.map(v => v.ip).filter(Boolean));
@@ -925,102 +1011,301 @@
                 document.getElementById("kpiTotalLeads").innerText = leads.length;
 
                 const durations = visits.map(v => v.duration || 0).filter(d => d > 0);
-                const avgSec = durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 120;
+                const avgSec = durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
                 document.getElementById("kpiAvgDuration").innerText = formatDuration(avgSec);
 
-                // ── Render Tool Bars ──
-                renderToolBars(visits);
+                // ── Render All 6 Real Charts ──
+                renderAllCharts(visits, leads, processes);
 
-                // ── Render Activity Feed ──
-                renderActivityFeed(visits, leads, processes);
-
-                // ── Render Leads Table ──
+                // ── Render Tables ──
                 renderLeadsTable(leads);
-
-                // ── Render Connections Table ──
                 renderConnectionsTable(visits);
-
-                // ── Render Processes Table ──
                 renderProcessesTable(processes);
             }
 
-            function renderToolBars(visits) {
-                const tools = [
-                    { name: "Stemer", key: "stemer", color: "var(--accent-purple)" },
-                    { name: "Midifier", key: "midifier", color: "var(--accent-orange)" },
-                    { name: "Sampler", key: "sampler", color: "var(--accent-blue)" },
-                    { name: "Mixter", key: "mixter", color: "var(--accent-emerald)" },
-                    { name: "Master", key: "master", color: "var(--accent-pink)" },
-                    { name: "Generator (Beta)", key: "generator", color: "var(--accent-red)" }
-                ];
+            // ── 6 COMPREHENSIVE CHARTS (CHART.JS) ──
+            function renderAllCharts(visits, leads, processes) {
+                // Global Chart Defaults for Studio Dark Theme
+                Chart.defaults.color = "rgba(255, 255, 255, 0.6)";
+                Chart.defaults.font.family = "'Outfit', sans-serif";
+                Chart.defaults.font.size = 11;
 
-                const counts = {};
-                tools.forEach(t => counts[t.key] = 0);
+                // 1. Timeline Chart (Activity by Time / Day)
+                renderTimelineChart(visits);
 
+                // 2. Tool Doughnut Chart (Tool Breakdown)
+                renderToolDoughnutChart(visits);
+
+                // 3. Conversion Funnel Chart (Visits vs Processes vs Leads)
+                renderConversionFunnelChart(visits, leads, processes);
+
+                // 4. Countries Bar Chart (Top Countries)
+                renderCountriesChart(visits);
+
+                // 5. Devices Pie Chart (Platforms)
+                renderDevicesChart(visits);
+
+                // 6. Tool Duration Chart (Average Time Spent per Tool)
+                renderDurationChart(visits);
+            }
+
+            function renderTimelineChart(visits) {
+                const ctx = document.getElementById("timelineChart").getContext("2d");
+                if (chartInstances.timeline) chartInstances.timeline.destroy();
+
+                // Group visits by date (YYYY-MM-DD)
+                const dateMap = {};
                 visits.forEach(v => {
-                    const tk = (v.tool || "").toLowerCase();
-                    if (counts[tk] !== undefined) counts[tk]++;
+                    const dateStr = v.timestamp ? v.timestamp.slice(0, 10) : "Hoy";
+                    dateMap[dateStr] = (dateMap[dateStr] || 0) + 1;
                 });
 
-                const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
-                const container = document.getElementById("toolBarsContainer");
-                container.innerHTML = "";
+                const labels = Object.keys(dateMap).slice(-7);
+                const counts = labels.map(l => dateMap[l]);
 
-                tools.forEach(t => {
-                    const count = counts[t.key] || 0;
-                    const pct = Math.round((count / total) * 100);
+                if (labels.length === 0) {
+                    labels.push("Hoy");
+                    counts.push(0);
+                }
 
-                    const item = document.createElement("div");
-                    item.className = "tool-bar-item";
-                    item.innerHTML = `
-                        <div class="tool-bar-header">
-                            <span><span class="pill-tool ${getPillClass(t.key)}" style="margin-right: 6px;">${t.name}</span></span>
-                            <span><strong>${count}</strong> usos (${pct}%)</span>
-                        </div>
-                        <div class="tool-bar-track">
-                            <div class="tool-bar-fill" style="width: ${pct}%; background: ${t.color};"></div>
-                        </div>
-                    `;
-                    container.appendChild(item);
+                chartInstances.timeline = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: "Conexiones Reales",
+                            data: counts,
+                            borderColor: "#8b5cf6",
+                            backgroundColor: "rgba(139, 92, 246, 0.15)",
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: "#8b5cf6",
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: { grid: { color: "rgba(255, 255, 255, 0.04)" } },
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 },
+                                grid: { color: "rgba(255, 255, 255, 0.04)" }
+                            }
+                        }
+                    }
                 });
             }
 
-            function renderActivityFeed(visits, leads, processes) {
-                const container = document.getElementById("activityFeedList");
-                container.innerHTML = "";
+            function renderToolDoughnutChart(visits) {
+                const ctx = document.getElementById("toolDoughnutChart").getContext("2d");
+                if (chartInstances.toolDoughnut) chartInstances.toolDoughnut.destroy();
 
-                const allEvents = [];
-                visits.forEach(v => allEvents.push({ type: "visit", text: `Visita a ${v.tool.toUpperCase()}`, sub: `${v.city || v.country || "Ubicación"} · ${v.ip}`, time: v.timestamp }));
-                leads.forEach(l => allEvents.push({ type: "lead", text: `Lead Capturado: ${l.name}`, sub: `${l.email} · Archivo: ${l.file}`, time: l.timestamp }));
-                processes.forEach(p => allEvents.push({ type: "process", text: `Proceso ${p.tool.toUpperCase()}: ${p.action}`, sub: `${p.details}`, time: p.timestamp }));
+                const toolKeys = ["stemer", "midifier", "sampler", "mixter", "master", "generator", "home"];
+                const toolNames = ["Stemer", "Midifier", "Sampler", "Mixter", "Master", "Generator", "Home"];
+                const toolColors = ["#8b5cf6", "#f97316", "#3b82f6", "#10b981", "#ec4899", "#ef4444", "#ffffff"];
 
-                allEvents.sort((a, b) => new Date(b.time) - new Date(a.time));
-                const topEvents = allEvents.slice(0, 10);
+                const counts = toolKeys.map(k => visits.filter(v => (v.tool || "").toLowerCase() === k).length);
+                const hasData = counts.some(c => c > 0);
 
-                if (topEvents.length === 0) {
-                    container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 2rem;">Sin eventos recientes</div>`;
-                    return;
+                chartInstances.toolDoughnut = new Chart(ctx, {
+                    type: "doughnut",
+                    data: {
+                        labels: toolNames,
+                        datasets: [{
+                            data: hasData ? counts : [1, 1, 1, 1, 1, 1, 1],
+                            backgroundColor: hasData ? toolColors : toolColors.map(c => "rgba(255,255,255,0.06)"),
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: "68%",
+                        plugins: {
+                            legend: {
+                                position: "right",
+                                labels: { boxWidth: 10, padding: 8 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderConversionFunnelChart(visits, leads, processes) {
+                const ctx = document.getElementById("conversionFunnelChart").getContext("2d");
+                if (chartInstances.funnel) chartInstances.funnel.destroy();
+
+                const vCount = visits.length;
+                const pCount = processes.length;
+                const lCount = leads.length;
+
+                chartInstances.funnel = new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: ["Visitas Totales", "Procesos Realizados", "Leads Capturados"],
+                        datasets: [{
+                            data: [vCount, pCount, lCount],
+                            backgroundColor: [
+                                "rgba(139, 92, 246, 0.8)",
+                                "rgba(59, 130, 246, 0.8)",
+                                "rgba(16, 185, 129, 0.8)"
+                            ],
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        indexAxis: "y",
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 },
+                                grid: { color: "rgba(255, 255, 255, 0.04)" }
+                            },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            function renderCountriesChart(visits) {
+                const ctx = document.getElementById("countriesBarChart").getContext("2d");
+                if (chartInstances.countries) chartInstances.countries.destroy();
+
+                const countryMap = {};
+                visits.forEach(v => {
+                    const c = v.country || "Desconocido";
+                    countryMap[c] = (countryMap[c] || 0) + 1;
+                });
+
+                const sorted = Object.entries(countryMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                const labels = sorted.map(s => s[0]);
+                const counts = sorted.map(s => s[1]);
+
+                if (labels.length === 0) {
+                    labels.push("Sin datos");
+                    counts.push(0);
                 }
 
-                topEvents.forEach(ev => {
-                    const div = document.createElement("div");
-                    div.style.cssText = "padding: 10px 14px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;";
-                    
-                    let tagColor = "var(--accent-purple)";
-                    if (ev.type === "lead") tagColor = "var(--accent-emerald)";
-                    if (ev.type === "process") tagColor = "var(--accent-orange)";
+                chartInstances.countries = new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: "Visitantes",
+                            data: counts,
+                            backgroundColor: "rgba(59, 130, 246, 0.75)",
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 },
+                                grid: { color: "rgba(255, 255, 255, 0.04)" }
+                            }
+                        }
+                    }
+                });
+            }
 
-                    div.innerHTML = `
-                        <div>
-                            <div style="font-weight: 700; font-size: 0.82rem; color: #fff;">
-                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${tagColor}; margin-right: 8px;"></span>
-                                ${ev.text}
-                            </div>
-                            <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 3px; margin-left: 16px;">${ev.sub}</div>
-                        </div>
-                        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">${formatDate(ev.time)}</div>
-                    `;
-                    container.appendChild(div);
+            function renderDevicesChart(visits) {
+                const ctx = document.getElementById("devicesPieChart").getContext("2d");
+                if (chartInstances.devices) chartInstances.devices.destroy();
+
+                const devMap = { "Desktop": 0, "Móvil": 0 };
+                visits.forEach(v => {
+                    const dev = (v.device || "").toLowerCase();
+                    if (dev.includes("android") || dev.includes("ios") || dev.includes("iphone") || dev.includes("mobile")) {
+                        devMap["Móvil"]++;
+                    } else {
+                        devMap["Desktop"]++;
+                    }
+                });
+
+                const hasData = devMap["Desktop"] > 0 || devMap["Móvil"] > 0;
+
+                chartInstances.devices = new Chart(ctx, {
+                    type: "pie",
+                    data: {
+                        labels: ["Desktop / PC", "Dispositivos Móviles"],
+                        datasets: [{
+                            data: hasData ? [devMap["Desktop"], devMap["Móvil"]] : [1, 1],
+                            backgroundColor: hasData ? ["#ec4899", "#8b5cf6"] : ["rgba(255,255,255,0.06)", "rgba(255,255,255,0.04)"],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: "right",
+                                labels: { boxWidth: 10 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderDurationChart(visits) {
+                const ctx = document.getElementById("durationBarChart").getContext("2d");
+                if (chartInstances.duration) chartInstances.duration.destroy();
+
+                const toolKeys = ["stemer", "midifier", "sampler", "mixter", "master", "generator"];
+                const toolNames = ["Stemer", "Midifier", "Sampler", "Mixter", "Master", "Gen"];
+
+                const avgDurations = toolKeys.map(k => {
+                    const toolVisits = visits.filter(v => (v.tool || "").toLowerCase() === k && v.duration > 0);
+                    if (toolVisits.length === 0) return 0;
+                    return Math.round(toolVisits.reduce((acc, v) => acc + (v.duration || 0), 0) / toolVisits.length);
+                });
+
+                chartInstances.duration = new Chart(ctx, {
+                    type: "bar",
+                    data: {
+                        labels: toolNames,
+                        datasets: [{
+                            label: "Segundos promedio",
+                            data: avgDurations,
+                            backgroundColor: [
+                                "#8b5cf6",
+                                "#f97316",
+                                "#3b82f6",
+                                "#10b981",
+                                "#ec4899",
+                                "#ef4444"
+                            ],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 },
+                                grid: { color: "rgba(255, 255, 255, 0.04)" }
+                            }
+                        }
+                    }
                 });
             }
 
@@ -1029,7 +1314,7 @@
                 tbody.innerHTML = "";
 
                 if (!leads || leads.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay leads registrados aún</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No hay leads registrados aún. Cuando un usuario descargue un archivo y deje su correo aparecerá aquí en tiempo real.</td></tr>`;
                     return;
                 }
 
@@ -1053,7 +1338,7 @@
                 tbody.innerHTML = "";
 
                 if (!visits || visits.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay conexiones registradas aún</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No hay conexiones registradas aún. Las visitas reales a la app se registrarán automáticamente.</td></tr>`;
                     return;
                 }
 
@@ -1076,7 +1361,7 @@
                 tbody.innerHTML = "";
 
                 if (!processes || processes.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay procesos registrados aún</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No hay procesos registrados aún. Cada separación de audio o conversión MIDI se guardará aquí.</td></tr>`;
                     return;
                 }
 
@@ -1098,7 +1383,7 @@
             function exportLeadsToCsv() {
                 const leads = currentData.leads || [];
                 if (leads.length === 0) {
-                    alert("No hay leads registrados para exportar.");
+                    alert("No hay leads registrados aún para exportar.");
                     return;
                 }
 
@@ -1122,12 +1407,21 @@
                 const a = document.createElement("a");
                 const today = new Date().toISOString().slice(0, 10);
                 a.href = url;
-                a.download = `leads_myooz_labs_${today}.csv`;
+                a.download = `leads_reales_myooz_labs_${today}.csv`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             }
+
+            // Clear Data Button
+            document.getElementById("clearDataBtn").addEventListener("click", function () {
+                if (confirm("¿Estás seguro de que deseas limpiar el historial local? Se iniciará el conteo desde cero.")) {
+                    localStorage.removeItem(STORAGE_KEY_ANALYTICS);
+                    currentData = { visits: [], leads: [], processes: [] };
+                    renderDashboard(currentData);
+                }
+            });
 
             document.getElementById("exportCsvBtn").addEventListener("click", exportLeadsToCsv);
             document.getElementById("exportCsvBtnTop").addEventListener("click", exportLeadsToCsv);
