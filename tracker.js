@@ -574,10 +574,12 @@
 })();
 
 /* DATATA · presencia en directo (entra / sale) */
-/* DATATA · presencia en directo (v3)
+/* DATATA · presencia en directo (v4)
    Avisa al dashboard cuando alguien entra, cambia de estado y sale (al cerrar la pestaña).
    - Pocos mensajes (el canal gratuito tiene un límite diario): entrada, salida, cambios reales
      y una señal de vida cada 2 min (5 min con la pestaña oculta).
+   - Canal en vivo (Supabase Realtime): el servidor detecta al instante cuando la pestaña se cierra o se corta.
+     Solo lleva app, página y estado (sin IP ni ubicación, que van por el aviso de entrada).
    - La misma persona conserva su identificador al pasar de una app del ecosistema a otra por un enlace.
    Cambia APP por la clave de la app en DATATA:
    myooz · reu · stem · acopio_v · acopio_c · indep · dijimu · venezuela */
@@ -587,11 +589,12 @@
   if (/admin|moderador/i.test(location.pathname)) return; // los paneles internos no cuentan como visita
   try { if (window.self !== window.top) return; } catch (e) { return; } // dentro de otra página (p. ej. el mapa dentro de Por Venezuela): avisa la página que lo contiene
   if (window.__datataPresence) return;
-  window.__datataPresence = 3;
+  window.__datataPresence = 4;
 
   var TOPIC = 'https://ntfy.sh/myoozlabs_live_telemetry_v2_e829fa';
   var ECO = ['myoozlabs.vercel.app', 'myoozlabs.com', 'reu-live.vercel.app', 'toolboxlab.vercel.app', 'tinahmbuz-audiostems.hf.space',
     'centro-de-acopio-ven.vercel.app', 'acopio-col.vercel.app', 'indpendent.vercel.app', 'dijimu.vercel.app', 'studio-x-pro.vercel.app', 'porvenezuela.vercel.app'];
+  var RT_URL = 'wss://hcjjdryltrbagybpygdy.supabase.co/realtime/v1/websocket?apikey=sb_publishable_AFBWrOkX9RqVSfAvIXyeUA_6TCwEJve&vsn=1.0.0', RT_TOPIC = 'realtime:datata';
   var HB_VISIBLE = 120000, HB_HIDDEN = 300000, IDLE = 300;
   function get(s, k) { try { return s.getItem(k); } catch (e) { return null; } }
   function put(s, k, v) { try { s.setItem(k, v); } catch (e) {} }
@@ -638,6 +641,7 @@
   function send(ev, beacon) {
     var idle = idleSecs();
     sentIdle = idle >= IDLE; lastSent = Date.now();
+    if (ev !== 'leave') rtTrack(false);
     var body = JSON.stringify({
       v: 3, event: ev, app: APP, sid: sid, since: since, vid: vid, from: from,
       ip: geo.ip || '', city: geo.city || '', country: geo.country || '',
@@ -649,15 +653,51 @@
       fetch(TOPIC, { method: 'POST', body: body, keepalive: true }).catch(function () {});
     } catch (e) {}
   }
+  /* canal en vivo: presencia en Supabase Realtime */
+  var ws = null, wsRef = 0, wsJoin = '', wsOk = false, wsHb = null, wsRetry = 0, wsT = null, rtSig = '';
+  function rtState() {
+    return { v: 4, app: APP, sid: sid, since: since, vid: vid, from: from, url: location.pathname, ref: ref,
+      dev: /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'Móvil' : 'Escritorio',
+      vis: document.visibilityState || 'visible', idle: idleSecs() >= IDLE ? idleSecs() : 0 };
+  }
+  function rtPush(msg) { try { if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg)); } catch (e) {} }
+  function rtTrack(force) {
+    if (!wsOk) return;
+    var st = rtState(), sig = st.url + '|' + st.vis + '|' + (st.idle > 0) + '|' + sid;
+    if (!force && sig === rtSig) return; rtSig = sig;
+    rtPush({ topic: RT_TOPIC, event: 'presence', payload: { type: 'presence', event: 'track', payload: st }, ref: String(++wsRef), join_ref: wsJoin });
+  }
+  function rtConnect() {
+    clearTimeout(wsT);
+    if (left || !window.WebSocket || (ws && ws.readyState <= 1)) return;
+    try { ws = new WebSocket(RT_URL); } catch (e) { return; }
+    ws.onopen = function () {
+      wsRetry = 0; wsJoin = String(++wsRef);
+      rtPush({ topic: RT_TOPIC, event: 'phx_join', payload: { config: { broadcast: { self: false }, presence: { key: APP + ':' + sid, enabled: true }, private: false } }, ref: wsJoin, join_ref: wsJoin });
+      clearInterval(wsHb);
+      wsHb = setInterval(function () { rtPush({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: String(++wsRef) }); }, 25000);
+    };
+    ws.onmessage = function (e) {
+      try { var m = JSON.parse(e.data); if (m.event === 'phx_reply' && m.ref === wsJoin && m.payload && m.payload.status === 'ok') { wsOk = true; rtTrack(true); } } catch (x) {}
+    };
+    ws.onclose = function () {
+      wsOk = false; clearInterval(wsHb); ws = null;
+      if (!left) wsT = setTimeout(rtConnect, Math.min(30000, 1000 * Math.pow(2, wsRetry++)));
+    };
+  }
+  function rtClose() { clearTimeout(wsT); clearInterval(wsHb); wsOk = false; if (ws) { try { ws.close(); } catch (e) {} ws = null; } }
+
   function start() {
     if (started && !left) return;
     started = true; left = false;
     send('join');
+    rtConnect();
   }
   function stop() {
     if (left || !started) return;
     left = true;
     send('leave', true);
+    rtClose();
   }
   /* señal de vida espaciada + aviso cuando pasa a "sin actividad" */
   setInterval(function () {
@@ -686,7 +726,7 @@
 
   /* aviso inmediato al ocultar / volver a mostrar la pestaña */
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible') lastAct = Date.now();
+    if (document.visibilityState === 'visible') { lastAct = Date.now(); if (!ws && started && !left) rtConnect(); }
     if (started && !left) send('heartbeat');
   });
 
@@ -725,5 +765,6 @@
   if (wo) window.open = function (url) { var a = [].slice.call(arguments); if (typeof url === 'string') a[0] = tag(url); return wo.apply(window, a); };
 
   window.addEventListener('pagehide', stop);
-  window.addEventListener('pageshow', function (e) { if (e.persisted && left) { newSid(); started = false; start(); } });
+  window.addEventListener('pageshow', function (e) { if (e.persisted && left) { newSid(); rtSig = ''; started = false; start(); } });
+  window.addEventListener('online', function () { if (started && !left) rtConnect(); });
 })();
