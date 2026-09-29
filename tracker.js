@@ -582,7 +582,7 @@
      Solo lleva app, página y estado (sin IP ni ubicación, que van por el aviso de entrada).
    - La misma persona conserva su identificador al pasar de una app del ecosistema a otra por un enlace.
    Cambia APP por la clave de la app en DATATA:
-   myooz · reu · stem · acopio_v · acopio_c · indep · dijimu · venezuela */
+   myooz · reu · stem · acopio_v · acopio_c · indep · dijimu · venezuela · nona */
 (function () {
   'use strict';
   var APP = 'stem';
@@ -593,7 +593,7 @@
 
   var TOPIC = 'https://ntfy.sh/myoozlabs_live_telemetry_v2_e829fa';
   var ECO = ['myoozlabs.vercel.app', 'myoozlabs.com', 'reu-live.vercel.app', 'toolboxlab.vercel.app', 'tinahmbuz-audiostems.hf.space',
-    'centro-de-acopio-ven.vercel.app', 'acopio-col.vercel.app', 'indpendent.vercel.app', 'dijimu.vercel.app', 'studio-x-pro.vercel.app', 'porvenezuela.vercel.app'];
+    'centro-de-acopio-ven.vercel.app', 'acopio-col.vercel.app', 'indpendent.vercel.app', 'dijimu.vercel.app', 'studio-x-pro.vercel.app', 'porvenezuela.vercel.app', 'interfaz-hazel.vercel.app'];
   var RT_URL = 'wss://hcjjdryltrbagybpygdy.supabase.co/realtime/v1/websocket?apikey=sb_publishable_AFBWrOkX9RqVSfAvIXyeUA_6TCwEJve&vsn=1.0.0', RT_TOPIC = 'realtime:datata';
   var HB_VISIBLE = 120000, HB_HIDDEN = 300000, IDLE = 300;
   function get(s, k) { try { return s.getItem(k); } catch (e) { return null; } }
