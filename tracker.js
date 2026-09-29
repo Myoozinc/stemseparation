@@ -574,46 +574,75 @@
 })();
 
 /* DATATA · presencia en directo (entra / sale) */
-/* DATATA · presencia en directo
-   Avisa al dashboard cuando alguien entra, sigue conectado y sale (al cerrar la pestaña).
+/* DATATA · presencia en directo (v3)
+   Avisa al dashboard cuando alguien entra, cambia de estado y sale (al cerrar la pestaña).
+   - Pocos mensajes (el canal gratuito tiene un límite diario): entrada, salida, cambios reales
+     y una señal de vida cada 2 min (5 min con la pestaña oculta).
+   - La misma persona conserva su identificador al pasar de una app del ecosistema a otra por un enlace.
    Cambia APP por la clave de la app en DATATA:
    myooz · reu · stem · acopio_v · acopio_c · indep · dijimu · venezuela */
 (function () {
   'use strict';
   var APP = 'stem';
   if (/admin|moderador/i.test(location.pathname)) return; // los paneles internos no cuentan como visita
+  try { if (window.self !== window.top) return; } catch (e) { return; } // dentro de otra página (p. ej. el mapa dentro de Por Venezuela): avisa la página que lo contiene
   if (window.__datataPresence) return;
-  window.__datataPresence = true;
+  window.__datataPresence = 3;
 
   var TOPIC = 'https://ntfy.sh/myoozlabs_live_telemetry_v2_e829fa';
-  var K = 'datata_sid_' + APP, sid = '', since = 0, geo = {}, left = false, timer = null, started = false;
-  var lastAct = Date.now(), ref = '';
+  var ECO = ['myoozlabs.vercel.app', 'myoozlabs.com', 'reu-live.vercel.app', 'toolboxlab.vercel.app', 'tinahmbuz-audiostems.hf.space',
+    'centro-de-acopio-ven.vercel.app', 'acopio-col.vercel.app', 'indpendent.vercel.app', 'dijimu.vercel.app', 'studio-x-pro.vercel.app', 'porvenezuela.vercel.app'];
+  var HB_VISIBLE = 120000, HB_HIDDEN = 300000, IDLE = 300;
+  function get(s, k) { try { return s.getItem(k); } catch (e) { return null; } }
+  function put(s, k, v) { try { s.setItem(k, v); } catch (e) {} }
+  function rnd(n) { var s = ''; while (s.length < n) s += Math.random().toString(36).slice(2); return s.slice(0, n); }
+  var LS = null, SS = null;
+  try { LS = window.localStorage; SS = window.sessionStorage; } catch (e) {}
+  var mem = {}, store = function (s) { return s || { getItem: function (k) { return mem[k] || null; }, setItem: function (k, v) { mem[k] = v; } }; };
+  LS = store(LS); SS = store(SS);
 
+  /* identificador del visitante: viene en el enlace desde otra app del ecosistema, o se crea aquí */
+  var vid = '', from = '', ref = '';
   try { if (document.referrer) ref = new URL(document.referrer).hostname.replace(/^www\./, ''); } catch (e) {}
   try {
-    var saved = JSON.parse(sessionStorage.getItem(K) || 'null');
-    if (saved && saved.sid) { sid = saved.sid; since = saved.since; }
+    var u = new URL(location.href), qv = u.searchParams.get('_dtv');
+    if (qv && /^[a-z0-9]{6,24}$/.test(qv)) { vid = qv; from = (u.searchParams.get('_dtf') || '').slice(0, 16); }
+    if (u.searchParams.has('_dtv') || u.searchParams.has('_dtf')) {
+      u.searchParams.delete('_dtv'); u.searchParams.delete('_dtf');
+      history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+    }
   } catch (e) {}
-  if (!sid) {
-    sid = Math.random().toString(36).slice(2, 10); since = Date.now();
-    try { sessionStorage.setItem(K, JSON.stringify({ sid: sid, since: since })); } catch (e) {}
-  }
-  try { var g = JSON.parse(sessionStorage.getItem('datata_geo') || 'null'); if (g) geo = g; } catch (e) {}
+  if (vid) put(LS, 'datata_vid', vid); else vid = get(LS, 'datata_vid') || '';
+  if (!vid) { vid = rnd(12); put(LS, 'datata_vid', vid); }
+
+  /* pestaña: se conserva al recargar la misma pestaña */
+  var K = 'datata_sid_' + APP, sid = '', since = 0;
+  try { var sv = JSON.parse(get(SS, K) || 'null'); if (sv && sv.sid) { sid = sv.sid; since = sv.since; } } catch (e) {}
+  function newSid() { sid = rnd(8); since = Date.now(); put(SS, K, JSON.stringify({ sid: sid, since: since })); }
+  if (!sid) newSid();
+
+  var geo = {};
+  try { var g = JSON.parse(get(LS, 'datata_geo3') || 'null'); if (g && g.ip && Date.now() - g.t < 6 * 3600000) geo = g; } catch (e) {}
 
   /* actividad real de la persona (distingue "está usando la app" de "dejó la pestaña abierta") */
-  var actT = 0;
-  function act() { var n = Date.now(); if (n - actT > 1000) { actT = n; lastAct = n; } }
+  var lastAct = Date.now(), actT = 0, sentIdle = false, lastSent = 0, left = false, started = false;
+  function idleSecs() { return Math.max(0, Math.round((Date.now() - lastAct) / 1000)); }
+  function act() {
+    var n = Date.now(); if (n - actT < 1000) return; actT = n; lastAct = n;
+    if (sentIdle && started && !left) send('heartbeat'); // vuelve a estar activa: aviso inmediato
+  }
   ['pointerdown', 'pointermove', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach(function (t) {
     window.addEventListener(t, act, { passive: true, capture: true });
   });
 
   function send(ev, beacon) {
+    var idle = idleSecs();
+    sentIdle = idle >= IDLE; lastSent = Date.now();
     var body = JSON.stringify({
-      event: ev, app: APP, sid: sid, since: since,
+      v: 3, event: ev, app: APP, sid: sid, since: since, vid: vid, from: from,
       ip: geo.ip || '', city: geo.city || '', country: geo.country || '',
       url: location.pathname, userAgent: navigator.userAgent, ref: ref,
-      vis: document.visibilityState || 'visible',
-      idle: Math.max(0, Math.round((Date.now() - lastAct) / 1000))
+      vis: document.visibilityState || 'visible', idle: idle
     });
     try {
       if (beacon && navigator.sendBeacon && navigator.sendBeacon(TOPIC, body)) return;
@@ -624,19 +653,24 @@
     if (started && !left) return;
     started = true; left = false;
     send('join');
-    clearInterval(timer);
-    timer = setInterval(function () { send('heartbeat'); }, 15000);
   }
   function stop() {
-    if (left) return;
-    left = true; clearInterval(timer);
+    if (left || !started) return;
+    left = true;
     send('leave', true);
   }
+  /* señal de vida espaciada + aviso cuando pasa a "sin actividad" */
+  setInterval(function () {
+    if (!started || left) return;
+    var hidden = document.visibilityState === 'hidden';
+    if ((idleSecs() >= IDLE) !== sentIdle) { send('heartbeat'); return; }
+    if (Date.now() - lastSent >= (hidden ? HB_HIDDEN : HB_VISIBLE)) send('heartbeat');
+  }, 20000);
 
   /* ubicación: dos proveedores por si uno falla o lo bloquea un adblock; nunca se espera más de 1,5 s */
   function saveGeo(x) {
-    geo = { ip: x.ip, city: x.city, country: x.country_name || x.country };
-    try { sessionStorage.setItem('datata_geo', JSON.stringify(geo)); } catch (e) {}
+    geo = { ip: x.ip, city: x.city || '', country: x.country_name || x.country || '', t: Date.now() };
+    put(LS, 'datata_geo3', JSON.stringify(geo));
   }
   if (geo.ip) start();
   else {
@@ -647,12 +681,12 @@
       .catch(function () {
         return fetch('https://ipwho.is/').then(function (r) { return r.json(); }).then(function (x) { if (x && x.ip) saveGeo(x); }).catch(function () {});
       })
-      .then(function () { clearTimeout(t); start(); });
+      .then(function () { clearTimeout(t); if (!started) start(); else if (!left && geo.ip) send('heartbeat'); });
   }
 
   /* aviso inmediato al ocultar / volver a mostrar la pestaña */
   document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible') act();
+    if (document.visibilityState === 'visible') lastAct = Date.now();
     if (started && !left) send('heartbeat');
   });
 
@@ -670,6 +704,26 @@
   });
   window.addEventListener('popstate', onNav);
 
+  /* enlaces hacia otras apps del ecosistema: llevan el identificador para que cuente como la misma persona */
+  function tag(href) {
+    try {
+      var x = new URL(href, location.href);
+      if (x.host === location.host || ECO.indexOf(x.host.replace(/^www\./, '')) < 0) return href;
+      x.searchParams.set('_dtv', vid); x.searchParams.set('_dtf', APP);
+      return x.toString();
+    } catch (e) { return href; }
+  }
+  function onLink(e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    var h = tag(a.href); if (h !== a.href) a.href = h;
+  }
+  ['pointerdown', 'touchstart', 'click', 'auxclick', 'keydown'].forEach(function (t) {
+    document.addEventListener(t, onLink, { capture: true, passive: true });
+  });
+  var wo = window.open;
+  if (wo) window.open = function (url) { var a = [].slice.call(arguments); if (typeof url === 'string') a[0] = tag(url); return wo.apply(window, a); };
+
   window.addEventListener('pagehide', stop);
-  window.addEventListener('pageshow', function (e) { if (e.persisted) { started = false; start(); } });
+  window.addEventListener('pageshow', function (e) { if (e.persisted && left) { newSid(); started = false; start(); } });
 })();
