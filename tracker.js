@@ -574,7 +574,7 @@
 })();
 
 /* DATATA · presencia en directo (entra / sale) */
-/* DATATA · presencia en directo (v4.2)
+/* DATATA · presencia en directo (v4.3)
    Avisa al dashboard cuando alguien entra, cambia de estado y sale (al cerrar la pestaña).
    - Pocos mensajes (el canal gratuito tiene un límite diario): entrada, salida, cambios reales
      y una señal de vida cada 2 min (5 min con la pestaña oculta).
@@ -723,7 +723,7 @@
     if (Date.now() - lastSent >= (hidden ? HB_HIDDEN : HB_VISIBLE)) send('heartbeat');
   }, 20000);
 
-  /* ubicación: dos proveedores por si uno falla o lo bloquea un adblock; nunca se espera más de 1,5 s */
+  /* ubicación: tres proveedores por si uno falla o lo bloquea un adblock; nunca se espera más de 1,5 s */
   function saveGeo(x) {
     geo = { ip: x.ip, city: x.city || '', country: x.country_name || x.country || '', t: Date.now() };
     put(LS, 'datata_geo3', JSON.stringify(geo));
@@ -731,12 +731,12 @@
   if (geo.ip) start();
   else {
     var t = setTimeout(start, 1500);
-    fetch('https://ipapi.co/json/')
-      .then(function (r) { return r.json(); })
-      .then(function (x) { if (!x || !x.ip) throw 0; saveGeo(x); })
-      .catch(function () {
-        return fetch('https://ipwho.is/').then(function (r) { return r.json(); }).then(function (x) { if (x && x.ip) saveGeo(x); }).catch(function () {});
-      })
+    /* 1º tu propio servidor (MYOOZ Labs en Vercel, rápido y sin límites); si falla, dos servicios públicos */
+    var tryGeo = function (u) { return fetch(u).then(function (r) { return r.json(); }).then(function (x) { if (!x || !x.ip) throw 0; saveGeo(x); }); };
+    tryGeo('https://myoozlabs.vercel.app/api/track')
+      .catch(function () { return tryGeo('https://ipwho.is/'); })
+      .catch(function () { return tryGeo('https://ipapi.co/json/'); })
+      .catch(function () {})
       .then(function () { clearTimeout(t); if (!started) start(); else if (!left && geo.ip) { send('heartbeat'); rtTrack(true); sendGeo(true); } });
   }
 
