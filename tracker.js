@@ -574,12 +574,12 @@
 })();
 
 /* DATATA · presencia en directo (entra / sale) */
-/* DATATA · presencia en directo (v4)
+/* DATATA · presencia en directo (v4.2)
    Avisa al dashboard cuando alguien entra, cambia de estado y sale (al cerrar la pestaña).
    - Pocos mensajes (el canal gratuito tiene un límite diario): entrada, salida, cambios reales
      y una señal de vida cada 2 min (5 min con la pestaña oculta).
    - Canal en vivo (Supabase Realtime): el servidor detecta al instante cuando la pestaña se cierra o se corta.
-     Solo lleva app, página y estado (sin IP ni ubicación, que van por el aviso de entrada).
+     Solo lleva app, página, estado y una marca de red (sin IP); la IP y la ciudad van solo al panel.
    - La misma persona conserva su identificador al pasar de una app del ecosistema a otra por un enlace.
    Cambia APP por la clave de la app en DATATA:
    myooz · reu · stem · acopio_v · acopio_c · indep · dijimu · venezuela · nona */
@@ -595,6 +595,7 @@
   var ECO = ['myoozlabs.vercel.app', 'myoozlabs.com', 'reu-live.vercel.app', 'toolboxlab.vercel.app', 'tinahmbuz-audiostems.hf.space',
     'centro-de-acopio-ven.vercel.app', 'acopio-col.vercel.app', 'indpendent.vercel.app', 'dijimu.vercel.app', 'digimu.vercel.app', 'studio-x-pro.vercel.app', 'porvenezuela.vercel.app', 'interfaz-hazel.vercel.app'];
   var RT_URL = 'wss://hcjjdryltrbagybpygdy.supabase.co/realtime/v1/websocket?apikey=sb_publishable_AFBWrOkX9RqVSfAvIXyeUA_6TCwEJve&vsn=1.0.0', RT_TOPIC = 'realtime:datata';
+  var RT_HTTP = 'https://hcjjdryltrbagybpygdy.supabase.co/realtime/v1/api/broadcast', RT_KEY = 'sb_publishable_AFBWrOkX9RqVSfAvIXyeUA_6TCwEJve';
   var HB_VISIBLE = 120000, HB_HIDDEN = 300000, IDLE = 300;
   function get(s, k) { try { return s.getItem(k); } catch (e) { return null; } }
   function put(s, k, v) { try { s.setItem(k, v); } catch (e) {} }
@@ -655,15 +656,24 @@
   }
   /* canal en vivo: presencia en Supabase Realtime */
   var ws = null, wsRef = 0, wsJoin = '', wsOk = false, wsHb = null, wsRetry = 0, wsT = null, rtSig = '';
+  /* marca de red: igual para dispositivos conectados a la misma IP, sin revelar la IP a otros visitantes */
+  function netOf(ip) { if (!ip) return ''; var h = 2166136261; for (var i = 0; i < ip.length; i++) { h ^= ip.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36).slice(0, 6); }
+  /* IP y ciudad solo para el panel (difusión privada, no la ven los demás visitantes) */
+  var geoT = 0;
+  function sendGeo(force) {
+    if (!geo.ip || left) return; var n = Date.now(); if (!force && n - geoT < 60000) return; if (n - geoT < 4000) return; geoT = n;
+    try { fetch(RT_HTTP, { method: 'POST', keepalive: true, headers: { apikey: RT_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ topic: 'datata-geo', event: 'geo', payload: { app: APP, sid: sid, vid: vid, ip: geo.ip, city: geo.city || '', country: geo.country || '' } }] }) }).catch(function () {}); } catch (e) {}
+  }
   function rtState() {
-    return { v: 4, app: APP, sid: sid, since: since, vid: vid, from: from, url: location.pathname, ref: ref,
+    return { v: 4, app: APP, sid: sid, since: since, vid: vid, from: from, url: location.pathname, ref: ref, net: netOf(geo.ip),
       dev: /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'Móvil' : 'Escritorio',
       vis: document.visibilityState || 'visible', idle: idleSecs() >= IDLE ? idleSecs() : 0 };
   }
   function rtPush(msg) { try { if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg)); } catch (e) {} }
   function rtTrack(force) {
     if (!wsOk) return;
-    var st = rtState(), sig = st.url + '|' + st.vis + '|' + (st.idle > 0) + '|' + sid;
+    var st = rtState(), sig = st.url + '|' + st.vis + '|' + (st.idle > 0) + '|' + sid + '|' + st.net;
     if (!force && sig === rtSig) return; rtSig = sig;
     rtPush({ topic: RT_TOPIC, event: 'presence', payload: { type: 'presence', event: 'track', payload: st }, ref: String(++wsRef), join_ref: wsJoin });
   }
@@ -678,7 +688,12 @@
       wsHb = setInterval(function () { rtPush({ topic: 'phoenix', event: 'heartbeat', payload: {}, ref: String(++wsRef) }); }, 25000);
     };
     ws.onmessage = function (e) {
-      try { var m = JSON.parse(e.data); if (m.event === 'phx_reply' && m.ref === wsJoin && m.payload && m.payload.status === 'ok') { wsOk = true; rtTrack(true); } } catch (x) {}
+      try { var m = JSON.parse(e.data);
+        if (m.event === 'phx_reply' && m.ref === wsJoin && m.payload && m.payload.status === 'ok') { wsOk = true; rtTrack(true); }
+        /* cuando se abre el panel, le enviamos al instante la IP y la ciudad */
+        var ks = m.event === 'presence_state' ? Object.keys(m.payload || {}) : m.event === 'presence_diff' ? Object.keys((m.payload && m.payload.joins) || {}) : [];
+        for (var i = 0; i < ks.length; i++) if (ks[i].indexOf('panel-') === 0) { sendGeo(true); break; }
+      } catch (x) {}
     };
     ws.onclose = function () {
       wsOk = false; clearInterval(wsHb); ws = null;
@@ -692,6 +707,7 @@
     started = true; left = false;
     send('join');
     rtConnect();
+    sendGeo(true);
   }
   function stop() {
     if (left || !started) return;
@@ -721,7 +737,7 @@
       .catch(function () {
         return fetch('https://ipwho.is/').then(function (r) { return r.json(); }).then(function (x) { if (x && x.ip) saveGeo(x); }).catch(function () {});
       })
-      .then(function () { clearTimeout(t); if (!started) start(); else if (!left && geo.ip) send('heartbeat'); });
+      .then(function () { clearTimeout(t); if (!started) start(); else if (!left && geo.ip) { send('heartbeat'); rtTrack(true); sendGeo(true); } });
   }
 
   /* aviso inmediato al ocultar / volver a mostrar la pestaña */
